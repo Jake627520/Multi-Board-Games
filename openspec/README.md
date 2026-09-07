@@ -41,6 +41,7 @@ openspec/
 │   ├── game-platform/spec.md       # Platform abstractions, GameEngine protocol, Registry
 │   ├── game-session/spec.md        # Session lifecycle, move validation, history, undo, reset
 │   ├── licensing/spec.md           # Open-source license and IP boundary specification
+│   ├── gomoku/spec.md              # Gomoku (五子棋) board, rules, and win conditions
 │   └── xiangqi/
 │       ├── board/spec.md           # 9x10 grid, coordinates, river, palaces
 │       ├── pieces/spec.md          # 7 piece types, 32 pieces, setup, colors
@@ -63,7 +64,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 004-core-genericity-and-xiangqi-rules/
+    ├── 004-core-genericity-and-xiangqi-rules/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 005-add-gomoku-engine/
         ├── proposal.md
         ├── design.md
         ├── specs/
