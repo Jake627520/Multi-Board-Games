@@ -1,6 +1,6 @@
 import type { GameEngine, Player } from "../../core/game/types";
 import { createInitialBoard } from "./board";
-import { applyMoveUnchecked, getLegalMoves, getWinner, isGameOver } from "./rules";
+import { applyMoveUnchecked, getLegalMoves, getWinner, isGameOver, maskHiddenState } from "./rules";
 import type { BanqiMove, BanqiPlayer, BanqiState } from "./types";
 
 export class BanqiEngine implements GameEngine<BanqiState, BanqiMove> {
@@ -60,6 +60,10 @@ export class BanqiEngine implements GameEngine<BanqiState, BanqiMove> {
 
   serialize(state: BanqiState): string {
     return JSON.stringify(state);
+  }
+
+  serializeMasked(state: BanqiState): string {
+    return JSON.stringify(maskHiddenState(state));
   }
 
   deserialize(serialized: string): BanqiState {

@@ -89,7 +89,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 009-add-banqi-engine/
+    ├── 009-add-banqi-engine/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 010-banqi-rules-audit/
         ├── proposal.md
         ├── design.md
         ├── specs/
