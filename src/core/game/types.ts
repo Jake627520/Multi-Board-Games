@@ -24,3 +24,5 @@ export interface GameEngine<State, Move> {
   serialize(state: State): string;
   deserialize(serialized: string): State;
 }
+
+export type { AiPlayer } from "../ai/types";

@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import { createXiangqiEngine } from "../games/xiangqi/engine";
+import { createXiangqiAiLevel1 } from "../games/xiangqi/ai";
 import { isInCheck } from "../games/xiangqi/rules";
 import { useGameSession } from "./hooks/useGameSession";
 import { StatusBar } from "./components/StatusBar";
+import { GameModeSelector, type GameMode } from "./components/GameModeSelector";
 import type { Piece, XiangqiMove, XiangqiState } from "../games/xiangqi/types";
+import type { Player } from "../core/game/types";
 
 const labels: Record<Piece["type"], string> = {
   general: "將",
@@ -15,8 +18,21 @@ const labels: Record<Piece["type"], string> = {
   soldier: "卒",
 };
 
+const AVAILABLE_PLAYERS = [
+  { id: "red", label: "🟥 紅方（先手）" },
+  { id: "black", label: "⬛ 黑方（後手）" },
+];
+
 export function XiangqiBoard() {
   const engine = useMemo(() => createXiangqiEngine(), []);
+  const aiPlayer = useMemo(() => createXiangqiAiLevel1(), []);
+
+  const [mode, setMode] = useState<GameMode>("pvp");
+  const [humanPlayer, setHumanPlayer] = useState<Player>("red");
+
+  const aiColor: Player | undefined =
+    mode === "pve" ? (humanPlayer === "red" ? "black" : "red") : undefined;
+
   const {
     state,
     currentPlayer,
@@ -25,10 +41,14 @@ export function XiangqiBoard() {
     isDraw,
     legalMoves,
     error,
+    isAiThinking,
     move,
     undo,
     reset,
-  } = useGameSession<XiangqiState, XiangqiMove>(engine);
+  } = useGameSession<XiangqiState, XiangqiMove>(engine, {
+    aiPlayer: mode === "pve" ? aiPlayer : undefined,
+    aiColor,
+  });
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(
     null
@@ -41,6 +61,9 @@ export function XiangqiBoard() {
     : [];
 
   function clickCell(row: number, col: number) {
+    if (isAiThinking) return;
+    if (mode === "pve" && currentPlayer !== humanPlayer) return;
+
     const piece = state.board[row][col];
 
     if (selected) {
@@ -67,6 +90,18 @@ export function XiangqiBoard() {
     }
   }
 
+  function handleModeChange(newMode: GameMode) {
+    setMode(newMode);
+    reset();
+    setSelected(null);
+  }
+
+  function handleHumanPlayerChange(p: Player) {
+    setHumanPlayer(p);
+    reset();
+    setSelected(null);
+  }
+
   function handleReset() {
     reset();
     setSelected(null);
@@ -90,6 +125,7 @@ export function XiangqiBoard() {
           isDraw={isDraw}
           inCheck={inCheck}
           error={error}
+          isAiThinking={isAiThinking}
           onUndo={handleUndo}
           onReset={handleReset}
           formatPlayer={formatPlayer}
@@ -109,6 +145,7 @@ export function XiangqiBoard() {
                     isTarget ? "target" : ""
                   }`}
                   onClick={() => clickCell(r, c)}
+                  disabled={isAiThinking}
                   aria-label={`${r}-${c}${
                     piece ? ` ${labels[piece.type]}` : ""
                   }`}
@@ -129,6 +166,16 @@ export function XiangqiBoard() {
       <aside className="side-panel">
         <h2>中國象棋 (Xiangqi)</h2>
         <p className="engine-badge">Engine: XiangqiEngine (9×10)</p>
+
+        <GameModeSelector
+          mode={mode}
+          humanPlayer={humanPlayer}
+          availablePlayers={AVAILABLE_PLAYERS}
+          onModeChange={handleModeChange}
+          onHumanPlayerChange={handleHumanPlayerChange}
+          disabled={isAiThinking}
+        />
+
         <p className="muted">
           規則層與 React UI 嚴格分離，UI 不具任何遊戲規則邏輯。
         </p>

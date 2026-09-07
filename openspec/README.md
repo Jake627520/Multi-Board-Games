@@ -74,7 +74,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 006-ui-multi-game-platform/
+    ├── 006-ui-multi-game-platform/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 007-ai-framework/
         ├── proposal.md
         ├── design.md
         ├── specs/

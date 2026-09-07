@@ -1,0 +1,24 @@
+# Tasks for 007-ai-framework
+
+- [x] 1. Core AI Contract
+  - [x] 1.1 Create `src/core/ai/types.ts` defining `AiPlayer<State, Move>`.
+  - [x] 1.2 Re-export from `src/core/game/types.ts`.
+- [x] 2. Gomoku Level 1 AI (TDD)
+  - [x] 2.1 Write unit tests `tests/gomoku/ai.test.ts` (RED).
+  - [x] 2.2 Implement `src/games/gomoku/ai.ts` with 4-axis heuristics (GREEN).
+  - [x] 2.3 Verify all Gomoku AI tests pass.
+- [x] 3. Xiangqi Level 1 AI (TDD)
+  - [x] 3.1 Write unit tests `tests/xiangqi/ai.test.ts` (RED).
+  - [x] 3.2 Implement `src/games/xiangqi/ai.ts` with piece values & capture heuristics (GREEN).
+  - [x] 3.3 Verify all Xiangqi AI tests pass.
+- [x] 4. UI Layer Integration
+  - [x] 4.1 Create `src/ui/components/GameModeSelector.tsx`.
+  - [x] 4.2 Update `src/ui/hooks/useGameSession.ts` with AI turn orchestrator and delay.
+  - [x] 4.3 Integrate mode selector into `XiangqiBoard.tsx` and `GomokuBoard.tsx`.
+  - [x] 4.4 Add UI styles in `src/styles.css`.
+  - [x] 4.5 Write UI test for AI mode switcher `tests/ui/pve-session.test.ts`.
+- [x] 5. Verification & Acceptance
+  - [x] 5.1 Run full vitest suite (25 files, 87 tests passed, 0 regressions).
+  - [x] 5.2 Typecheck with `tsc --noEmit` (0 errors).
+  - [x] 5.3 Verify production build with `vite build` (289ms).
+  - [x] 5.4 Update OpenSpec living documentation.

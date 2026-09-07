@@ -1,11 +1,27 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { createGomokuEngine } from "../../games/gomoku/engine";
+import { createGomokuAiLevel1 } from "../../games/gomoku/ai";
 import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
+import { GameModeSelector, type GameMode } from "./GameModeSelector";
 import type { GomokuMove, GomokuPlayer, GomokuState } from "../../games/gomoku/types";
+import type { Player } from "../../core/game/types";
+
+const AVAILABLE_PLAYERS = [
+  { id: "black", label: "⚫ 黑子（先手）" },
+  { id: "white", label: "⚪ 白子（後手）" },
+];
 
 export function GomokuBoard() {
   const engine = useMemo(() => createGomokuEngine(), []);
+  const aiPlayer = useMemo(() => createGomokuAiLevel1(), []);
+
+  const [mode, setMode] = useState<GameMode>("pvp");
+  const [humanPlayer, setHumanPlayer] = useState<Player>("black");
+
+  const aiColor: Player | undefined =
+    mode === "pve" ? (humanPlayer === "black" ? "white" : "black") : undefined;
+
   const {
     state,
     currentPlayer,
@@ -13,14 +29,29 @@ export function GomokuBoard() {
     winner,
     isDraw,
     error,
+    isAiThinking,
     move,
     undo,
     reset,
-  } = useGameSession<GomokuState, GomokuMove>(engine);
+  } = useGameSession<GomokuState, GomokuMove>(engine, {
+    aiPlayer: mode === "pve" ? aiPlayer : undefined,
+    aiColor,
+  });
 
   function handleCellClick(row: number, col: number) {
-    if (isGameOver || state.board[row][col] !== null) return;
+    if (isGameOver || isAiThinking || state.board[row][col] !== null) return;
+    if (mode === "pve" && currentPlayer !== humanPlayer) return;
     move({ row, col });
+  }
+
+  function handleModeChange(newMode: GameMode) {
+    setMode(newMode);
+    reset();
+  }
+
+  function handleHumanPlayerChange(p: Player) {
+    setHumanPlayer(p);
+    reset();
   }
 
   const formatPlayer = (p: string) => (p === "black" ? "黑子 (Black)" : "白子 (White)");
@@ -34,6 +65,7 @@ export function GomokuBoard() {
           winner={winner}
           isDraw={isDraw}
           error={error}
+          isAiThinking={isAiThinking}
           onUndo={undo}
           onReset={reset}
           formatPlayer={formatPlayer}
@@ -53,7 +85,7 @@ export function GomokuBoard() {
                   key={`${r}-${c}`}
                   className={`gomoku-cell ${isEmpty ? "empty" : ""}`}
                   onClick={() => handleCellClick(r, c)}
-                  disabled={isGameOver || !isEmpty}
+                  disabled={isGameOver || isAiThinking || !isEmpty}
                   aria-label={`${r}-${c}${stone ? ` ${stone}` : " 空位"}`}
                 >
                   {stone && (
@@ -72,6 +104,16 @@ export function GomokuBoard() {
       <aside className="side-panel">
         <h2>五子棋 (Gomoku)</h2>
         <p className="engine-badge">Engine: GomokuEngine (15×15)</p>
+
+        <GameModeSelector
+          mode={mode}
+          humanPlayer={humanPlayer}
+          availablePlayers={AVAILABLE_PLAYERS}
+          onModeChange={handleModeChange}
+          onHumanPlayerChange={handleHumanPlayerChange}
+          disabled={isAiThinking}
+        />
+
         <p className="muted">
           五子棋 Free-style 規則：黑方先行，先在橫、直、斜任一方向連成五子者獲勝。
         </p>

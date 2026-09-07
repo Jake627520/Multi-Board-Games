@@ -7,6 +7,7 @@ interface StatusBarProps {
   readonly isDraw?: boolean;
   readonly inCheck?: boolean;
   readonly error?: string;
+  readonly isAiThinking?: boolean;
   readonly onUndo: () => void;
   readonly onReset: () => void;
   readonly formatPlayer?: (player: Player) => string;
@@ -26,6 +27,7 @@ export function StatusBar({
   isDraw,
   inCheck,
   error,
+  isAiThinking,
   onUndo,
   onReset,
   formatPlayer = defaultFormatPlayer,
@@ -36,6 +38,7 @@ export function StatusBar({
         {!isGameOver && (
           <span>
             輪到：<strong>{formatPlayer(currentPlayer)}</strong>
+            {isAiThinking && <span className="ai-thinking">（電腦思考中...）</span>}
           </span>
         )}
         {inCheck && !isGameOver && <span className="check">將軍！</span>}
