@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { createGameRegistry } from "./games/registry";
 import { XiangqiBoard } from "./ui/XiangqiBoard";
+import { GomokuBoard } from "./ui/components/GomokuBoard";
+import { GameSwitcher } from "./ui/components/GameSwitcher";
 import type { GameId } from "./core/game/types";
 
 export default function App() {
@@ -11,21 +13,22 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div>
-          <div className="eyebrow">MULTI BOARD GAMES</div>
+          <div className="eyebrow">MULTI BOARD GAMES PLATFORM</div>
           <h1>多棋類遊戲平台</h1>
         </div>
-        <select value={gameId} onChange={(e) => setGameId(e.target.value as GameId)}>
-          {registry.list().map((game) => (
-            <option key={game.id} value={game.id}>{game.name}</option>
-          ))}
-        </select>
+        <GameSwitcher
+          currentGameId={gameId}
+          availableGames={registry.list()}
+          onSelectGame={setGameId}
+        />
       </header>
 
-      {gameId === "xiangqi" ? (
-        <XiangqiBoard />
-      ) : (
+      {gameId === "xiangqi" && <XiangqiBoard key="xiangqi" />}
+      {gameId === "gomoku" && <GomokuBoard key="gomoku" />}
+
+      {gameId !== "xiangqi" && gameId !== "gomoku" && (
         <section className="placeholder">
-          <h2>{registry.get(gameId)?.name}</h2>
+          <h2>{registry.get(gameId)?.name || gameId}</h2>
           <p>此遊戲已保留擴充位置，尚未加入 Game Engine。</p>
         </section>
       )}

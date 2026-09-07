@@ -69,7 +69,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 005-add-gomoku-engine/
+    ├── 005-add-gomoku-engine/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 006-ui-multi-game-platform/
         ├── proposal.md
         ├── design.md
         ├── specs/
