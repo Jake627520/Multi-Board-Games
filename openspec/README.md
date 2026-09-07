@@ -84,7 +84,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 008-move-notation/
+    ├── 008-move-notation/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 009-add-banqi-engine/
         ├── proposal.md
         ├── design.md
         ├── specs/

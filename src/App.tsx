@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createGameRegistry } from "./games/registry";
 import { XiangqiBoard } from "./ui/XiangqiBoard";
 import { GomokuBoard } from "./ui/components/GomokuBoard";
+import { BanqiBoard } from "./ui/components/BanqiBoard";
 import { GameSwitcher } from "./ui/components/GameSwitcher";
 import type { GameId } from "./core/game/types";
 
@@ -25,8 +26,9 @@ export default function App() {
 
       {gameId === "xiangqi" && <XiangqiBoard key="xiangqi" />}
       {gameId === "gomoku" && <GomokuBoard key="gomoku" />}
+      {gameId === "banqi" && <BanqiBoard key="banqi" />}
 
-      {gameId !== "xiangqi" && gameId !== "gomoku" && (
+      {gameId !== "xiangqi" && gameId !== "gomoku" && gameId !== "banqi" && (
         <section className="placeholder">
           <h2>{registry.get(gameId)?.name || gameId}</h2>
           <p>此遊戲已保留擴充位置，尚未加入 Game Engine。</p>
