@@ -79,7 +79,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 007-ai-framework/
+    ├── 007-ai-framework/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 008-move-notation/
         ├── proposal.md
         ├── design.md
         ├── specs/

@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { createGomokuEngine } from "../../games/gomoku/engine";
 import { createGomokuAiLevel1 } from "../../games/gomoku/ai";
+import { toGomokuNotation } from "../../games/gomoku/notation";
 import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
 import { GameModeSelector, type GameMode } from "./GameModeSelector";
+import { MoveHistory } from "./MoveHistory";
 import type { GomokuMove, GomokuPlayer, GomokuState } from "../../games/gomoku/types";
 import type { Player } from "../../core/game/types";
 
@@ -30,12 +32,14 @@ export function GomokuBoard() {
     isDraw,
     error,
     isAiThinking,
+    history,
     move,
     undo,
     reset,
   } = useGameSession<GomokuState, GomokuMove>(engine, {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
+    formatMove: (m) => toGomokuNotation(m),
   });
 
   function handleCellClick(row: number, col: number) {
@@ -112,6 +116,14 @@ export function GomokuBoard() {
           onModeChange={handleModeChange}
           onHumanPlayerChange={handleHumanPlayerChange}
           disabled={isAiThinking}
+        />
+
+        <MoveHistory
+          moves={history.map((h) => ({
+            player: h.player,
+            notation: h.notation ?? "",
+          }))}
+          formatPlayer={formatPlayer}
         />
 
         <p className="muted">

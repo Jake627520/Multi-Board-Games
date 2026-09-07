@@ -21,7 +21,7 @@ export class GameSession<State, Move> {
     return this.engine.getCurrentPlayer(this.state);
   }
 
-  move(move: Move): State {
+  move(move: Move, notation?: string): State {
     const legal = this.engine.getLegalMoves(this.state);
     if (!legal.some((candidate) => JSON.stringify(candidate) === JSON.stringify(move))) {
       throw new Error("Illegal move");
@@ -29,7 +29,7 @@ export class GameSession<State, Move> {
     this.snapshots.push(this.state);
     const player = this.engine.getCurrentPlayer(this.state);
     this.state = this.engine.applyMove(this.state, move);
-    this.history.push({ move, player });
+    this.history.push({ move, player, notation });
     return this.state;
   }
 

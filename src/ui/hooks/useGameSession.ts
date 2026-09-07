@@ -7,6 +7,7 @@ export interface UseGameSessionOptions<State, Move> {
   readonly aiPlayer?: AiPlayer<State, Move>;
   readonly aiColor?: Player;
   readonly aiDelayMs?: number;
+  readonly formatMove?: (move: Move, stateBefore: State) => string;
 }
 
 export function useGameSession<State, Move>(
@@ -36,11 +37,14 @@ export function useGameSession<State, Move>(
   const isAiThinkingRef = useRef(isAiThinking);
   isAiThinkingRef.current = isAiThinking;
 
+  const formatMove = options?.formatMove;
+
   function move(m: Move): boolean {
     if (isAiThinkingRef.current) return false;
     setError("");
     try {
-      const nextState = session.move(m);
+      const notation = formatMove ? formatMove(m, state) : undefined;
+      const nextState = session.move(m, notation);
       setState(nextState);
       return true;
     } catch (err) {
@@ -76,7 +80,8 @@ export function useGameSession<State, Move>(
             stateRef.current,
             legalMovesRef.current
           );
-          const nextState = session.move(chosenMove);
+          const notation = formatMove ? formatMove(chosenMove, stateRef.current) : undefined;
+          const nextState = session.move(chosenMove, notation);
           setState(nextState);
         } catch (err) {
           const msg = err instanceof Error ? err.message : "AI 走步失敗";
@@ -88,7 +93,7 @@ export function useGameSession<State, Move>(
 
       return () => clearTimeout(timer);
     }
-  }, [currentPlayer, aiColor, aiPlayer, isGameOver, session, aiDelayMs]);
+  }, [currentPlayer, aiColor, aiPlayer, isGameOver, session, aiDelayMs, formatMove]);
 
   return {
     state,

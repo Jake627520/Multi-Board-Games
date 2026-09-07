@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { createXiangqiEngine } from "../games/xiangqi/engine";
 import { createXiangqiAiLevel1 } from "../games/xiangqi/ai";
+import { toXiangqiNotation } from "../games/xiangqi/notation";
 import { isInCheck } from "../games/xiangqi/rules";
 import { useGameSession } from "./hooks/useGameSession";
 import { StatusBar } from "./components/StatusBar";
 import { GameModeSelector, type GameMode } from "./components/GameModeSelector";
+import { MoveHistory, type FormattedMove } from "./components/MoveHistory";
 import type { Piece, XiangqiMove, XiangqiState } from "../games/xiangqi/types";
 import type { Player } from "../core/game/types";
 
@@ -42,12 +44,14 @@ export function XiangqiBoard() {
     legalMoves,
     error,
     isAiThinking,
+    history,
     move,
     undo,
     reset,
   } = useGameSession<XiangqiState, XiangqiMove>(engine, {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
+    formatMove: toXiangqiNotation,
   });
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(
@@ -174,6 +178,14 @@ export function XiangqiBoard() {
           onModeChange={handleModeChange}
           onHumanPlayerChange={handleHumanPlayerChange}
           disabled={isAiThinking}
+        />
+
+        <MoveHistory
+          moves={history.map((h) => ({
+            player: h.player,
+            notation: h.notation ?? "",
+          }))}
+          formatPlayer={formatPlayer}
         />
 
         <p className="muted">
