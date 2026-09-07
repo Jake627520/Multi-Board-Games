@@ -41,4 +41,28 @@ describe("GameRegistry", () => {
     const registry = new GameRegistry();
     expect(registry.get("gomoku")).toBeUndefined();
   });
+
+  it("accepts arbitrary game IDs and novel player models without core modifications", () => {
+    const registry = new GameRegistry();
+    type GomokuPlayer = "black" | "white";
+    interface GomokuState {
+      board: (GomokuPlayer | null)[][];
+      currentPlayer: GomokuPlayer;
+    }
+    const othelloEngine: GameEngine<GomokuState, { row: number; col: number }> = {
+      id: "othello-custom",
+      name: "Othello / Reversi",
+      createInitialState: () => ({ board: [], currentPlayer: "black" }),
+      getCurrentPlayer: (s) => s.currentPlayer,
+      getLegalMoves: () => [{ row: 2, col: 3 }],
+      applyMove: (s) => ({ ...s, currentPlayer: s.currentPlayer === "black" ? "white" : "black" }),
+      isGameOver: () => false,
+      getWinner: () => null,
+      serialize: (s) => JSON.stringify(s),
+      deserialize: (str) => JSON.parse(str),
+    };
+
+    registry.register(othelloEngine);
+    expect(registry.get("othello-custom")).toBe(othelloEngine);
+  });
 });

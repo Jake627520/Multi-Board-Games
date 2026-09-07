@@ -1,5 +1,5 @@
 import { cloneBoard, crossedRiver, inBounds, isPalace } from "./board";
-import type { Piece, XiangqiMove, XiangqiState } from "./types";
+import type { Piece, XiangqiMove, XiangqiPlayer, XiangqiState } from "./types";
 import type { Player, Position } from "../../core/game/types";
 
 const dirs = [[1,0],[-1,0],[0,1],[0,-1]] as const;
@@ -154,26 +154,103 @@ export function getLegalMoves(state: XiangqiState, player = state.currentPlayer)
   return moves;
 }
 
+export function boardSignature(state: XiangqiState): string {
+  const pieces: string[] = [];
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 9; c++) {
+      const p = state.board[r][c];
+      if (p) {
+        pieces.push(`${p.player}-${p.type}@${r},${c}`);
+      }
+    }
+  }
+  return `${state.currentPlayer}:${pieces.sort().join(";")}`;
+}
+
 export function applyMoveUnchecked(state: XiangqiState, move: XiangqiMove): XiangqiState {
   const board = cloneBoard(state.board);
   const piece = board[move.from.row][move.from.col];
   if (!piece) throw new Error("No piece at source");
 
+  const captured = state.board[move.to.row][move.to.col];
   const moved = { ...piece, position: { ...move.to } };
   board[move.from.row][move.from.col] = null;
   board[move.to.row][move.to.col] = moved;
 
-  let winner: Player | null = null;
-  if (moved.type === "general") {
-    const captured = state.board[move.to.row][move.to.col];
-    if (captured?.type === "general") winner = moved.player;
+  let winner: XiangqiPlayer | null = null;
+  if (moved.type === "general" && captured?.type === "general") {
+    winner = moved.player;
+  }
+
+  const nextPlayer: XiangqiPlayer = state.currentPlayer === "red" ? "black" : "red";
+  const nonCaptureCount = captured !== null ? 0 : (state.nonCaptureCount ?? 0) + 1;
+
+  const tentativeState: XiangqiState = {
+    board,
+    currentPlayer: nextPlayer,
+    winner,
+    moveNumber: state.moveNumber + 1,
+    nonCaptureCount,
+  };
+
+  const isCheck = isInCheck(tentativeState, nextPlayer);
+  const checkHistory = state.checkHistory ? [...state.checkHistory, isCheck] : [isCheck];
+
+  const initialSig = state.positionHistory ? null : boardSignature(state);
+  const positionHistory = state.positionHistory ? [...state.positionHistory] : [initialSig!];
+
+  const currentSig = boardSignature(tentativeState);
+  positionHistory.push(currentSig);
+
+  let isDraw = false;
+  let terminationReason: XiangqiState["terminationReason"] = undefined;
+
+  if (winner) {
+    terminationReason = "checkmate";
+  } else if (nonCaptureCount >= 120) {
+    isDraw = true;
+    terminationReason = "sixty_move_draw";
+  } else {
+    const occurrences: number[] = [];
+    for (let i = 0; i < positionHistory.length; i++) {
+      if (positionHistory[i] === currentSig) {
+        occurrences.push(i);
+      }
+    }
+
+    if (occurrences.length >= 2) {
+      const prevIndex = occurrences[occurrences.length - 2];
+      const cycleLength = positionHistory.length - 1 - prevIndex;
+
+      const moverCheckIndices: number[] = [];
+      for (let offset = 0; offset < cycleLength; offset += 2) {
+        const idx = checkHistory.length - 1 - offset;
+        if (idx >= 0) moverCheckIndices.push(idx);
+      }
+
+      const allChecks =
+        moverCheckIndices.length >= 2 && moverCheckIndices.every((i) => checkHistory[i] === true);
+
+      if (allChecks) {
+        winner = nextPlayer;
+        terminationReason = "perpetual_check";
+      } else if (occurrences.length >= 3) {
+        isDraw = true;
+        terminationReason = "threefold_repetition";
+      }
+    }
   }
 
   return {
     board,
-    currentPlayer: state.currentPlayer === "red" ? "black" : "red",
+    currentPlayer: nextPlayer,
     winner,
     moveNumber: state.moveNumber + 1,
+    isDraw: isDraw ? true : undefined,
+    terminationReason,
+    positionHistory,
+    checkHistory,
+    nonCaptureCount,
   };
 }
 
@@ -185,12 +262,13 @@ export function applyMove(state: XiangqiState, move: XiangqiMove): XiangqiState 
   return applyMoveUnchecked(state, move);
 }
 
-export function isGameOver(state: XiangqiState) {
-  return state.winner !== null || getLegalMoves(state).length === 0;
+export function isGameOver(state: XiangqiState): boolean {
+  return state.winner !== null || state.isDraw === true || getLegalMoves(state).length === 0;
 }
 
 export function getWinner(state: XiangqiState): Player | null {
   if (state.winner) return state.winner;
+  if (state.isDraw) return null;
   if (getLegalMoves(state).length === 0) {
     return state.currentPlayer === "red" ? "black" : "red";
   }

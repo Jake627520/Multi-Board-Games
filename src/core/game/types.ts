@@ -1,5 +1,5 @@
-export type Player = "red" | "black";
-export type GameId = "xiangqi" | "banqi" | "gomoku" | "checkers";
+export type Player = string;
+export type GameId = string;
 
 export interface Position {
   readonly row: number;

@@ -58,7 +58,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 003-add-open-source-license/
+    ├── 003-add-open-source-license/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 004-core-genericity-and-xiangqi-rules/
         ├── proposal.md
         ├── design.md
         ├── specs/

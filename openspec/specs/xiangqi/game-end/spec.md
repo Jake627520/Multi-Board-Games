@@ -62,12 +62,35 @@ If an engine state directly results in the capture of a General (e.g. unchecked 
 
 ---
 
-## 5. Summary State Matrix
+## 5. Cyclical Adjudication & Natural Draws
 
-| In Check? | Legal Moves Count | `isGameOver(state)` | `getWinner(state)` | Condition |
-|---|---|---|---|---|
-| Yes | 0 | `true` | Opponent | Checkmate (將死) |
-| No | 0 | `true` | Opponent | Stalemate (困斃) |
-| Yes | > 0 | `false` | `null` | Active check in progress |
-| No | > 0 | `false` | `null` | Standard match in progress |
-| Any | Any | `true` | Captor | General captured |
+### 5.1 Perpetual Check (長將判負)
+If a player repeatedly delivers checks causing an identical board position to recur within a cyclical move pattern, that player is guilty of single-sided perpetual check and is declared the **LOSER**.
+- `isGameOver(state) === true`
+- `getWinner(state) === opponent`
+
+### 5.2 Threefold Repetition (三次重複局面和棋)
+If an identical board state with the same player turn occurs 3 times during a match without one-sided illegal continuous attack (perpetual check/chase), the match ends in a **DRAW (和棋)**.
+- `isGameOver(state) === true`
+- `getWinner(state) === null`
+- `state.isDraw === true`
+
+### 5.3 Sixty-Move Non-Capture Rule (自然限招)
+If 120 consecutive half-moves (60 full rounds by both players) occur without any piece capture, either side may claim a draw or the match automatically terminates as a **DRAW (和棋)**.
+- `isGameOver(state) === true`
+- `getWinner(state) === null`
+- `state.isDraw === true`
+
+---
+
+## 6. Summary State Matrix
+
+| In Check? | Legal Moves | Repetition / Limits | `isGameOver` | `getWinner` | Condition |
+|---|---|---|---|---|---|
+| Yes | 0 | - | `true` | Opponent | Checkmate (將死) |
+| No | 0 | - | `true` | Opponent | Stalemate (困斃) |
+| Any | - | Perpetual Check cycle | `true` | Checked player | Perpetual Check forfeiture (長將判負) |
+| Any | - | 3 identical states | `true` | `null` | Threefold Repetition Draw (三次重複和棋) |
+| Any | - | 120 half-moves no capture | `true` | `null` | 60-Round Draw (自然限招和棋) |
+| Yes | > 0 | Normal play | `false` | `null` | Active check in progress |
+| No | > 0 | Normal play | `false` | `null` | Standard match in progress |

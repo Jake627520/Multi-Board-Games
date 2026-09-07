@@ -1,9 +1,8 @@
-import type { Piece, PieceType, XiangqiState } from "../../src/games/xiangqi/types";
-import type { Player } from "../../src/core/game/types";
+import type { Piece, PieceType, XiangqiPlayer, XiangqiState } from "../../src/games/xiangqi/types";
 
 export function createPiece(
   id: string,
-  player: Player,
+  player: XiangqiPlayer,
   type: PieceType,
   row: number,
   col: number
@@ -13,8 +12,8 @@ export function createPiece(
 
 export function buildState(
   pieces: Piece[],
-  currentPlayer: Player = "red",
-  winner: Player | null = null,
+  currentPlayer: XiangqiPlayer = "red",
+  winner: XiangqiPlayer | null = null,
   moveNumber = 1
 ): XiangqiState {
   const board = Array.from({ length: 10 }, () => Array<Piece | null>(9).fill(null));
