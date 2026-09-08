@@ -13,6 +13,7 @@
   --info:#3d5a6c; --info-soft:#dde7ec;
   --danger:#9a3b2f; --danger-soft:#efd9d2;
   --shadow:rgba(70,50,20,.16);
+  --card-2:#eae0c8; --piece-ink:#26201a; --gold:#c1972f; --gold-soft:#efe3c9; --gold-deep:#8a5a1f;
   --font-ui:"Noto Sans TC",system-ui,-apple-system,"PingFang TC",sans-serif;
   --font-serif:"Noto Serif TC",serif;
   --font-seal:"Ma Shan Zheng","Noto Serif TC",serif;
@@ -59,7 +60,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 .cell:nth-child(n+10)::after { content: ""; position: absolute; width: 1px; height: 100%; background: var(--wood-line); left: 50%; top: 0; }
 .piece { z-index: 2; width: 72%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: var(--disc); border: 1.5px solid currentColor; box-shadow: 0 2px 5px rgba(50,35,10,.28), inset 0 0 0 3px var(--disc), inset 0 0 0 3.8px currentColor; font-family: var(--font-serif); font-weight: 700; font-size: clamp(18px, 3.5vw, 30px); user-select: none; }
 .piece.red { color: var(--accent); }
-.piece.black { color: var(--ink); }
+.piece.black { color: var(--piece-ink); }
 .cell.selected .piece { outline: 3px solid var(--accent); outline-offset: 1px; }
 .cell.target::after { content: "•"; z-index: 3; position: absolute; color: var(--accent); font-size: 28px; background: transparent; }
 .river { position: absolute; z-index: 4; left: 0; right: 0; top: 45%; text-align: center; font-family: var(--font-seal); font-weight: 400; letter-spacing: .3em; color: var(--wood-line); pointer-events: none; font-size: clamp(16px, 2.4vw, 26px); background: var(--wood); padding: 4px; }
@@ -71,8 +72,8 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   grid-template-columns: repeat(15, 1fr);
   grid-template-rows: repeat(15, 1fr);
   aspect-ratio: 1 / 1;
-  background: #e8bd78;
-  border: 3px solid #78350f;
+  background: var(--wood);
+  border: 3px solid var(--wood-line);
   box-shadow: inset 0 0 10px rgba(0,0,0,.15);
   border-radius: 6px;
   overflow: hidden;
@@ -93,7 +94,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   position: absolute;
   width: 100%;
   height: 1px;
-  background: #78350f;
+  background: var(--wood-line);
   top: 50%;
   left: 0;
 }
@@ -103,7 +104,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   position: absolute;
   width: 1px;
   height: 100%;
-  background: #78350f;
+  background: var(--wood-line);
   left: 50%;
   top: 0;
 }
@@ -122,36 +123,36 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .stone.black {
-  background: radial-gradient(circle at 35% 35%, #4b5563, #111827);
-  border: 1px solid #030712;
+  background: radial-gradient(circle at 35% 35%, #4a4034, var(--piece-ink));
+  border: 1px solid #0f0b06;
 }
 
 .stone.white {
-  background: radial-gradient(circle at 35% 35%, #ffffff, #d1d5db);
-  border: 1px solid #9ca3af;
+  background: radial-gradient(circle at 35% 35%, #fbf5e6, var(--disc));
+  border: 1px solid var(--line);
 }
 
 .stone.winning {
-  outline: 3px solid #fbbf24;
-  box-shadow: 0 0 12px 4px rgba(251, 191, 36, 0.7);
+  outline: 3px solid var(--gold);
+  box-shadow: 0 0 12px 4px rgba(193, 151, 47, 0.7);
   animation: winPulse 1.2s ease-in-out infinite;
 }
 
 @keyframes winPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 8px 2px rgba(251, 191, 36, 0.6); }
-  50% { transform: scale(1.08); box-shadow: 0 0 16px 6px rgba(251, 191, 36, 0.9); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 8px 2px rgba(193, 151, 47, 0.6); }
+  50% { transform: scale(1.08); box-shadow: 0 0 16px 6px rgba(193, 151, 47, 0.9); }
 }
 
 .side-panel h2 { margin-top: 0; }
 .engine-badge { display: inline-block; font-size: 12px; font-weight: 700; color: var(--jade); background: transparent; border: 1px solid var(--line); padding: 3px 8px; border-radius: 2px; margin: 4px 0 12px; }
-.muted { color: #6b7280; line-height: 1.6; }
+.muted { color: var(--ink-2); line-height: 1.6; }
 .actions { display: flex; gap: 8px; margin: 12px 0; }
 .actions button { border: 1px solid var(--accent); background: var(--accent); color: #f6ecd8; padding: 9px 15px; border-radius: 2px; cursor: pointer; font-weight: 600; transition: background .15s, transform .12s; }
 .actions button:active { transform: translateY(1px); }
 .actions button:first-child { background: transparent; color: var(--ink); border-color: var(--line); }
 .actions button:hover { opacity: 0.9; }
-.error { color: #b91c1c; background: #fee2e2; padding: 9px; border-radius: 8px; margin-top: 8px; font-size: 14px; }
-.legend { margin-top: 20px; display: grid; gap: 8px; color: #4b5563; font-size: 14px; }
+.error { color: var(--danger); background: var(--danger-soft); padding: 9px; border-radius: 8px; margin-top: 8px; font-size: 14px; }
+.legend { margin-top: 20px; display: grid; gap: 8px; color: var(--ink-2); font-size: 14px; }
 .placeholder { text-align: center; padding: 80px 20px; }
 
 @media (max-width: 900px) {
@@ -165,10 +166,10 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: #f8fafc;
+  background: var(--card-2);
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--card-edge);
 }
 
 .mode-tabs {
@@ -178,9 +179,9 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .mode-btn {
   flex: 1;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #334155;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
   padding: 8px 10px;
   border-radius: 8px;
   font-size: 13px;
@@ -190,14 +191,14 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .mode-btn:hover:not(:disabled) {
-  border-color: #94a3b8;
-  background: #f1f5f9;
+  border-color: var(--ink-2);
+  background: var(--card-2);
 }
 
 .mode-btn.active {
-  background: var(--ink);
-  color: #ffffff;
-  border-color: var(--ink);
+  background: var(--accent);
+  color: #f6ecd8;
+  border-color: var(--accent);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -206,13 +207,13 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   flex-direction: column;
   gap: 6px;
   padding-top: 4px;
-  border-top: 1px dashed #e2e8f0;
+  border-top: 1px dashed var(--card-edge);
 }
 
 .side-label {
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ink-2);
 }
 
 .side-buttons {
@@ -222,9 +223,9 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .side-btn {
   flex: 1;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #1e293b;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
   padding: 6px 8px;
   border-radius: 6px;
   font-size: 12px;
@@ -235,7 +236,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .side-btn.active {
   background: var(--accent);
-  color: #ffffff;
+  color: #f6ecd8;
   border-color: var(--accent);
 }
 
@@ -255,20 +256,20 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 /* MoveHistory Styles */
 .move-history-container {
   margin: 16px 0;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--card);
+  border: 1px solid var(--card-edge);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .move-history-header {
-  background: #f1f5f9;
+  background: var(--card-2);
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 700;
-  color: #334155;
-  border-bottom: 1px solid #e2e8f0;
+  color: var(--ink);
+  border-bottom: 1px solid var(--card-edge);
 }
 
 .move-history-list {
@@ -282,7 +283,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .move-history-empty {
   text-align: center;
-  color: #94a3b8;
+  color: var(--ink-2);
   font-size: 13px;
   padding: 20px 0;
 }
@@ -303,7 +304,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .move-index {
-  color: #94a3b8;
+  color: var(--ink-2);
   font-family: monospace;
   font-size: 12px;
   min-width: 24px;
@@ -317,26 +318,26 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .move-badge.red {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .move-badge.black {
-  background: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #cbd5e1;
+  background: var(--card-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
 }
 
 .move-badge.white {
-  background: #ffffff;
-  color: #475569;
-  border: 1px solid #cbd5e1;
+  background: var(--card);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
 }
 
 .move-notation {
   font-family: "PingFang TC", "Microsoft YaHei", sans-serif;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--ink);
 }
 
 /* Banqi (暗棋 4x8) Board Styles */
@@ -345,10 +346,10 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(4, 1fr);
   gap: 6px;
-  background: #c2955f;
+  background: var(--wood);
   padding: 12px;
   border-radius: 12px;
-  border: 4px solid #784821;
+  border: 4px solid var(--wood-line);
   box-shadow: 0 8px 24px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.3);
   max-width: 680px;
   width: 100%;
@@ -378,7 +379,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .banqi-cell.target {
-  background: rgba(34, 197, 94, 0.25);
+  background: var(--good-soft);
 }
 
 .banqi-cell.target::after {
@@ -386,9 +387,9 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   position: absolute;
   width: 12px;
   height: 12px;
-  background: #16a34a;
+  background: var(--good);
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(22, 163, 74, 0.8);
+  box-shadow: 0 0 6px rgba(63, 114, 86, 0.7);
 }
 
 .banqi-piece {
@@ -414,15 +415,15 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .banqi-piece.revealed.red {
-  background: radial-gradient(circle at 35% 35%, #fff5f5, #fed7d7);
-  border: 2px solid #e53e3e;
-  color: #c53030;
+  background: radial-gradient(circle at 35% 35%, #fbf3e4, var(--disc));
+  border: 2px solid var(--accent);
+  color: var(--accent);
 }
 
 .banqi-piece.revealed.black {
-  background: radial-gradient(circle at 35% 35%, #ffffff, #e2e8f0);
-  border: 2px solid #2d3748;
-  color: #1a202c;
+  background: radial-gradient(circle at 35% 35%, #fbf5e6, var(--disc));
+  border: 2px solid var(--piece-ink);
+  color: var(--piece-ink);
 }
 
 .banqi-legend {
@@ -431,8 +432,8 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .unassigned-badge {
-  background: #fef3c7;
-  color: #b45309;
+  background: var(--gold-soft);
+  color: var(--gold-deep);
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: 700;
@@ -442,8 +443,8 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 .replay-controls {
   margin: 12px 0;
   padding: 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--card-2);
+  border: 1px solid var(--card-edge);
   border-radius: 12px;
 }
 
@@ -456,8 +457,8 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .replay-toolbar button {
-  border: 1px solid #cbd5e1;
-  background: #fff;
+  border: 1px solid var(--line);
+  background: var(--card);
   border-radius: 8px;
   padding: 6px 10px;
   cursor: pointer;
@@ -471,15 +472,15 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .replay-toolbar button.active,
 .replay-speed button.active {
-  background: var(--ink);
-  color: #fff;
-  border-color: var(--ink);
+  background: var(--accent);
+  color: #f6ecd8;
+  border-color: var(--accent);
 }
 
 .replay-step-label {
   font-size: 13px;
   font-weight: 600;
-  color: #475569;
+  color: var(--ink-2);
   margin: 0 8px;
 }
 
@@ -490,9 +491,9 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .replay-exit {
   margin-left: auto;
-  background: #fee2e2 !important;
-  color: #991b1b !important;
-  border-color: #fecaca !important;
+  background: var(--danger-soft) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger-soft) !important;
 }
 
 .replay-slider {
@@ -504,8 +505,8 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 .save-manager-panel {
   margin: 16px 0;
   padding: 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--card-2);
+  border: 1px solid var(--card-edge);
   border-radius: 12px;
 }
 
@@ -523,7 +524,9 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 .save-new input {
   flex: 1;
   padding: 6px 10px;
-  border: 1px solid #cbd5e1;
+  background: var(--card-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: 8px;
 }
 
@@ -540,7 +543,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   flex-direction: column;
   gap: 6px;
   padding: 8px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--card-edge);
 }
 
 .save-meta {
@@ -550,7 +553,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 .save-meta span {
-  color: #64748b;
+  color: var(--ink-2);
   font-size: 12px;
 }
 
@@ -561,8 +564,8 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .save-actions button,
 .save-new button {
-  border: 1px solid #cbd5e1;
-  background: #fff;
+  border: 1px solid var(--line);
+  background: var(--card);
   border-radius: 6px;
   padding: 4px 8px;
   font-size: 12px;
@@ -577,13 +580,13 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 .save-edit-row input {
   flex: 1;
   padding: 4px 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--line);
   border-radius: 6px;
 }
 
 .save-empty {
   text-align: center;
-  color: #94a3b8;
+  color: var(--ink-2);
   padding: 16px 0;
   font-size: 13px;
 }
@@ -597,4 +600,18 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   background: var(--accent-soft);
 }
 
-
+/* ── 暗色（自動跟隨系統）：反轉 UI 外框；棋盤/棋子維持暖木島嶼 ── */
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#171310; --paper-2:#1e1813;
+    --ink:#ece2cd; --ink-2:#b0a184;
+    --line:#4a3f2d; --line-soft:#3a3123;
+    --card:#221c14; --card-2:#2a2318; --card-edge:#3a3020;
+    --accent-soft:#3a2420; --good-soft:#243029; --info:#7f9fb0; --info-soft:#232c30;
+    --danger:#d0685b; --danger-soft:#33221e;
+    --shadow:rgba(0,0,0,.5);
+  }
+  body{ background-image:
+    radial-gradient(120% 80% at 12% -10%, var(--paper-2), transparent 60%),
+    radial-gradient(90% 70% at 108% 120%, var(--paper-2), transparent 55%); }
+}
