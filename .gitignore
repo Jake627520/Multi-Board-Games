@@ -1,6 +1,41 @@
-node_modules
-dist
-.DS_Store
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Production build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Test & Coverage reports
+coverage/
+*.lcov
+.nyc_output/
+
+# Environment variables & secrets
 .env
 .env.*
-coverage/
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS & Editor files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-workspace
+*.sw?
+
+# Build cache
+.vite/
+*.tsbuildinfo
