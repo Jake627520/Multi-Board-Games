@@ -22,7 +22,7 @@ Without this persistence boundary, future features run a high risk of calling `e
 
 ## 3. Non-Goals
 
-- Cloud save, remote database syncing, or multiplayer networking protocols.
+- Cloud save, remote database syncing, or multiplayer networking protocols (and associated cloud user data privacy / replay content ownership governance, which will be formally addressed if and when remote sharing is scoped).
 - UI redesign or new game mechanics.
 - Heavy external validation dependencies (runtime validation will be lightweight, deterministic, and type-safe).
 - Modifying game rules of Xiangqi, Gomoku, or Banqi.
