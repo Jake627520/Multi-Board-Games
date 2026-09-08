@@ -416,3 +416,163 @@ h1 { margin: 4px 0 0; font-size: clamp(28px, 5vw, 44px); }
   font-weight: 700;
 }
 
+/* ===== Replay Controls ===== */
+.replay-controls {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.replay-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.replay-toolbar button {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.replay-toolbar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.replay-toolbar button.active,
+.replay-speed button.active {
+  background: #1e293b;
+  color: #fff;
+  border-color: #1e293b;
+}
+
+.replay-step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 8px;
+}
+
+.replay-speed {
+  display: flex;
+  gap: 4px;
+}
+
+.replay-exit {
+  margin-left: auto;
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
+}
+
+.replay-slider {
+  width: 100%;
+  accent-color: #2563eb;
+}
+
+/* ===== Save Manager ===== */
+.save-manager-panel {
+  margin: 16px 0;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.save-manager-panel h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.save-new {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.save-new input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.save-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.save-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.save-meta {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.save-meta span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.save-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.save-actions button,
+.save-new button {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.save-edit-row {
+  display: flex;
+  gap: 6px;
+}
+
+.save-edit-row input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+.save-empty {
+  text-align: center;
+  color: #94a3b8;
+  padding: 16px 0;
+  font-size: 13px;
+}
+
+/* MoveHistory clickable in replay */
+.move-item.clickable {
+  cursor: pointer;
+}
+
+.move-item.clickable:hover {
+  background: #eff6ff;
+}
+
+

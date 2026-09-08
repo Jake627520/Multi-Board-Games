@@ -6,7 +6,9 @@ import { isInCheck } from "../games/xiangqi/rules";
 import { useGameSession } from "./hooks/useGameSession";
 import { StatusBar } from "./components/StatusBar";
 import { GameModeSelector, type GameMode } from "./components/GameModeSelector";
-import { MoveHistory, type FormattedMove } from "./components/MoveHistory";
+import { MoveHistory } from "./components/MoveHistory";
+import { ReplayControls } from "./components/ReplayControls";
+import { SaveManagerPanel } from "./components/SaveManagerPanel";
 import type { Piece, XiangqiMove, XiangqiState } from "../games/xiangqi/types";
 import type { Player } from "../core/game/types";
 
@@ -48,6 +50,25 @@ export function XiangqiBoard() {
     move,
     undo,
     reset,
+    // Replay
+    isReplayMode,
+    replayStep,
+    replayStepCount,
+    isPlaying,
+    replaySpeed,
+    setReplaySpeed,
+    setIsPlaying,
+    enterReplay,
+    exitReplay,
+    replayStepTo,
+    replayNext,
+    replayPrev,
+    // Local Save
+    listLocalSaves,
+    saveToLocal,
+    loadFromLocal,
+    deleteLocalSave,
+    renameLocalSave,
   } = useGameSession<XiangqiState, XiangqiMove>(engine, {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
@@ -58,14 +79,14 @@ export function XiangqiBoard() {
     null
   );
 
-  const targets = selected
+  const targets = selected && !isReplayMode
     ? legalMoves.filter(
         (m) => m.from.row === selected.row && m.from.col === selected.col
       )
     : [];
 
   function clickCell(row: number, col: number) {
-    if (isAiThinking) return;
+    if (isAiThinking || isReplayMode || isGameOver) return;
     if (mode === "pve" && currentPlayer !== humanPlayer) return;
 
     const piece = viewState.board[row][col];
@@ -149,13 +170,16 @@ export function XiangqiBoard() {
                     isTarget ? "target" : ""
                   }`}
                   onClick={() => clickCell(r, c)}
-                  disabled={isAiThinking}
+                  disabled={isAiThinking || isReplayMode}
                   aria-label={`${r}-${c}${
-                    piece ? ` ${labels[piece.type]}` : ""
+                    piece ? ` ${piece.player} ${piece.type}` : " empty"
                   }`}
                 >
                   {piece && (
-                    <span className={`piece ${piece.player}`}>
+                    <span
+                      className={`piece ${piece.player}`}
+                      data-testid={`piece-${piece.player}-${piece.type}`}
+                    >
                       {labels[piece.type]}
                     </span>
                   )}
@@ -163,7 +187,6 @@ export function XiangqiBoard() {
               );
             })
           )}
-          <div className="river">楚河　　漢界</div>
         </div>
       </div>
 
@@ -171,14 +194,42 @@ export function XiangqiBoard() {
         <h2>中國象棋 (Xiangqi)</h2>
         <p className="engine-badge">Engine: XiangqiEngine (9×10)</p>
 
-        <GameModeSelector
-          mode={mode}
-          humanPlayer={humanPlayer}
-          availablePlayers={AVAILABLE_PLAYERS}
-          onModeChange={handleModeChange}
-          onHumanPlayerChange={handleHumanPlayerChange}
-          disabled={isAiThinking}
-        />
+        {isReplayMode ? (
+          <ReplayControls
+            currentStep={replayStep}
+            totalSteps={replayStepCount}
+            isPlaying={isPlaying}
+            speed={replaySpeed}
+            onPrev={replayPrev}
+            onNext={replayNext}
+            onStepTo={replayStepTo}
+            onTogglePlay={() => setIsPlaying(!isPlaying)}
+            onSpeedChange={setReplaySpeed}
+            onExit={exitReplay}
+          />
+        ) : (
+          <>
+            <div className="actions">
+              <button
+                type="button"
+                onClick={() => enterReplay()}
+                disabled={history.length === 0}
+                data-testid="enter-replay-btn"
+              >
+                🎬 復盤回放本局
+              </button>
+            </div>
+
+            <GameModeSelector
+              mode={mode}
+              humanPlayer={humanPlayer}
+              availablePlayers={AVAILABLE_PLAYERS}
+              onModeChange={handleModeChange}
+              onHumanPlayerChange={handleHumanPlayerChange}
+              disabled={isAiThinking}
+            />
+          </>
+        )}
 
         <MoveHistory
           moves={history.map((h) => ({
@@ -186,7 +237,21 @@ export function XiangqiBoard() {
             notation: h.notation ?? "",
           }))}
           formatPlayer={formatPlayer}
+          isReplayMode={isReplayMode}
+          activeStep={replayStep}
+          onStepClick={replayStepTo}
         />
+
+        {!isReplayMode && (
+          <SaveManagerPanel
+            listSaves={listLocalSaves}
+            onSave={saveToLocal}
+            onLoad={loadFromLocal}
+            onDelete={deleteLocalSave}
+            onRename={renameLocalSave}
+            disabled={isAiThinking}
+          />
+        )}
 
         <p className="muted">
           規則層與 React UI 嚴格分離，UI 不具任何遊戲規則邏輯。

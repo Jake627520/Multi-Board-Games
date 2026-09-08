@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-38%20files%20%7C%20154%20passed-brightgreen.svg)](tests/)
-[![Version](https://img.shields.io/badge/Version-0.3.0-orange.svg)](package.json)
+[![Vitest](https://img.shields.io/badge/Tests-40%20files%20%7C%20163%20passed-brightgreen.svg)](tests/)
+[![Version](https://img.shields.io/badge/Version-0.4.0-orange.svg)](package.json)
 
 高可擴充的多棋類抽象對弈平台，嚴格遵循三層解耦架構（UI 層、Core Session / Persistence 層、Game Engine 規則層）。全專案**零外部二進位素材**、**零傳染性依賴**，以規格導向（OpenSpec）與測試驅動（TDD）打造。
 
@@ -16,9 +16,12 @@
 - **半盤暗棋 (Banqi)**：$4 \times 8$ 隨機洗牌佈局，首翻決定執色、階級相剋、兵吃將、炮跳吃，具備完整的非完全資訊隱藏機制。
 - **雙人與電腦對戰**：支援本地雙人輪流（PvP）與單人對電腦（PvE，可自選先後手與難度，具備即時思考延遲）。
 - **通用視角解耦 (Generic Player View)**：核心層實質分離權威全狀態（Authoritative Full State）與安全視角（ViewState），暗棋未翻開狀態在記憶體與網路層皆不洩露兵種與陣營。
-- **版本化存檔與回放 (Save / Load / Replay)**：
+- **版本化存檔與管理 (Save Manager)**：
   - 支援信賴本機存檔（GameSaveEnvelope v1）與原子化校驗回滾。
-  - 支援動作導向重播（GameReplayEnvelope v1）與逐步時光回溯，公開回放嚴格脫敏。
+  - 提供本機存檔管理面板：一鍵儲存（自訂名稱）、載入、重新命名、刪除與容量保護（每遊戲上限 20 筆）。
+- **視覺化復盤回放 (Replay Controls)**：
+  - 支援步譜單步前進/後退、進度滑桿拖曳跳轉、步譜項目點選跳轉。
+  - 支援自動播放與 3 檔播放速度切換（慢 1.2s / 正常 0.8s / 快 0.4s），回放期間 AI 與操作安全互斥。
 - **純代碼渲染**：全棋盤與棋子皆以純 CSS 形狀與系統 Unicode 字元（`將`、`帥`、`卒`、`兵`、`🀄`）即時繪製，無外部圖片或字型依賴。
 
 ---
@@ -52,7 +55,7 @@ npm run dev
 本專案遵循嚴格的 TDD 與品質防線，全專案無任何警告或跳過測試：
 
 ```bash
-# 執行全量單元與整合測試（38 個測試檔案、154 個測試）
+# 執行全量單元與整合測試（40 個測試檔案、163 個測試）
 npm run test
 
 # 執行 TypeScript 靜態型別嚴格檢查

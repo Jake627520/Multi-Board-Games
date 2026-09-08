@@ -112,7 +112,11 @@ openspec/
     │   │   ├── replay/
     │   │   └── serialization-policy/
     │   └── tasks.md
-    └── 013-gomoku-enhancement/
+    ├── 013-gomoku-enhancement/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   └── tasks.md
+    └── 014-replay-ui-and-save-manager/
         ├── proposal.md
         ├── design.md
         └── tasks.md

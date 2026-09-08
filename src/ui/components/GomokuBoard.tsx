@@ -6,6 +6,8 @@ import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
 import { GameModeSelector, type GameMode } from "./GameModeSelector";
 import { MoveHistory } from "./MoveHistory";
+import { ReplayControls } from "./ReplayControls";
+import { SaveManagerPanel } from "./SaveManagerPanel";
 import type { GomokuMove, GomokuPlayer, GomokuRuleMode, GomokuState } from "../../games/gomoku/types";
 import type { Player } from "../../core/game/types";
 
@@ -41,6 +43,25 @@ export function GomokuBoard() {
     move,
     undo,
     reset,
+    // Replay
+    isReplayMode,
+    replayStep,
+    replayStepCount,
+    isPlaying,
+    replaySpeed,
+    setReplaySpeed,
+    setIsPlaying,
+    enterReplay,
+    exitReplay,
+    replayStepTo,
+    replayNext,
+    replayPrev,
+    // Local Save
+    listLocalSaves,
+    saveToLocal,
+    loadFromLocal,
+    deleteLocalSave,
+    renameLocalSave,
   } = useGameSession<GomokuState, GomokuMove>(engine, {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
@@ -54,7 +75,7 @@ export function GomokuBoard() {
   }, [viewState.winningLine]);
 
   function handleCellClick(row: number, col: number) {
-    if (isGameOver || isAiThinking || viewState.board[row][col] !== null) return;
+    if (isGameOver || isAiThinking || isReplayMode || viewState.board[row][col] !== null) return;
     if (mode === "pve" && currentPlayer !== humanPlayer) return;
     move({ row, col });
   }
@@ -106,7 +127,7 @@ export function GomokuBoard() {
                   key={`${r}-${c}`}
                   className={`gomoku-cell ${isEmpty ? "empty" : ""}`}
                   onClick={() => handleCellClick(r, c)}
-                  disabled={isGameOver || isAiThinking || !isEmpty}
+                  disabled={isGameOver || isAiThinking || isReplayMode || !isEmpty}
                   aria-label={`${r}-${c}${stone ? ` ${stone}` : " 空位"}`}
                 >
                   {stone && (
@@ -126,65 +147,93 @@ export function GomokuBoard() {
         <h2>五子棋 (Gomoku)</h2>
         <p className="engine-badge">Engine: GomokuEngine (15×15)</p>
 
-        {/* 規則模式選擇 */}
-        <div className="game-mode-selector" data-testid="rule-mode-selector">
-          <span className="side-label">規則模式：</span>
-          <div className="mode-tabs">
-            <button
-              type="button"
-              className={`mode-btn ${ruleMode === "freestyle" ? "active" : ""}`}
-              onClick={() => handleRuleModeChange("freestyle")}
-              disabled={isAiThinking}
-              data-testid="rule-freestyle"
-            >
-              自由規則 (Freestyle)
-            </button>
-            <button
-              type="button"
-              className={`mode-btn ${ruleMode === "forbidden_moves" ? "active" : ""}`}
-              onClick={() => handleRuleModeChange("forbidden_moves")}
-              disabled={isAiThinking}
-              data-testid="rule-forbidden"
-            >
-              黑方禁手 (Forbidden)
-            </button>
-          </div>
-        </div>
-
-        <GameModeSelector
-          mode={mode}
-          humanPlayer={humanPlayer}
-          availablePlayers={AVAILABLE_PLAYERS}
-          onModeChange={handleModeChange}
-          onHumanPlayerChange={handleHumanPlayerChange}
-          disabled={isAiThinking}
-        />
-
-        {/* AI 難度選擇 */}
-        {mode === "pve" && (
-          <div className="game-mode-selector" data-testid="ai-level-selector">
-            <span className="side-label">電腦難度：</span>
-            <div className="mode-tabs">
+        {isReplayMode ? (
+          <ReplayControls
+            currentStep={replayStep}
+            totalSteps={replayStepCount}
+            isPlaying={isPlaying}
+            speed={replaySpeed}
+            onPrev={replayPrev}
+            onNext={replayNext}
+            onStepTo={replayStepTo}
+            onTogglePlay={() => setIsPlaying(!isPlaying)}
+            onSpeedChange={setReplaySpeed}
+            onExit={exitReplay}
+          />
+        ) : (
+          <>
+            <div className="actions">
               <button
                 type="button"
-                className={`mode-btn ${aiLevel === "l1" ? "active" : ""}`}
-                onClick={() => setAiLevel("l1")}
-                disabled={isAiThinking}
-                data-testid="ai-level-1"
+                onClick={() => enterReplay()}
+                disabled={history.length === 0}
+                data-testid="enter-replay-btn"
               >
-                Level 1 (啟發式)
-              </button>
-              <button
-                type="button"
-                className={`mode-btn ${aiLevel === "l2" ? "active" : ""}`}
-                onClick={() => setAiLevel("l2")}
-                disabled={isAiThinking}
-                data-testid="ai-level-2"
-              >
-                Level 2 (Minimax)
+                🎬 復盤回放本局
               </button>
             </div>
-          </div>
+
+            {/* 規則模式選擇 */}
+            <div className="game-mode-selector" data-testid="rule-mode-selector">
+              <span className="side-label">規則模式：</span>
+              <div className="mode-tabs">
+                <button
+                  type="button"
+                  className={`mode-btn ${ruleMode === "freestyle" ? "active" : ""}`}
+                  onClick={() => handleRuleModeChange("freestyle")}
+                  disabled={isAiThinking}
+                  data-testid="rule-freestyle"
+                >
+                  自由規則 (Freestyle)
+                </button>
+                <button
+                  type="button"
+                  className={`mode-btn ${ruleMode === "forbidden_moves" ? "active" : ""}`}
+                  onClick={() => handleRuleModeChange("forbidden_moves")}
+                  disabled={isAiThinking}
+                  data-testid="rule-forbidden"
+                >
+                  黑方禁手 (Forbidden)
+                </button>
+              </div>
+            </div>
+
+            <GameModeSelector
+              mode={mode}
+              humanPlayer={humanPlayer}
+              availablePlayers={AVAILABLE_PLAYERS}
+              onModeChange={handleModeChange}
+              onHumanPlayerChange={handleHumanPlayerChange}
+              disabled={isAiThinking}
+            />
+
+            {/* AI 難度選擇 */}
+            {mode === "pve" && (
+              <div className="game-mode-selector" data-testid="ai-level-selector">
+                <span className="side-label">電腦難度：</span>
+                <div className="mode-tabs">
+                  <button
+                    type="button"
+                    className={`mode-btn ${aiLevel === "l1" ? "active" : ""}`}
+                    onClick={() => setAiLevel("l1")}
+                    disabled={isAiThinking}
+                    data-testid="ai-level-1"
+                  >
+                    Level 1 (啟發式)
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-btn ${aiLevel === "l2" ? "active" : ""}`}
+                    onClick={() => setAiLevel("l2")}
+                    disabled={isAiThinking}
+                    data-testid="ai-level-2"
+                  >
+                    Level 2 (Minimax)
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <MoveHistory
@@ -193,7 +242,21 @@ export function GomokuBoard() {
             notation: h.notation ?? "",
           }))}
           formatPlayer={formatPlayer}
+          isReplayMode={isReplayMode}
+          activeStep={replayStep}
+          onStepClick={replayStepTo}
         />
+
+        {!isReplayMode && (
+          <SaveManagerPanel
+            listSaves={listLocalSaves}
+            onSave={saveToLocal}
+            onLoad={loadFromLocal}
+            onDelete={deleteLocalSave}
+            onRename={renameLocalSave}
+            disabled={isAiThinking}
+          />
+        )}
 
         <p className="muted">
           {ruleMode === "freestyle"

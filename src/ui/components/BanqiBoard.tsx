@@ -2,7 +2,10 @@ import { useMemo, useState } from "react";
 import { createBanqiEngine } from "../../games/banqi/engine";
 import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
-import type { BanqiMove, BanqiPlayer, BanqiState, BanqiViewPiece, BanqiViewState } from "../../games/banqi/types";
+import { MoveHistory } from "./MoveHistory";
+import { ReplayControls } from "./ReplayControls";
+import { SaveManagerPanel } from "./SaveManagerPanel";
+import type { BanqiMove, BanqiPlayer, BanqiState, BanqiViewState } from "../../games/banqi/types";
 import type { PieceType } from "../../games/xiangqi/types";
 import type { Player } from "../../core/game/types";
 
@@ -37,14 +40,39 @@ export function BanqiBoard() {
     isDraw,
     legalMoves,
     error,
+    history,
     move,
     undo,
     reset,
-  } = useGameSession<BanqiState, BanqiMove, BanqiViewState>(engine);
+    // Replay
+    isReplayMode,
+    replayStep,
+    replayStepCount,
+    isPlaying,
+    replaySpeed,
+    setReplaySpeed,
+    setIsPlaying,
+    enterReplay,
+    exitReplay,
+    replayStepTo,
+    replayNext,
+    replayPrev,
+    // Local Save
+    listLocalSaves,
+    saveToLocal,
+    loadFromLocal,
+    deleteLocalSave,
+    renameLocalSave,
+  } = useGameSession<BanqiState, BanqiMove, BanqiViewState>(engine, {
+    formatMove: (m) =>
+      m.type === "flip"
+        ? `翻 (${m.pos.row},${m.pos.col})`
+        : `(${m.from.row},${m.from.col})→(${m.to.row},${m.to.col})`,
+  });
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
 
-  const targets = selected
+  const targets = selected && !isReplayMode
     ? legalMoves
         .filter(
           (m): m is { type: "move"; from: { row: number; col: number }; to: { row: number; col: number } } =>
@@ -54,7 +82,7 @@ export function BanqiBoard() {
     : [];
 
   function handleCellClick(row: number, col: number) {
-    if (isGameOver) return;
+    if (isGameOver || isReplayMode) return;
     const piece = viewState.board[row][col];
 
     // 1. If user already selected a piece, check if clicking a target
@@ -82,7 +110,7 @@ export function BanqiBoard() {
       return;
     }
 
-    // 3. Clicking own revealed piece -> SELECT
+    // 3. Selecting own revealed piece
     if (piece && piece.isRevealed && piece.player === currentPlayer) {
       setSelected({ row, col });
     }
@@ -98,12 +126,7 @@ export function BanqiBoard() {
     setSelected(null);
   }
 
-  const formatPlayer = (p: Player) => {
-    if (viewState.player1Color === null) {
-      return "尚未決定（翻子決定）";
-    }
-    return p === "red" ? "紅方 (Red)" : "黑方 (Black)";
-  };
+  const formatPlayer = (p: string) => (p === "red" ? "紅方 (Red)" : "黑方 (Black)");
 
   return (
     <section className="game-layout">
@@ -123,10 +146,10 @@ export function BanqiBoard() {
           className="banqi-board"
           data-testid="banqi-board"
           role="grid"
-          aria-label="4x8 暗棋棋盤"
+          aria-label="4x8 半盤暗棋盤"
         >
           {viewState.board.map((row, r) =>
-            row.map((piece: BanqiViewPiece | null, c: number) => {
+            row.map((piece, c) => {
               const isSelected = selected?.row === r && selected?.col === c;
               const isTarget = targets.some((t) => t.row === r && t.col === c);
 
@@ -135,7 +158,7 @@ export function BanqiBoard() {
                   key={`${r}-${c}`}
                   className={`banqi-cell ${isSelected ? "selected" : ""} ${isTarget ? "target" : ""}`}
                   onClick={() => handleCellClick(r, c)}
-                  disabled={isGameOver}
+                  disabled={isGameOver || isReplayMode}
                   aria-label={`${r}-${c}${
                     piece
                       ? piece.isRevealed
@@ -165,6 +188,32 @@ export function BanqiBoard() {
         <h2>暗棋 (Banqi)</h2>
         <p className="engine-badge">Engine: BanqiEngine (4×8 半盤)</p>
 
+        {isReplayMode ? (
+          <ReplayControls
+            currentStep={replayStep}
+            totalSteps={replayStepCount}
+            isPlaying={isPlaying}
+            speed={replaySpeed}
+            onPrev={replayPrev}
+            onNext={replayNext}
+            onStepTo={replayStepTo}
+            onTogglePlay={() => setIsPlaying(!isPlaying)}
+            onSpeedChange={setReplaySpeed}
+            onExit={exitReplay}
+          />
+        ) : (
+          <div className="actions">
+            <button
+              type="button"
+              onClick={() => enterReplay()}
+              disabled={history.length === 0}
+              data-testid="enter-replay-btn"
+            >
+              🎬 復盤回放本局
+            </button>
+          </div>
+        )}
+
         <div className="banqi-legend">
           <p>
             <strong>當前執方：</strong>
@@ -175,6 +224,27 @@ export function BanqiBoard() {
             )}
           </p>
         </div>
+
+        <MoveHistory
+          moves={history.map((h) => ({
+            player: h.player,
+            notation: h.notation ?? "",
+          }))}
+          formatPlayer={formatPlayer}
+          isReplayMode={isReplayMode}
+          activeStep={replayStep}
+          onStepClick={replayStepTo}
+        />
+
+        {!isReplayMode && (
+          <SaveManagerPanel
+            listSaves={listLocalSaves}
+            onSave={saveToLocal}
+            onLoad={loadFromLocal}
+            onDelete={deleteLocalSave}
+            onRename={renameLocalSave}
+          />
+        )}
 
         <p className="muted">
           規則說明：
