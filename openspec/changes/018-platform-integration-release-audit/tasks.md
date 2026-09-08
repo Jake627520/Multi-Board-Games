@@ -51,3 +51,14 @@
 - [x] Verify production build output assets in `dist/` (relative paths confirmed)
 - [x] Verify production deployment accessibility (GitHub Pages 404 unconfigured status documented)
 - [x] Commit and push changes to `origin/main`
+
+## Phase I: Round 18.2 GitHub Pages Deployment & Online Release Verification
+- [x] Create `.github/workflows/deploy.yml` with official Pages actions (`upload-pages-artifact`, `deploy-pages`)
+- [x] Update Xiangqi AI test virtualization benchmark budget for CI stability
+- [x] Push deployment workflow to `main` and trigger GitHub Actions
+- [x] Verify GitHub Actions `deploy.yml` runs successfully (`Build & Validate` and `Deploy to Pages` PASSED)
+- [x] Verify online production deployment (`https://jake627520.github.io/Multi-Board-Games/` returns HTTP 200)
+- [x] Verify online static assets (`./assets/*.js` and `./assets/*.css` return HTTP 200)
+- [x] Execute online Playwright smoke test against live deployment (Xiangqi, Gomoku, Banqi, zero console errors)
+- [x] Update `README.md` with Live Demo badge and direct link
+

@@ -21,20 +21,20 @@
 ## 3. Release Gate 檢核清單
 
 ```text
-[ ] P0 = 0
-[ ] P1 = 0 OR explicitly accepted
-[ ] Unit tests PASS
-[ ] Typecheck PASS
-[ ] Build PASS
-[ ] E2E PASS (or documented environment constraints)
-[ ] CI configuration verified
-[ ] Production deployment verified
-[ ] Banqi hidden state verified
-[ ] Save/Load verified
-[ ] Replay verified
-[ ] AI verified
-[ ] Session isolation verified
-[ ] README verified
-[ ] License verified
+[x] P0 = 0
+[x] P1 = 0 OR explicitly accepted
+[x] Unit tests PASS
+[x] Typecheck PASS
+[x] Build PASS
+[x] E2E PASS (or documented environment constraints)
+[x] CI configuration verified
+[x] Production deployment verified
+[x] Banqi hidden state verified
+[x] Save/Load verified
+[x] Replay verified
+[x] AI verified
+[x] Session isolation verified
+[x] README verified
+[x] License verified
 ```
 只有在上述所有項目皆為 PASS 時，Release Status 方可標記為 `RELEASE READY`。

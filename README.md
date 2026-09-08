@@ -2,11 +2,19 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml/badge.svg)](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml)
+[![GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success.svg)](https://jake627520.github.io/Multi-Board-Games/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![Vitest](https://img.shields.io/badge/Tests-47%20files%20%7C%20192%20passed-brightgreen.svg)](tests/)
 [![Version](https://img.shields.io/badge/Version-0.6.0-orange.svg)](package.json)
 
 高可擴充的多棋類抽象對弈平台，嚴格遵循三層解耦架構（UI 層、Core Session / Persistence 層、Game Engine 規則層）。全專案**零外部二進位素材**、**零傳染性依賴**，以規格導向（OpenSpec）與測試驅動（TDD）打造。
+
+---
+
+## 🌐 線上遊玩（Live Demo）
+
+可以直接在瀏覽器線上遊玩本平台（GitHub Pages 自動部署）：
+👉 **[https://jake627520.github.io/Multi-Board-Games/](https://jake627520.github.io/Multi-Board-Games/)**
 
 ---
 
