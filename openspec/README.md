@@ -124,7 +124,11 @@ openspec/
     │   ├── proposal.md
     │   ├── design.md
     │   └── tasks.md
-    └── 016-xiangqi-ai-level2/
+    ├── 016-xiangqi-ai-level2/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   └── tasks.md
+    └── 017-banqi-ai-level2/
         ├── proposal.md
         ├── design.md
         └── tasks.md

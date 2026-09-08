@@ -4,6 +4,8 @@ import { createGomokuEngine } from "../../src/games/gomoku/engine";
 import { createGomokuAiLevel1 } from "../../src/games/gomoku/ai";
 import { createXiangqiEngine } from "../../src/games/xiangqi/engine";
 import { createXiangqiAiLevel1 } from "../../src/games/xiangqi/ai";
+import { createBanqiEngine } from "../../src/games/banqi/engine";
+import { createBanqiAiLevel2 } from "../../src/games/banqi/ai";
 
 describe("UI / Hook PvE AI Integration Lifecycle", () => {
   it("executes an interactive Gomoku PvE match with AI opponent", async () => {
@@ -61,5 +63,27 @@ describe("UI / Hook PvE AI Integration Lifecycle", () => {
     session.move(aiMove);
     expect(session.getCurrentPlayer()).toBe("red");
     expect(session.getHistory()).toHaveLength(2);
+  });
+
+  it("executes an interactive Banqi PvE match with AI opponent", async () => {
+    const engine = createBanqiEngine();
+    const session = new GameSession(engine);
+    const ai = createBanqiAiLevel2();
+
+    // Human flips first piece at (0, 0)
+    session.move({ type: "flip", pos: { row: 0, col: 0 } });
+    expect(session.getHistory()).toHaveLength(1);
+    const opponent = session.getCurrentPlayer();
+
+    // AI selects response move
+    const legalMoves = engine.getLegalMoves(session.getState());
+    const aiMove = await ai.selectMove(session.getState(), legalMoves);
+
+    expect(legalMoves).toContainEqual(aiMove);
+
+    // Apply AI move
+    session.move(aiMove);
+    expect(session.getHistory()).toHaveLength(2);
+    expect(session.getCurrentPlayer()).not.toBe(opponent);
   });
 });

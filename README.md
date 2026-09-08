@@ -3,8 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml/badge.svg)](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-41%20files%20%7C%20168%20passed-brightgreen.svg)](tests/)
-[![Version](https://img.shields.io/badge/Version-0.5.0-orange.svg)](package.json)
+[![Vitest](https://img.shields.io/badge/Tests-42%20files%20%7C%20174%20passed-brightgreen.svg)](tests/)
+[![Version](https://img.shields.io/badge/Version-0.6.0-orange.svg)](package.json)
 
 高可擴充的多棋類抽象對弈平台，嚴格遵循三層解耦架構（UI 層、Core Session / Persistence 層、Game Engine 規則層）。全專案**零外部二進位素材**、**零傳染性依賴**，以規格導向（OpenSpec）與測試驅動（TDD）打造。
 
@@ -14,7 +14,7 @@
 
 - **中國象棋 (Xiangqi)**：完整傳統規則（含將軍、困斃、長將判負、三次重複和棋、自然限招等）與中文傳統記譜，PvE 支援 Level 1（單層啟發式）與 Level 2（2-ply Minimax + Alpha-Beta 剪枝 + 走法排序）AI 切換。
 - **五子棋 (Gomoku)**：$15 \times 15$ 棋盤，支援自由規則 (Freestyle) 與黑方禁手規則（三三、四四、長連禁手，成五優先；白方無禁手），具備精確五連金光高亮與 Level 2 Minimax（含鄰近剪枝與 Alpha-Beta 搜尋）AI。
-- **半盤暗棋 (Banqi)**：$4 \times 8$ 隨機洗牌佈局，首翻決定執色、階級相剋、兵吃將、炮跳吃，具備完整的非完全資訊隱藏機制。
+- **半盤暗棋 (Banqi)**：$4 \times 8$ 隨機洗牌佈局，首翻決定執色、階級相剋、兵吃將、炮跳吃，具備完整的非完全資訊隱藏機制，PvE 支援 Level 1（啟發式）與 Level 2（2-ply Minimax + Alpha-Beta 剪枝）AI 切換。
 - **雙人與電腦對戰**：支援本地雙人輪流（PvP）與單人對電腦（PvE，可自選先後手與難度，具備即時思考延遲）。
 - **通用視角解耦 (Generic Player View)**：核心層實質分離權威全狀態（Authoritative Full State）與安全視角（ViewState），暗棋未翻開狀態在記憶體與網路層皆不洩露兵種與陣營。
 - **版本化存檔與管理 (Save Manager)**：
@@ -56,7 +56,7 @@ npm run dev
 本專案遵循嚴格的 TDD 與品質防線，全專案無任何警告或跳過測試：
 
 ```bash
-# 執行全量單元與整合測試（41 個測試檔案、168 個測試）
+# 執行全量單元與整合測試（42 個測試檔案、174 個測試）
 npm run test
 
 # 執行 TypeScript 靜態型別嚴格檢查
