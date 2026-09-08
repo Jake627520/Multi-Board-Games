@@ -16,13 +16,13 @@ Contributors retain individual copyright to their contributions, licensed under 
 
 Third-party npm packages, build tools, and type definitions used by this project do not become MIT-licensed by virtue of being referenced or bundled in this repository. They remain governed strictly by their respective upstream licenses.
 
-A comprehensive inventory of direct dependencies is tracked in [`docs/THIRD_PARTY_LICENSES.md`](./docs/THIRD_PARTY_LICENSES.md).
+A comprehensive inventory of direct dependencies is tracked in [`docs/THIRD_PARTY_LICENSES.md`](./THIRD_PARTY_LICENSES.md).
 
 ---
 
 ## 3. Game Rules and Concepts
 
-The general rules, mechanics, and concepts of traditional board games (including Chinese Chess / Xiangqi, Gomoku, Banqi, and Chinese Checkers) are public domain cultural heritage and game mechanics.
+The general rules, mechanics, and concepts of traditional board games (including Chinese Chess / Xiangqi, Gomoku, and Banqi) are public domain cultural heritage and game mechanics.
 
 This project **does NOT** claim exclusive copyright over traditional board game rules. The copyright claim applies strictly to:
 - The proprietary TypeScript code implementing the rules.
