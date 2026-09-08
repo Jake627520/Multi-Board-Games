@@ -234,31 +234,6 @@ export function applyMoveUnchecked(state: BanqiState, move: BanqiMove): BanqiSta
   };
 }
 
-/**
- * Backward-compatible masking helper for tests
- */
-export function maskHiddenState(state: BanqiState): BanqiState {
-  const maskedBoard = state.board.map((row) =>
-    row.map((piece) => {
-      if (!piece) return null;
-      if (piece.isRevealed) {
-        return { ...piece };
-      }
-      return {
-        id: "hidden",
-        player: "unknown" as unknown as BanqiPlayer,
-        type: "unknown" as unknown as BanqiPiece["type"],
-        rank: 0,
-        isRevealed: false,
-      };
-    })
-  );
-
-  return {
-    ...state,
-    board: maskedBoard,
-  };
-}
 
 /**
  * Generic Player/Spectator View Projection Contract

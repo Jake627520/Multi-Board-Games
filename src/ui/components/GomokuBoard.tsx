@@ -25,7 +25,7 @@ export function GomokuBoard() {
     mode === "pve" ? (humanPlayer === "black" ? "white" : "black") : undefined;
 
   const {
-    state,
+    viewState,
     currentPlayer,
     isGameOver,
     winner,
@@ -43,7 +43,7 @@ export function GomokuBoard() {
   });
 
   function handleCellClick(row: number, col: number) {
-    if (isGameOver || isAiThinking || state.board[row][col] !== null) return;
+    if (isGameOver || isAiThinking || viewState.board[row][col] !== null) return;
     if (mode === "pve" && currentPlayer !== humanPlayer) return;
     move({ row, col });
   }
@@ -81,7 +81,7 @@ export function GomokuBoard() {
           role="grid"
           aria-label="15x15 五子棋盤"
         >
-          {state.board.map((row, r) =>
+          {viewState.board.map((row, r) =>
             row.map((stone: GomokuPlayer | null, c: number) => {
               const isEmpty = stone === null;
               return (

@@ -99,10 +99,18 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 011-generic-player-view/
+    ├── 011-generic-player-view/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 012-save-load-replay/
         ├── proposal.md
         ├── design.md
         ├── specs/
+        │   ├── save-load/
+        │   ├── replay/
+        │   └── serialization-policy/
         └── tasks.md
 ```
 

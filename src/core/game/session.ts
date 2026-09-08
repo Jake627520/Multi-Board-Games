@@ -2,15 +2,28 @@ import type { GameEngine, GameViewContext, MoveRecord, Player } from "./types";
 
 export class GameSession<State, Move, ViewState = State> {
   private state: State;
+  private initialState: State;
   private readonly history: MoveRecord<Move>[] = [];
   private readonly snapshots: State[] = [];
 
   constructor(private readonly engine: GameEngine<State, Move, ViewState>) {
     this.state = engine.createInitialState();
+    this.initialState = this.state;
   }
 
   getState(): State {
     return this.state;
+  }
+
+  getInitialState(): State {
+    return this.initialState;
+  }
+
+  loadState(state: State): void {
+    this.state = state;
+    this.initialState = state;
+    this.history.length = 0;
+    this.snapshots.length = 0;
   }
 
   getView(context: GameViewContext): ViewState {
@@ -47,6 +60,7 @@ export class GameSession<State, Move, ViewState = State> {
 
   reset(): State {
     this.state = this.engine.createInitialState();
+    this.initialState = this.state;
     this.history.length = 0;
     this.snapshots.length = 0;
     return this.state;

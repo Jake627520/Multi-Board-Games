@@ -36,7 +36,7 @@ export function XiangqiBoard() {
     mode === "pve" ? (humanPlayer === "red" ? "black" : "red") : undefined;
 
   const {
-    state,
+    viewState,
     currentPlayer,
     isGameOver,
     winner,
@@ -68,7 +68,7 @@ export function XiangqiBoard() {
     if (isAiThinking) return;
     if (mode === "pve" && currentPlayer !== humanPlayer) return;
 
-    const piece = state.board[row][col];
+    const piece = viewState.board[row][col];
 
     if (selected) {
       const targetMove = targets.find(
@@ -81,7 +81,7 @@ export function XiangqiBoard() {
           return;
         }
       }
-      if (piece?.player === state.currentPlayer) {
+      if (piece?.player === currentPlayer) {
         setSelected({ row, col });
       } else {
         setSelected(null);
@@ -89,7 +89,7 @@ export function XiangqiBoard() {
       return;
     }
 
-    if (piece?.player === state.currentPlayer) {
+    if (piece?.player === currentPlayer) {
       setSelected({ row, col });
     }
   }
@@ -117,7 +117,7 @@ export function XiangqiBoard() {
   }
 
   const formatPlayer = (p: string) => (p === "red" ? "紅方 (Red)" : "黑方 (Black)");
-  const inCheck = isInCheck(state, state.currentPlayer);
+  const inCheck = isInCheck(viewState, currentPlayer);
 
   return (
     <section className="game-layout">
@@ -136,7 +136,7 @@ export function XiangqiBoard() {
         />
 
         <div className="xiangqi-board" data-testid="xiangqi-board">
-          {state.board.map((row, r) =>
+          {viewState.board.map((row, r) =>
             row.map((piece, c) => {
               const isSelected = selected?.row === r && selected?.col === c;
               const isTarget = targets.some(

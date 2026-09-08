@@ -1,0 +1,21 @@
+# Tasks for 012-save-load-replay
+
+- [x] 1. TDD Failing Test Suites (RED)
+  - [x] 1.1 Create `tests/core/save-load.test.ts` (envelopes, validation, round-trips for Xiangqi, Gomoku, Banqi, atomic rollback on failure).
+  - [x] 1.2 Create `tests/core/replay.test.ts` (action replay, intermediate steps, non-mutation of session, Banqi public vs trusted replay).
+  - [x] 1.3 Create `tests/core/serialization-policy.test.ts` (verify public export cannot use full state serialization).
+- [x] 2. Core Persistence Contracts & Engine Update
+  - [x] 2.1 Define `GameSaveEnvelope`, `GameReplayEnvelope`, `PersistenceTarget` in `src/core/persistence/types.ts`.
+  - [x] 2.2 Add `loadState(state: State): void` and `getInitialState(): State` to `src/core/game/session.ts`.
+  - [x] 2.3 Implement `SaveManager` in `src/core/persistence/save-manager.ts` with strict runtime validation.
+  - [x] 2.4 Implement `ReplayManager` and `ReplaySession` in `src/core/persistence/replay-manager.ts`.
+- [x] 3. Legacy Cleanup (Banqi)
+  - [x] 3.1 Remove `maskHiddenState` and `serializeMasked` from `src/games/banqi/rules.ts` and `src/games/banqi/engine.ts`.
+  - [x] 3.2 Update `tests/banqi/audit.test.ts` to assert against `projectBanqiView` and `serializeView`.
+- [x] 4. UI Hook Integration
+  - [x] 4.1 Expose safe `save()`, `load()`, `createReplay()` from `useGameSession`.
+- [x] 5. Verification & Regressions (GREEN)
+  - [x] 5.1 Run full Vitest test suite (all tests pass).
+  - [x] 5.2 Run TypeScript check (`tsc --noEmit`).
+  - [x] 5.3 Run production build (`vite build`).
+  - [x] 5.4 Update `openspec/README.md`.

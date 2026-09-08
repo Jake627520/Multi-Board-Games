@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { GameSession } from "../../core/game/session";
 import type { GameEngine, GameViewContext, Player } from "../../core/game/types";
 import type { AiPlayer } from "../../core/ai/types";
+import { SaveManager } from "../../core/persistence/save-manager";
+import { ReplayManager } from "../../core/persistence/replay-manager";
+import { exportPublicView } from "../../core/persistence/policy";
+import type { GameReplayEnvelope } from "../../core/persistence/types";
 
 export interface UseGameSessionOptions<State, Move, ViewState = State> {
   readonly aiPlayer?: AiPlayer<State, Move>;
@@ -79,6 +83,35 @@ export function useGameSession<State, Move, ViewState = State>(
     setState(initial);
   }
 
+  const saveManager = useMemo(() => new SaveManager(), []);
+  const replayManager = useMemo(() => new ReplayManager(), []);
+
+  function saveGame(): string {
+    return saveManager.save(session, engine);
+  }
+
+  function loadGame(envelopeJson: string): boolean {
+    if (isAiThinkingRef.current) return false;
+    setError("");
+    try {
+      saveManager.load(envelopeJson, session, engine);
+      setState(session.getState());
+      return true;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "讀取存檔失敗";
+      setError(msg);
+      return false;
+    }
+  }
+
+  function exportPublic(ctx?: GameViewContext): string {
+    return exportPublicView(session, engine, ctx ?? viewContext);
+  }
+
+  function createReplay(): GameReplayEnvelope<Move> {
+    return replayManager.createReplay(session, engine);
+  }
+
   // AI turn automation
   useEffect(() => {
     if (!aiPlayer || !aiColor || isGameOver) return;
@@ -121,5 +154,9 @@ export function useGameSession<State, Move, ViewState = State>(
     move,
     undo,
     reset,
+    saveGame,
+    loadGame,
+    exportPublic,
+    createReplay,
   };
 }

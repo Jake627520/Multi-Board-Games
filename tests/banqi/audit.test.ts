@@ -5,18 +5,19 @@ import {
   canCapture,
   getLegalMoves,
   applyMoveUnchecked,
-  maskHiddenState,
+  projectBanqiView,
   isGameOver,
   getWinner,
 } from "../../src/games/banqi/rules";
 import { GameSession } from "../../src/core/game/session";
 import type { BanqiPiece, BanqiState } from "../../src/games/banqi/types";
+import type { GameViewContext } from "../../src/core/game/types";
 
 describe("010 Banqi Rules & Hidden Information Audit", () => {
   const engine = createBanqiEngine();
 
-  // P0 - 1: Hidden Information Masking
-  it("Audit #1: maskHiddenState strips private piece identity from face-down pieces", () => {
+  // P0 - 1: Hidden Information Masking & View Projection
+  it("Audit #1: projectBanqiView strips private piece identity from face-down pieces", () => {
     const board = emptyBoard();
     board[0][0] = {
       id: "red-general-1",
@@ -41,24 +42,25 @@ describe("010 Banqi Rules & Hidden Information Audit", () => {
       moveNumber: 1,
     };
 
-    const masked = maskHiddenState(state);
-    const maskedPiece = masked.board[0][0];
-    const revealedPiece = masked.board[0][1];
+    const context: GameViewContext = { role: "spectator", player: null };
+    const view = projectBanqiView(state, context);
+    const hiddenPiece = view.board[0][0];
+    const revealedPiece = view.board[0][1];
 
-    // Face-down piece must have sensitive data masked
-    expect(maskedPiece?.isRevealed).toBe(false);
-    expect(maskedPiece?.player).toBe("unknown");
-    expect(maskedPiece?.type).toBe("unknown");
-    expect(maskedPiece?.rank).toBe(0);
+    // Face-down piece must have sensitive data omitted
+    expect(hiddenPiece?.isRevealed).toBe(false);
+    expect("player" in (hiddenPiece || {})).toBe(false);
+    expect("type" in (hiddenPiece || {})).toBe(false);
+    expect("rank" in (hiddenPiece || {})).toBe(false);
 
     // Face-up piece retains authentic identity
     expect(revealedPiece?.isRevealed).toBe(true);
-    expect(revealedPiece?.player).toBe("black");
-    expect(revealedPiece?.type).toBe("soldier");
-    expect(revealedPiece?.rank).toBe(1);
+    expect(revealedPiece && "player" in revealedPiece ? revealedPiece.player : null).toBe("black");
+    expect(revealedPiece && "type" in revealedPiece ? revealedPiece.type : null).toBe("soldier");
+    expect(revealedPiece && "rank" in revealedPiece ? revealedPiece.rank : null).toBe(1);
 
-    // JSON serialization of masked state must not contain "general" or "red-general"
-    const json = JSON.stringify(masked);
+    // JSON serialization of view state must not contain "general" or "red-general"
+    const json = engine.serializeView(view);
     expect(json).not.toContain("general");
     expect(json).toContain("soldier");
   });
