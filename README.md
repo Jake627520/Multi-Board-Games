@@ -1,6 +1,7 @@
 # Multi Board Games Platform（多棋類遊戲平台）
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml/badge.svg)](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![Vitest](https://img.shields.io/badge/Tests-40%20files%20%7C%20163%20passed-brightgreen.svg)](tests/)
 [![Version](https://img.shields.io/badge/Version-0.4.0-orange.svg)](package.json)

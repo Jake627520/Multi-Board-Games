@@ -116,7 +116,11 @@ openspec/
     │   ├── proposal.md
     │   ├── design.md
     │   └── tasks.md
-    └── 014-replay-ui-and-save-manager/
+    ├── 014-replay-ui-and-save-manager/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   └── tasks.md
+    └── 015-github-ci-and-repo-metadata/
         ├── proposal.md
         ├── design.md
         └── tasks.md
