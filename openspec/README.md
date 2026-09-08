@@ -94,7 +94,12 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 010-banqi-rules-audit/
+    ├── 010-banqi-rules-audit/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   └── tasks.md
+    └── 011-generic-player-view/
         ├── proposal.md
         ├── design.md
         ├── specs/

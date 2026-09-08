@@ -1,6 +1,14 @@
 import { cloneBoard, inBounds, ROWS, COLS } from "./board";
-import type { BanqiMove, BanqiPiece, BanqiPlayer, BanqiState } from "./types";
-import type { Position } from "../../core/game/types";
+import type {
+  BanqiFullState,
+  BanqiMove,
+  BanqiPiece,
+  BanqiPlayer,
+  BanqiState,
+  BanqiViewPiece,
+  BanqiViewState,
+} from "./types";
+import type { GameViewContext, Position } from "../../core/game/types";
 
 const DIRS = [
   [0, 1],
@@ -226,6 +234,9 @@ export function applyMoveUnchecked(state: BanqiState, move: BanqiMove): BanqiSta
   };
 }
 
+/**
+ * Backward-compatible masking helper for tests
+ */
 export function maskHiddenState(state: BanqiState): BanqiState {
   const maskedBoard = state.board.map((row) =>
     row.map((piece) => {
@@ -246,5 +257,42 @@ export function maskHiddenState(state: BanqiState): BanqiState {
   return {
     ...state,
     board: maskedBoard,
+  };
+}
+
+/**
+ * Generic Player/Spectator View Projection Contract
+ */
+export function projectBanqiView(
+  state: BanqiFullState,
+  _context: GameViewContext
+): BanqiViewState {
+  const viewBoard: (BanqiViewPiece | null)[][] = state.board.map((row, r) =>
+    row.map((piece, c) => {
+      if (!piece) return null;
+      if (piece.isRevealed) {
+        return {
+          id: piece.id,
+          player: piece.player,
+          type: piece.type,
+          rank: piece.rank,
+          isRevealed: true,
+        };
+      }
+      // Omit player, type, and rank completely for hidden pieces
+      return {
+        id: `hidden-${r}-${c}`,
+        isRevealed: false,
+      };
+    })
+  );
+
+  return {
+    board: viewBoard,
+    currentPlayer: state.currentPlayer,
+    player1Color: state.player1Color,
+    winner: state.winner,
+    isDraw: state.isDraw,
+    moveNumber: state.moveNumber,
   };
 }

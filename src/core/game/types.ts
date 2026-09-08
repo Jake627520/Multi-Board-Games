@@ -12,7 +12,14 @@ export interface MoveRecord<Move = unknown> {
   readonly notation?: string;
 }
 
-export interface GameEngine<State, Move> {
+export type ViewRole = "player" | "spectator";
+
+export interface GameViewContext<P = Player> {
+  readonly role: ViewRole;
+  readonly player: P | null;
+}
+
+export interface GameEngine<State, Move, ViewState = State> {
   readonly id: GameId;
   readonly name: string;
   createInitialState(): State;
@@ -23,6 +30,8 @@ export interface GameEngine<State, Move> {
   getWinner(state: State): Player | null;
   serialize(state: State): string;
   deserialize(serialized: string): State;
+  projectView(state: State, context: GameViewContext): ViewState;
+  serializeView(viewState: ViewState): string;
 }
 
 export type { AiPlayer } from "../ai/types";

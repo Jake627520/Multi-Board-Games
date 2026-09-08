@@ -15,5 +15,7 @@ export function createXiangqiEngine(): GameEngine<XiangqiState, XiangqiMove> {
     getWinner,
     serialize: (state) => JSON.stringify(state),
     deserialize: (serialized) => JSON.parse(serialized) as XiangqiState,
+    projectView: (state) => state,
+    serializeView: (viewState) => JSON.stringify(viewState),
   };
 }

@@ -14,6 +14,8 @@ function createMockEngine(id: GameId, name: string): GameEngine<{ turn: number }
     getWinner: () => null,
     serialize: (state) => JSON.stringify(state),
     deserialize: (serialized) => JSON.parse(serialized),
+    projectView: (state) => state,
+    serializeView: (viewState) => JSON.stringify(viewState),
   };
 }
 
@@ -60,6 +62,8 @@ describe("GameRegistry", () => {
       getWinner: () => null,
       serialize: (s) => JSON.stringify(s),
       deserialize: (str) => JSON.parse(str),
+      projectView: (s) => s,
+      serializeView: (v) => JSON.stringify(v),
     };
 
     registry.register(othelloEngine);

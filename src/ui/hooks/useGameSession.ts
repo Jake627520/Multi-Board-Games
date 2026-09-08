@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GameSession } from "../../core/game/session";
-import type { GameEngine, Player } from "../../core/game/types";
+import type { GameEngine, GameViewContext, Player } from "../../core/game/types";
 import type { AiPlayer } from "../../core/ai/types";
 
-export interface UseGameSessionOptions<State, Move> {
+export interface UseGameSessionOptions<State, Move, ViewState = State> {
   readonly aiPlayer?: AiPlayer<State, Move>;
   readonly aiColor?: Player;
   readonly aiDelayMs?: number;
   readonly formatMove?: (move: Move, stateBefore: State) => string;
+  readonly viewContext?: GameViewContext;
 }
 
-export function useGameSession<State, Move>(
-  engine: GameEngine<State, Move>,
-  options?: UseGameSessionOptions<State, Move>
+export function useGameSession<State, Move, ViewState = State>(
+  engine: GameEngine<State, Move, ViewState>,
+  options?: UseGameSessionOptions<State, Move, ViewState>
 ) {
   const session = useMemo(() => new GameSession(engine), [engine]);
   const [state, setState] = useState<State>(() => session.getState());
@@ -28,6 +29,16 @@ export function useGameSession<State, Move>(
   const aiPlayer = options?.aiPlayer;
   const aiColor = options?.aiColor;
   const aiDelayMs = options?.aiDelayMs ?? 400;
+  const viewContext: GameViewContext = options?.viewContext ?? {
+    role: "spectator",
+    player: null,
+  };
+
+  // Safe projected view state for UI consumption
+  const viewState: ViewState = useMemo(
+    () => engine.projectView(state, viewContext),
+    [engine, state, viewContext]
+  );
 
   // Track latest references to avoid stale closures in setTimeout
   const stateRef = useRef(state);
@@ -97,6 +108,7 @@ export function useGameSession<State, Move>(
 
   return {
     state,
+    viewState,
     session,
     currentPlayer,
     isGameOver,

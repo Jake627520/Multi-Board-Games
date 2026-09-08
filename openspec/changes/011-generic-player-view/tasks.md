@@ -1,0 +1,21 @@
+# Tasks for 011-generic-player-view
+
+- [x] 1. TDD Security Test Suite Formulation
+  - [x] 1.1 Create `tests/banqi/player-view.test.ts` defining the 7 security test requirements (RED).
+- [x] 2. Core Abstraction & Generic Player View Contract
+  - [x] 2.1 Update `src/core/game/types.ts` with `ViewRole`, `GameViewContext`, and `GameEngine<State, Move, ViewState = State>`.
+  - [x] 2.2 Update `src/core/game/session.ts` to support `getView(context)`.
+- [x] 3. Banqi View State & Projection Implementation
+  - [x] 3.1 Define `BanqiViewPiece`, `BanqiViewState`, and `BanqiFullState` in `src/games/banqi/types.ts`.
+  - [x] 3.2 Implement `projectView` and `serializeView` in `src/games/banqi/engine.ts` and `src/games/banqi/rules.ts`.
+  - [x] 3.3 Verify `tests/banqi/player-view.test.ts` passes (GREEN).
+- [x] 4. Xiangqi & Gomoku Engine Compatibility
+  - [x] 4.1 Provide default `projectView` and `serializeView` in `XiangqiEngine` and `GomokuEngine`.
+- [x] 5. UI Layer Integration
+  - [x] 5.1 Update `useGameSession` to optionally project state to view state for UI consumers.
+  - [x] 5.2 Migrate `BanqiBoard.tsx` to safely consume `ViewState`.
+- [x] 6. Verification & Regressions
+  - [x] 6.1 Run full Vitest suite (32 files, 0 regressions).
+  - [x] 6.2 Run TypeScript type check (`tsc --noEmit`).
+  - [x] 6.3 Run production build (`vite build`).
+  - [x] 6.4 Update `openspec/README.md`.

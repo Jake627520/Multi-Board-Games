@@ -1,16 +1,20 @@
-import type { GameEngine, MoveRecord, Player } from "./types";
+import type { GameEngine, GameViewContext, MoveRecord, Player } from "./types";
 
-export class GameSession<State, Move> {
+export class GameSession<State, Move, ViewState = State> {
   private state: State;
   private readonly history: MoveRecord<Move>[] = [];
   private readonly snapshots: State[] = [];
 
-  constructor(private readonly engine: GameEngine<State, Move>) {
+  constructor(private readonly engine: GameEngine<State, Move, ViewState>) {
     this.state = engine.createInitialState();
   }
 
   getState(): State {
     return this.state;
+  }
+
+  getView(context: GameViewContext): ViewState {
+    return this.engine.projectView(this.state, context);
   }
 
   getHistory(): readonly MoveRecord<Move>[] {

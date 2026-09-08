@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createBanqiEngine } from "../../games/banqi/engine";
 import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
-import type { BanqiMove, BanqiPiece, BanqiPlayer, BanqiState } from "../../games/banqi/types";
+import type { BanqiMove, BanqiPlayer, BanqiState, BanqiViewPiece, BanqiViewState } from "../../games/banqi/types";
 import type { PieceType } from "../../games/xiangqi/types";
 import type { Player } from "../../core/game/types";
 
@@ -30,7 +30,7 @@ const LABELS: Record<BanqiPlayer, Record<PieceType, string>> = {
 export function BanqiBoard() {
   const engine = useMemo(() => createBanqiEngine(), []);
   const {
-    state,
+    viewState,
     currentPlayer,
     isGameOver,
     winner,
@@ -40,7 +40,7 @@ export function BanqiBoard() {
     move,
     undo,
     reset,
-  } = useGameSession<BanqiState, BanqiMove>(engine);
+  } = useGameSession<BanqiState, BanqiMove, BanqiViewState>(engine);
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
 
@@ -55,7 +55,7 @@ export function BanqiBoard() {
 
   function handleCellClick(row: number, col: number) {
     if (isGameOver) return;
-    const piece = state.board[row][col];
+    const piece = viewState.board[row][col];
 
     // 1. If user already selected a piece, check if clicking a target
     if (selected) {
@@ -99,7 +99,7 @@ export function BanqiBoard() {
   }
 
   const formatPlayer = (p: Player) => {
-    if (state.player1Color === null) {
+    if (viewState.player1Color === null) {
       return "尚未決定（翻子決定）";
     }
     return p === "red" ? "紅方 (Red)" : "黑方 (Black)";
@@ -125,8 +125,8 @@ export function BanqiBoard() {
           role="grid"
           aria-label="4x8 暗棋棋盤"
         >
-          {state.board.map((row, r) =>
-            row.map((piece: BanqiPiece | null, c: number) => {
+          {viewState.board.map((row, r) =>
+            row.map((piece: BanqiViewPiece | null, c: number) => {
               const isSelected = selected?.row === r && selected?.col === c;
               const isTarget = targets.some((t) => t.row === r && t.col === c);
 
@@ -168,7 +168,7 @@ export function BanqiBoard() {
         <div className="banqi-legend">
           <p>
             <strong>當前執方：</strong>
-            {state.player1Color === null ? (
+            {viewState.player1Color === null ? (
               <span className="unassigned-badge">首著翻牌決定執色</span>
             ) : (
               <span>已決定（紅 / 黑輪流）</span>

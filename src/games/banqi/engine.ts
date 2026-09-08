@@ -1,13 +1,13 @@
-import type { GameEngine, Player } from "../../core/game/types";
+import type { GameEngine, GameViewContext, Player } from "../../core/game/types";
 import { createInitialBoard } from "./board";
-import { applyMoveUnchecked, getLegalMoves, getWinner, isGameOver, maskHiddenState } from "./rules";
-import type { BanqiMove, BanqiPlayer, BanqiState } from "./types";
+import { applyMoveUnchecked, getLegalMoves, getWinner, isGameOver, maskHiddenState, projectBanqiView } from "./rules";
+import type { BanqiFullState, BanqiMove, BanqiPlayer, BanqiState, BanqiViewState } from "./types";
 
-export class BanqiEngine implements GameEngine<BanqiState, BanqiMove> {
+export class BanqiEngine implements GameEngine<BanqiFullState, BanqiMove, BanqiViewState> {
   readonly id = "banqi";
   readonly name = "暗棋 (Banqi)";
 
-  createInitialState(): BanqiState {
+  createInitialState(): BanqiFullState {
     return {
       board: createInitialBoard(),
       currentPlayer: "red", // placeholder until first flip
@@ -17,15 +17,15 @@ export class BanqiEngine implements GameEngine<BanqiState, BanqiMove> {
     };
   }
 
-  getCurrentPlayer(state: BanqiState): Player {
+  getCurrentPlayer(state: BanqiFullState): Player {
     return state.currentPlayer;
   }
 
-  getLegalMoves(state: BanqiState): BanqiMove[] {
+  getLegalMoves(state: BanqiFullState): BanqiMove[] {
     return getLegalMoves(state);
   }
 
-  applyMove(state: BanqiState, move: BanqiMove): BanqiState {
+  applyMove(state: BanqiFullState, move: BanqiMove): BanqiFullState {
     const legal = this.getLegalMoves(state);
     const isValid = legal.some(
       (m) =>
@@ -50,24 +50,32 @@ export class BanqiEngine implements GameEngine<BanqiState, BanqiMove> {
     return applyMoveUnchecked(state, move);
   }
 
-  isGameOver(state: BanqiState): boolean {
+  isGameOver(state: BanqiFullState): boolean {
     return isGameOver(state);
   }
 
-  getWinner(state: BanqiState): Player | null {
+  getWinner(state: BanqiFullState): Player | null {
     return getWinner(state);
   }
 
-  serialize(state: BanqiState): string {
+  serialize(state: BanqiFullState): string {
     return JSON.stringify(state);
   }
 
-  serializeMasked(state: BanqiState): string {
+  serializeMasked(state: BanqiFullState): string {
     return JSON.stringify(maskHiddenState(state));
   }
 
-  deserialize(serialized: string): BanqiState {
-    return JSON.parse(serialized) as BanqiState;
+  serializeView(viewState: BanqiViewState): string {
+    return JSON.stringify(viewState);
+  }
+
+  projectView(state: BanqiFullState, context: GameViewContext): BanqiViewState {
+    return projectBanqiView(state, context);
+  }
+
+  deserialize(serialized: string): BanqiFullState {
+    return JSON.parse(serialized) as BanqiFullState;
   }
 }
 

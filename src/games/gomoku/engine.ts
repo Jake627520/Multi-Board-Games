@@ -15,5 +15,7 @@ export function createGomokuEngine(): GameEngine<GomokuState, GomokuMove> {
     getWinner,
     serialize: (state) => JSON.stringify(state),
     deserialize: (serialized) => JSON.parse(serialized) as GomokuState,
+    projectView: (state) => state,
+    serializeView: (viewState) => JSON.stringify(viewState),
   };
 }
