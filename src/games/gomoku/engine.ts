@@ -17,7 +17,7 @@ export function createGomokuEngine(
     getWinner,
     serialize: (state) => JSON.stringify(state),
     deserialize: (serialized) => JSON.parse(serialized) as GomokuState,
-    projectView: (state) => state,
+    projectView: (state) => ({ ...state, board: state.board.map((row) => [...row]) }),
     serializeView: (viewState) => JSON.stringify(viewState),
   };
 }

@@ -128,10 +128,17 @@ openspec/
     │   ├── proposal.md
     │   ├── design.md
     │   └── tasks.md
-    └── 017-banqi-ai-level2/
+    ├── 017-banqi-ai-level2/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   └── tasks.md
+    └── 018-platform-integration-release-audit/
         ├── proposal.md
         ├── design.md
-        └── tasks.md
+        ├── tasks.md
+        └── specs/
+            └── integration/
+                └── spec.md
 ```
 
 ## Spec Governance & TDD Workflow

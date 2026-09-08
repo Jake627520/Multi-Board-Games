@@ -232,24 +232,33 @@ export function useGameSession<State, Move, ViewState = State>(
     if (isReplayMode || !aiPlayer || !aiColor || isGameOver) return;
     if (currentPlayer === aiColor) {
       setIsAiThinking(true);
+      let cancelled = false;
       const timer = setTimeout(async () => {
         try {
           const chosenMove = await aiPlayer.selectMove(
             stateRef.current,
             legalMovesRef.current
           );
+          if (cancelled) return;
           const notation = formatMove
             ? formatMove(chosenMove, stateRef.current)
             : undefined;
           const nextState = session.move(chosenMove, notation);
           setState(nextState);
         } catch (err) {
-          setError(err instanceof Error ? err.message : "AI 走步失敗");
+          if (!cancelled) {
+            setError(err instanceof Error ? err.message : "AI 走步失敗");
+          }
         } finally {
-          setIsAiThinking(false);
+          if (!cancelled) {
+            setIsAiThinking(false);
+          }
         }
       }, aiDelayMs);
-      return () => clearTimeout(timer);
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
     }
   }, [
     currentPlayer,

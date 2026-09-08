@@ -356,6 +356,7 @@ export function BanqiBoard() {
             onLoad={loadFromLocal}
             onDelete={deleteLocalSave}
             onRename={renameLocalSave}
+            disabled={isAiThinking}
           />
         )}
 

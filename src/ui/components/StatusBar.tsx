@@ -53,10 +53,10 @@ export function StatusBar({
       </div>
 
       <div className="actions">
-        <button onClick={onUndo} aria-label="悔棋">
+        <button onClick={onUndo} disabled={isAiThinking} aria-label="悔棋">
           悔棋
         </button>
-        <button onClick={onReset} aria-label="重新開始">
+        <button onClick={onReset} disabled={isAiThinking} aria-label="重新開始">
           重新開始
         </button>
       </div>

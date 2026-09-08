@@ -34,7 +34,19 @@ These packages are used solely during development, testing, and compilation; the
 
 ---
 
-## 3. Maintenance & Audit Guidelines
+## 3. External Web Typography
+
+These web fonts are requested dynamically via Google Fonts and are governed by permissive open-source font licenses; no binary font files are bundled into the repository:
+
+| Font Family | License | Upstream Author / Project | Attribution Requirement |
+|---|---|---|---|
+| `Ma Shan Zheng` | `OFL-1.1` | Yue Zheng | SIL Open Font License notice retention |
+| `Noto Serif TC` | `OFL-1.1` | Google Inc. | SIL Open Font License notice retention |
+| `Noto Sans TC` | `OFL-1.1` | Google Inc. | SIL Open Font License notice retention |
+
+---
+
+## 4. Maintenance & Audit Guidelines
 
 Whenever a new dependency is added via `npm install`:
 1. Verify that the license is permissive (e.g., MIT, BSD, Apache-2.0, ISC).

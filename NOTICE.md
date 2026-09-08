@@ -9,7 +9,7 @@ The underlying rules, mechanics, and names of traditional games (Xiangqi, Gomoku
 
 ## 3. Visual Assets & Typography
 - **Pieces & Boards**: Rendered purely via semantic HTML/CSS and system/Unicode characters (e.g. `將`, `帥`, `卒`, `兵`, and `🀄` for face-down Banqi pieces). Board lines and piece shapes are drawn with CSS alone. This repository contains **no image, sprite, icon, SVG, or audio assets** of any kind.
-- **Fonts**: No proprietary font files or binary typography assets are bundled within this repository. Rendering relies entirely on the viewer's own system fonts, declared as CSS font stacks (`system-ui`, `-apple-system`, `BlinkMacSystemFont`, `PingFang TC`, `Microsoft YaHei`, and the generic `sans-serif` / `monospace` families), plus the operating system's emoji font for `🀄`.
+- **Fonts**: No proprietary font files or binary typography assets are bundled within this repository. Web typography utilizes open-source web fonts (`Ma Shan Zheng` and `Noto Serif TC` / `Noto Sans TC`, governed by the SIL Open Font License 1.1) fetched dynamically via Google Fonts, with seamless fallback to the viewer's local system fonts (`system-ui`, `-apple-system`, `BlinkMacSystemFont`, `PingFang TC`, `Microsoft YaHei`, `serif`, `sans-serif`), plus the operating system's emoji font for `🀄`.
 
 ## 4. Third-Party Dependencies
 This platform uses external open-source packages governed by permissive licenses (MIT, Apache-2.0). A complete, up-to-date inventory of dependencies and upstream licenses is maintained in:
