@@ -34,6 +34,7 @@ describe("Gomoku Level 1 AI", () => {
       currentPlayer: "black",
       winner: null,
       moveNumber: 8,
+      ruleMode: "freestyle",
     };
 
     const legalMoves = engine.getLegalMoves(state);
@@ -59,6 +60,7 @@ describe("Gomoku Level 1 AI", () => {
       currentPlayer: "white",
       winner: null,
       moveNumber: 8,
+      ruleMode: "freestyle",
     };
 
     const legalMoves = engine.getLegalMoves(state);

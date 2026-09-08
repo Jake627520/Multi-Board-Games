@@ -104,13 +104,17 @@ openspec/
     │   ├── design.md
     │   ├── specs/
     │   └── tasks.md
-    └── 012-save-load-replay/
+    ├── 012-save-load-replay/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   ├── specs/
+    │   │   ├── save-load/
+    │   │   ├── replay/
+    │   │   └── serialization-policy/
+    │   └── tasks.md
+    └── 013-gomoku-enhancement/
         ├── proposal.md
         ├── design.md
-        ├── specs/
-        │   ├── save-load/
-        │   ├── replay/
-        │   └── serialization-policy/
         └── tasks.md
 ```
 

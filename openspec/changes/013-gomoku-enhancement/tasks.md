@@ -1,0 +1,23 @@
+# Tasks: 013-gomoku-enhancement
+
+- [x] 1. Core Model & Board State
+  - [x] 1.1 Update `types.ts` with `GomokuRuleMode`, `ruleMode`, and `winningLine`.
+  - [x] 1.2 Update `board.ts` to accept `ruleMode` in `createInitialState`.
+- [x] 2. Rule Engine & Foul Detection
+  - [x] 2.1 Implement `findWinningLine` returning exact 5 coordinates.
+  - [x] 2.2 Implement `isForbiddenMove` for Black (overline, double-three, double-four, five-in-a-row precedence).
+  - [x] 2.3 Update `getLegalMoves` and `applyMove` to respect forbidden moves.
+  - [x] 2.4 Update `engine.ts` factory to accept `ruleMode`.
+- [x] 3. AI Enhancement
+  - [x] 3.1 Implement neighbor pruning `getNeighborMoves(state, radius = 2)`.
+  - [x] 3.2 Implement `GomokuAiLevel2` using Minimax + Alpha-Beta search.
+  - [x] 3.3 Add factory functions `createGomokuAiLevel1` and `createGomokuAiLevel2`.
+- [x] 4. Automated Tests (TDD)
+  - [x] 4.1 Create `tests/gomoku/forbidden-rules.test.ts`.
+  - [x] 4.2 Create `tests/gomoku/winning-line.test.ts`.
+  - [x] 4.3 Create `tests/gomoku/ai-level2.test.ts`.
+  - [x] 4.4 Verify all existing and new tests pass (38 files, 154 tests).
+- [x] 5. UI Integration & Styling
+  - [x] 5.1 Update `GomokuBoard.tsx` with rule mode and AI level selectors.
+  - [x] 5.2 Add `.stone.winning` and pulse animation in `src/styles.css`.
+  - [x] 5.3 Verify browser rendering and build pass.

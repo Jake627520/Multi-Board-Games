@@ -154,6 +154,7 @@ describe("Gomoku Rules & Mechanics", () => {
       currentPlayer: "black",
       winner: null,
       moveNumber: 225,
+      ruleMode: "freestyle",
     };
 
     expect(isGameOver(nearFullState)).toBe(false);
