@@ -1,7 +1,7 @@
 {
   "name": "multi-board-games",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Multi Board Games Platform with decoupled game engines and session management",
   "license": "MIT",
   "type": "module",
