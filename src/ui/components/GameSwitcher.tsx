@@ -18,6 +18,7 @@ export function GameSwitcher({
       </label>
       <select
         id="game-select"
+        data-testid="game-switcher-select"
         value={currentGameId}
         onChange={(e) => onSelectGame(e.target.value)}
         aria-label="選擇棋類遊戲"

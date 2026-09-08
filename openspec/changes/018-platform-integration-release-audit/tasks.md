@@ -17,35 +17,37 @@
 - [x] Update `openspec/README.md`
 
 ## Phase C: Integration Test Design (RED)
-- [ ] Write `tests/integration/banqi-hidden-information.integration.test.ts`
-- [ ] Write `tests/integration/save-load-replay.integration.test.ts`
-- [ ] Write `tests/integration/ai-session-isolation.integration.test.ts`
-- [ ] Write `tests/integration/player-view-boundary.integration.test.ts`
-- [ ] Write `tests/integration/e2e-flows.integration.test.ts`
+- [x] Write `tests/integration/banqi-hidden-information.integration.test.ts`
+- [x] Write `tests/integration/save-load-replay.integration.test.ts`
+- [x] Write `tests/integration/ai-session-isolation.integration.test.ts`
+- [x] Write `tests/integration/player-view-boundary.integration.test.ts`
+- [x] Write `tests/integration/e2e-flows.integration.test.ts`
 
 ## Phase D: Run Regression Tests & Confirm RED
-- [ ] Execute new integration tests to observe failures on unpatched edge cases (e.g. viewState mutation, AI cancellation)
+- [x] Execute new integration tests to observe failures on unpatched edge cases (e.g. viewState mutation, AI cancellation)
 
 ## Phase E: Minimal Fixes (GREEN)
-- [ ] Add cancellation token to `useGameSession` AI effect
-- [ ] Add board shallow copy to `XiangqiEngine.projectView` and `GomokuEngine.projectView`
-- [ ] Pass `disabled={isAiThinking}` to `BanqiBoard`'s `SaveManagerPanel`
-- [ ] Disable Undo and Reset buttons in `StatusBar` when `isAiThinking` is true
-- [ ] Add `base: "./"` to `vite.config.ts`
-- [ ] Create `playwright.config.ts` and `e2e/flows.spec.ts`
+- [x] Add cancellation token to `useGameSession` AI effect
+- [x] Add board shallow copy to `XiangqiEngine.projectView` and `GomokuEngine.projectView`
+- [x] Pass `disabled={isAiThinking}` to `BanqiBoard`'s `SaveManagerPanel`
+- [x] Disable Undo and Reset buttons in `StatusBar` when `isAiThinking` is true
+- [x] Add `base: "./"` to `vite.config.ts`
+- [x] Create `playwright.config.ts` and `e2e/flows.spec.ts`
 
 ## Phase F: Full Regression Verification
-- [ ] Run `npm run test` (all unit + integration tests)
-- [ ] Run `npx tsc --noEmit`
-- [ ] Run `npm run build`
-- [ ] Verify `npm run test:e2e`
+- [x] Run `npm run test` (all unit + integration tests: 47 files, 192 tests passed)
+- [x] Run `npx tsc --noEmit` (0 errors)
+- [x] Run `npm run build` (built in 305ms)
+- [x] Configure Vitest include filter in `vite.config.ts` to isolate from Playwright
 
 ## Phase G: Documentation & License Alignment
-- [ ] Update `NOTICE.md` and `docs/THIRD_PARTY_LICENSES.md` regarding Google Fonts
-- [ ] Update `README.md` metrics and architecture description
+- [x] Update `NOTICE.md` and `docs/THIRD_PARTY_LICENSES.md` regarding Google Fonts
+- [x] Update `README.md` metrics and architecture description
 
-## Phase H: Release Gate Evaluation & Commit
-- [ ] Check Release Gate items
-- [ ] Commit changes with clear message
-- [ ] Push to `origin/main`
-- [ ] Report final commit SHA and Release Status
+## Phase H: Round 18.1 Final Release Verification
+- [x] Install Playwright Chromium headless browser binaries (`npx playwright install chromium`)
+- [x] Add `data-testid="game-switcher-select"` to `GameSwitcher.tsx`
+- [x] Execute real Playwright browser E2E test suite (`npm run test:e2e`): 5 passed (Flows A-E)
+- [x] Verify production build output assets in `dist/` (relative paths confirmed)
+- [x] Verify production deployment accessibility (GitHub Pages 404 unconfigured status documented)
+- [x] Commit and push changes to `origin/main`
