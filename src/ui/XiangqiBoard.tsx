@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { createXiangqiEngine } from "../games/xiangqi/engine";
-import { createXiangqiAiLevel1 } from "../games/xiangqi/ai";
+import {
+  createXiangqiAiLevel1,
+  createXiangqiAiLevel2,
+} from "../games/xiangqi/ai";
 import { toXiangqiNotation } from "../games/xiangqi/notation";
 import { isInCheck } from "../games/xiangqi/rules";
 import { useGameSession } from "./hooks/useGameSession";
@@ -29,7 +32,11 @@ const AVAILABLE_PLAYERS = [
 
 export function XiangqiBoard() {
   const engine = useMemo(() => createXiangqiEngine(), []);
-  const aiPlayer = useMemo(() => createXiangqiAiLevel1(), []);
+  const [aiLevel, setAiLevel] = useState<"l1" | "l2">("l1");
+  const aiPlayer = useMemo(
+    () => (aiLevel === "l2" ? createXiangqiAiLevel2() : createXiangqiAiLevel1()),
+    [aiLevel]
+  );
 
   const [mode, setMode] = useState<GameMode>("pvp");
   const [humanPlayer, setHumanPlayer] = useState<Player>("red");
@@ -228,6 +235,41 @@ export function XiangqiBoard() {
               onHumanPlayerChange={handleHumanPlayerChange}
               disabled={isAiThinking}
             />
+
+            {/* AI 難度選擇 */}
+            {mode === "pve" && (
+              <div className="game-mode-selector" data-testid="ai-level-selector">
+                <span className="side-label">電腦難度：</span>
+                <div className="mode-tabs">
+                  <button
+                    type="button"
+                    className={`mode-btn ${aiLevel === "l1" ? "active" : ""}`}
+                    onClick={() => {
+                      setAiLevel("l1");
+                      reset();
+                      setSelected(null);
+                    }}
+                    disabled={isAiThinking}
+                    data-testid="ai-level-1"
+                  >
+                    Level 1 (啟發式)
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-btn ${aiLevel === "l2" ? "active" : ""}`}
+                    onClick={() => {
+                      setAiLevel("l2");
+                      reset();
+                      setSelected(null);
+                    }}
+                    disabled={isAiThinking}
+                    data-testid="ai-level-2"
+                  >
+                    Level 2 (Minimax)
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
 

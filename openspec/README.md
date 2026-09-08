@@ -120,7 +120,11 @@ openspec/
     │   ├── proposal.md
     │   ├── design.md
     │   └── tasks.md
-    └── 015-github-ci-and-repo-metadata/
+    ├── 015-github-ci-and-repo-metadata/
+    │   ├── proposal.md
+    │   ├── design.md
+    │   └── tasks.md
+    └── 016-xiangqi-ai-level2/
         ├── proposal.md
         ├── design.md
         └── tasks.md
