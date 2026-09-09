@@ -34,7 +34,7 @@ export function StatusBar({
 }: StatusBarProps) {
   return (
     <div className="status-bar-container">
-      <div className="status-row">
+      <div className="status-row" role="status" aria-live="polite">
         {!isGameOver && (
           <span>
             輪到：<strong>{formatPlayer(currentPlayer)}</strong>
@@ -61,7 +61,11 @@ export function StatusBar({
         </button>
       </div>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

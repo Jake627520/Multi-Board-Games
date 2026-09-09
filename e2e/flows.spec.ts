@@ -106,4 +106,37 @@ test.describe("E2E Platform User Flows A through E", () => {
     await page.getByTestId("game-switcher-select").selectOption("xiangqi");
     await expect(page.getByTestId("xiangqi-board")).toBeVisible();
   });
+
+  test("Flow F: A11y & Mobile UX (Round 19 Phase B.2) - StatusBar aria-live, touch targets >= 44px", async ({ page }) => {
+    // 1. StatusBar aria-live & role
+    const statusRow = page.locator(".status-row");
+    await expect(statusRow).toHaveAttribute("role", "status");
+    await expect(statusRow).toHaveAttribute("aria-live", "polite");
+
+    // 2. Narrow screen touch targets >= 44px
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    const undoBtn = page.getByRole("button", { name: "悔棋" });
+    const resetBtn = page.getByRole("button", { name: "重新開始" });
+    const undoBox = await undoBtn.boundingBox();
+    const resetBox = await resetBtn.boundingBox();
+    expect(undoBox?.height).toBeGreaterThanOrEqual(44);
+    expect(undoBox?.width).toBeGreaterThanOrEqual(44);
+    expect(resetBox?.height).toBeGreaterThanOrEqual(44);
+    expect(resetBox?.width).toBeGreaterThanOrEqual(44);
+
+    // Make 1 move and enter replay to check replay toolbar buttons
+    await page.locator(".cell").nth(7 * 9 + 1).click();
+    await page.locator(".cell").nth(7 * 9 + 4).click();
+    await page.getByTestId("enter-replay-btn").click();
+
+    const replayToolbarBtns = page.locator(".replay-toolbar button");
+    const count = await replayToolbarBtns.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      const box = await replayToolbarBtns.nth(i).boundingBox();
+      expect(box?.height).toBeGreaterThanOrEqual(44);
+      expect(box?.width).toBeGreaterThanOrEqual(44);
+    }
+  });
 });

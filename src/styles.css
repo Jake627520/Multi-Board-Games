@@ -157,6 +157,42 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 @media (max-width: 900px) {
   .game-layout { grid-template-columns: 1fr; }
+
+  /* 窄螢幕主要操作按鈕觸控友善目標（WCAG 2.5.5 / 2.5.8 ≥ 44×44px，不動棋盤格） */
+  .actions button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .replay-toolbar button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .save-new button,
+  .save-actions button,
+  .save-edit-row button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .save-new input,
+  .save-edit-row input {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
 }
 
 /* Game Mode & AI Styling */
@@ -619,4 +655,22 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   body{ background-image:
     radial-gradient(120% 80% at 12% -10%, var(--paper-2), transparent 60%),
     radial-gradient(90% 70% at 108% 120%, var(--paper-2), transparent 55%); }
+}
+
+/* ── 減低動態（prefers-reduced-motion）：停止無限跳動與縮減過渡，保留靜態高亮 ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .stone.winning {
+    animation: none !important;
+    transform: none !important;
+  }
+  .ai-thinking {
+    animation: none !important;
+    opacity: 1 !important;
+  }
 }
