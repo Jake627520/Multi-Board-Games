@@ -24,6 +24,8 @@ These packages are used solely during development, testing, and compilation; the
 | Package Name | Installed Version | License | Purpose | Source / Repository | Attribution Requirement |
 |---|---|---|---|---|---|
 | `@playwright/test` | `1.63.0` | `Apache-2.0` | End-to-end browser test automation | [https://playwright.dev](https://playwright.dev) | Apache-2.0 notice retention |
+| `@testing-library/dom` | `10.4.1` | `MIT` | DOM query utilities for component-level tests | [testing-library/dom-testing-library](https://github.com/testing-library/dom-testing-library) | Retain copyright notice |
+| `@testing-library/react` | `16.3.3` | `MIT` | React component rendering utilities for tests | [testing-library/react-testing-library](https://github.com/testing-library/react-testing-library) | Retain copyright notice |
 | `@types/react` | `19.2.18` | `MIT` | TypeScript type declarations for React | [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) | Retain copyright notice |
 | `@types/react-dom` | `19.2.7` | `MIT` | TypeScript type declarations for React DOM | [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) | Retain copyright notice |
 | `@vitejs/plugin-react` | `5.2.0` | `MIT` | Vite plugin for React fast refresh | [vite-plugin-react](https://github.com/vitejs/vite-plugin-react) | Retain copyright notice |

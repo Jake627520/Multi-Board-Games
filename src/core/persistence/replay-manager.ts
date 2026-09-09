@@ -1,7 +1,13 @@
 import type { GameEngine, GameViewContext } from "../game/types";
 import type { GameSession } from "../game/session";
 import type { GameReplayEnvelope } from "./types";
-import { CURRENT_ENGINE_VERSION, CURRENT_SAVE_FORMAT_VERSION } from "./save-manager";
+import { CURRENT_ENGINE_VERSION } from "./save-manager";
+
+/**
+ * Replay envelope 的格式版本，刻意與 save envelope 的版本脫鉤：
+ * 存檔格式升到 v2（加入棋譜）並不改變 replay envelope 的結構。
+ */
+export const CURRENT_REPLAY_FORMAT_VERSION = 1;
 
 export class ReplaySession<State, Move, ViewState = State> {
   private currentStep = 0;
@@ -70,7 +76,7 @@ export class ReplayManager {
     engine: GameEngine<State, Move, ViewState>
   ): GameReplayEnvelope<Move> {
     return {
-      formatVersion: CURRENT_SAVE_FORMAT_VERSION,
+      formatVersion: CURRENT_REPLAY_FORMAT_VERSION,
       gameId: engine.id,
       engineVersion: CURRENT_ENGINE_VERSION,
       initialState: engine.serialize(session.getInitialState()),
@@ -88,7 +94,7 @@ export class ReplayManager {
     if (!envelope || typeof envelope !== "object") {
       throw new Error("Invalid replay envelope");
     }
-    if (envelope.formatVersion !== CURRENT_SAVE_FORMAT_VERSION) {
+    if (envelope.formatVersion !== CURRENT_REPLAY_FORMAT_VERSION) {
       throw new Error(`Unsupported format version: ${String(envelope.formatVersion)}`);
     }
     if (envelope.gameId !== engine.id) {

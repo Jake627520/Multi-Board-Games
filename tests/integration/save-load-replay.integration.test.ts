@@ -38,10 +38,13 @@ describe("Save -> Load -> Replay Round-Trip Integration", () => {
     expect(loadedSession.getState().board[7][4]?.type).toBe("cannon");
     expect(loadedSession.getState().board[2][2]?.type).toBe("horse");
 
+    // 載入的存檔本身就帶著 2 步棋譜（v2），不再歸零
+    expect(loadedSession.getHistory()).toHaveLength(2);
+
     // Continue game from loaded session
     loadedSession.move({ from: { row: 9, col: 1 }, to: { row: 7, col: 2 } });
     expect(loadedSession.getCurrentPlayer()).toBe("black");
-    expect(loadedSession.getHistory()).toHaveLength(1);
+    expect(loadedSession.getHistory()).toHaveLength(3);
 
     // Replay creation on original session
     const replayEnvelope = replayManager.createReplay(session, engine);

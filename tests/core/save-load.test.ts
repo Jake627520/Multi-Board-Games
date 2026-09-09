@@ -10,18 +10,26 @@ describe("012 Save / Load Persistence Architecture", () => {
   const saveManager = new SaveManager();
 
   describe("Save Envelope & Validation", () => {
-    it("creates a versioned GameSaveEnvelope with formatVersion 1", () => {
+    it("creates a versioned GameSaveEnvelope with formatVersion 2 carrying the move history", () => {
       const engine = createXiangqiEngine();
       const session = new GameSession(engine);
+      session.move({ from: { row: 6, col: 4 }, to: { row: 5, col: 4 } }, "兵五進一");
 
       const envelopeJson = saveManager.save(session, engine);
       const parsed = JSON.parse(envelopeJson);
 
-      expect(parsed.formatVersion).toBe(1);
+      expect(parsed.formatVersion).toBe(2);
       expect(parsed.gameId).toBe("xiangqi");
       expect(typeof parsed.engineVersion).toBe("string");
       expect(typeof parsed.state).toBe("string");
       expect(typeof parsed.savedAt).toBe("string");
+
+      // v2 新增：棋譜與起始局面必須一併保存，否則載入後步譜會歸零
+      expect(typeof parsed.initialState).toBe("string");
+      expect(Array.isArray(parsed.history)).toBe(true);
+      expect(parsed.history).toHaveLength(1);
+      expect(parsed.history[0].player).toBe("red");
+      expect(parsed.history[0].notation).toBe("兵五進一");
     });
 
     it("rejects malformed JSON", () => {
@@ -184,7 +192,7 @@ describe("012 Save / Load Persistence Architecture", () => {
   });
 
   describe("Persistence Baseline & Undo Integration", () => {
-    it("loading a save establishes a clean baseline and clears prior undo snapshots", () => {
+    it("loading a v2 save restores the move history so undo keeps working", () => {
       const engine = createXiangqiEngine();
       const session = new GameSession(engine);
 
@@ -203,7 +211,41 @@ describe("012 Save / Load Persistence Architecture", () => {
       saveManager.load(savedState, session, engine);
       expect(session.getCurrentPlayer()).toBe("red");
 
-      // Undo on newly loaded state should be a no-op (snapshots stack was reset as a clean baseline)
+      // 棋譜必須跟著存檔回來（悔棋 / 復盤才不會失效）
+      expect(session.getHistory()).toHaveLength(2);
+
+      // 悔棋快照由 initialState + history 重放重建，因此可以一路退回開局
+      const afterFirstUndo = session.undo();
+      expect(afterFirstUndo.board[4][4]).toBeNull();
+      expect(session.getHistory()).toHaveLength(1);
+      expect(session.getCurrentPlayer()).toBe("black");
+
+      const afterSecondUndo = session.undo();
+      expect(afterSecondUndo.board[6][4]?.type).toBe("soldier");
+      expect(session.getHistory()).toHaveLength(0);
+      expect(session.getCurrentPlayer()).toBe("red");
+    });
+
+    it("loading a legacy v1 save (no history) still establishes a clean baseline", () => {
+      const engine = createXiangqiEngine();
+      const session = new GameSession(engine);
+
+      session.move({ from: { row: 6, col: 4 }, to: { row: 5, col: 4 } });
+      session.move({ from: { row: 3, col: 4 }, to: { row: 4, col: 4 } });
+
+      const legacyEnvelope = JSON.stringify({
+        formatVersion: 1,
+        gameId: "xiangqi",
+        engineVersion: "0.11.0",
+        state: engine.serialize(session.getState()),
+        savedAt: new Date().toISOString(),
+      });
+
+      saveManager.load(legacyEnvelope, session, engine);
+      expect(session.getCurrentPlayer()).toBe("red");
+      expect(session.getHistory()).toHaveLength(0);
+
+      // v1 沒有棋譜可還原，維持原本的 clean baseline 語義：悔棋為 no-op
       const afterUndoAttempt = session.undo();
       expect(afterUndoAttempt.board[4][4]?.type).toBe("soldier");
       expect(session.getCurrentPlayer()).toBe("red");
