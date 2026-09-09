@@ -5,7 +5,7 @@ import { GameSession } from "../../src/core/game/session";
 describe("Banqi Engine & Session Integration", () => {
   const engine = createBanqiEngine();
 
-  it("registers with id 'banqi' and name '暗棋 (Banqi)'", () => {
+  it("registers with id 'banqi' and a name containing '暗棋'", () => {
     expect(engine.id).toBe("banqi");
     expect(engine.name).toContain("暗棋");
   });

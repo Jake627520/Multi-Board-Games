@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createBanqiEngine } from "../../games/banqi/engine";
 import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
@@ -10,6 +10,7 @@ import { createBanqiAiLevel1, createBanqiAiLevel2 } from "../../games/banqi/ai";
 import type { BanqiMove, BanqiPlayer, BanqiState, BanqiViewState } from "../../games/banqi/types";
 import type { PieceType } from "../../games/xiangqi/types";
 import type { Player } from "../../core/game/types";
+import type { BoardProps } from "../board-props";
 
 const LABELS: Record<BanqiPlayer, Record<PieceType, string>> = {
   red: {
@@ -37,7 +38,7 @@ const AVAILABLE_PLAYERS = [
   { id: "black", label: "後手 (電腦先翻)" },
 ];
 
-export function BanqiBoard() {
+export function BanqiBoard({ onProgressChange }: BoardProps) {
   const engine = useMemo(() => createBanqiEngine(), []);
 
   const [mode, setMode] = useState<GameMode>("pvp");
@@ -178,6 +179,12 @@ export function BanqiBoard() {
     setSelected(null);
   }
 
+  // 回報「本局是否已開始」給 App（切換遊戲 / 回首頁前的確認依據）
+  const inProgress = history.length > 0 || isReplayMode;
+  useEffect(() => {
+    onProgressChange?.(inProgress);
+  }, [inProgress, onProgressChange]);
+
   const formatPlayer = (p: string) => (p === "red" ? "紅方 (Red)" : "黑方 (Black)");
 
   return (
@@ -238,8 +245,11 @@ export function BanqiBoard() {
       </div>
 
       <aside className="side-panel">
-        <h2>暗棋 (Banqi)</h2>
-        <p className="engine-badge">Engine: BanqiEngine (4×8 半盤)</p>
+        {engine.latinName && (
+          <span className="latin-name">{engine.latinName}</span>
+        )}
+        <h2>{engine.name}</h2>
+        <p className="engine-badge">8 × 4 半盤</p>
 
         {isReplayMode ? (
           <ReplayControls

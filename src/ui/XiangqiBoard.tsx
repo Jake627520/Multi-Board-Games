@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createXiangqiEngine } from "../games/xiangqi/engine";
 import {
   createXiangqiAiLevel1,
@@ -14,6 +14,7 @@ import { ReplayControls } from "./components/ReplayControls";
 import { SaveManagerPanel } from "./components/SaveManagerPanel";
 import type { Piece, XiangqiMove, XiangqiState } from "../games/xiangqi/types";
 import type { Player } from "../core/game/types";
+import type { BoardProps } from "./board-props";
 
 const labels: Record<Piece["type"], string> = {
   general: "將",
@@ -30,7 +31,7 @@ const AVAILABLE_PLAYERS = [
   { id: "black", label: "⬛ 黑方（後手）" },
 ];
 
-export function XiangqiBoard() {
+export function XiangqiBoard({ onProgressChange }: BoardProps) {
   const engine = useMemo(() => createXiangqiEngine(), []);
   const [aiLevel, setAiLevel] = useState<"l1" | "l2">("l1");
   const aiPlayer = useMemo(
@@ -144,6 +145,12 @@ export function XiangqiBoard() {
     setSelected(null);
   }
 
+  // 回報「本局是否已開始」給 App（切換遊戲 / 回首頁前的確認依據）
+  const inProgress = history.length > 0 || isReplayMode;
+  useEffect(() => {
+    onProgressChange?.(inProgress);
+  }, [inProgress, onProgressChange]);
+
   const formatPlayer = (p: string) => (p === "red" ? "紅方 (Red)" : "黑方 (Black)");
   const inCheck = isInCheck(viewState, currentPlayer);
 
@@ -194,12 +201,22 @@ export function XiangqiBoard() {
               );
             })
           )}
+
+          {/* 九宮斜線與楚河漢界：純 CSS 疊層，不參與 grid 排列 */}
+          <span className="palace palace-black" aria-hidden="true" />
+          <span className="palace palace-red" aria-hidden="true" />
+          <div className="river" aria-hidden="true">
+            楚河　　漢界
+          </div>
         </div>
       </div>
 
       <aside className="side-panel">
-        <h2>中國象棋 (Xiangqi)</h2>
-        <p className="engine-badge">Engine: XiangqiEngine (9×10)</p>
+        {engine.latinName && (
+          <span className="latin-name">{engine.latinName}</span>
+        )}
+        <h2>{engine.name}</h2>
+        <p className="engine-badge">9 × 10 棋盤</p>
 
         {isReplayMode ? (
           <ReplayControls
@@ -296,7 +313,13 @@ export function XiangqiBoard() {
         )}
 
         <p className="muted">
-          規則層與 React UI 嚴格分離，UI 不具任何遊戲規則邏輯。
+          規則說明：
+          <br />
+          • <strong>走法</strong>：車直行、炮隔一子吃、馬走日（蹩馬腳不可行）、象走田（塞象眼不可行）且不過河；士與將帥限走九宮，士走斜、將帥走直線一格。兵/卒過河前只能前進，過河後可左右平移。
+          <br />
+          • <strong>將軍</strong>：任一著法使對方將帥立即受攻擊即為將軍，被將方必須應將；兩方將帥不可在同一直線上直接照面（白臉將）。
+          <br />
+          • <strong>勝負</strong>：對方被將死或無合法著法（困斃）即獲勝；長將、長捉等循環局面依規則判負或和局。
         </p>
 
         <div className="legend">

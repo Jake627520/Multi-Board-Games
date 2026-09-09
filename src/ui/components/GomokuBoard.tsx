@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createGomokuEngine } from "../../games/gomoku/engine";
 import { createGomokuAiLevel1, createGomokuAiLevel2 } from "../../games/gomoku/ai";
 import { toGomokuNotation } from "../../games/gomoku/notation";
@@ -10,13 +10,14 @@ import { ReplayControls } from "./ReplayControls";
 import { SaveManagerPanel } from "./SaveManagerPanel";
 import type { GomokuMove, GomokuPlayer, GomokuRuleMode, GomokuState } from "../../games/gomoku/types";
 import type { Player } from "../../core/game/types";
+import type { BoardProps } from "../board-props";
 
 const AVAILABLE_PLAYERS = [
   { id: "black", label: "⚫ 黑子（先手）" },
   { id: "white", label: "⚪ 白子（後手）" },
 ];
 
-export function GomokuBoard() {
+export function GomokuBoard({ onProgressChange }: BoardProps) {
   const [ruleMode, setRuleMode] = useState<GomokuRuleMode>("freestyle");
   const [aiLevel, setAiLevel] = useState<"l1" | "l2">("l1");
   const [mode, setMode] = useState<GameMode>("pvp");
@@ -95,6 +96,12 @@ export function GomokuBoard() {
     reset();
   }
 
+  // 回報「本局是否已開始」給 App（切換遊戲 / 回首頁前的確認依據）
+  const inProgress = history.length > 0 || isReplayMode;
+  useEffect(() => {
+    onProgressChange?.(inProgress);
+  }, [inProgress, onProgressChange]);
+
   const formatPlayer = (p: string) => (p === "black" ? "黑子 (Black)" : "白子 (White)");
 
   return (
@@ -144,8 +151,11 @@ export function GomokuBoard() {
       </div>
 
       <aside className="side-panel">
-        <h2>五子棋 (Gomoku)</h2>
-        <p className="engine-badge">Engine: GomokuEngine (15×15)</p>
+        {engine.latinName && (
+          <span className="latin-name">{engine.latinName}</span>
+        )}
+        <h2>{engine.name}</h2>
+        <p className="engine-badge">15 × 15 棋盤</p>
 
         {isReplayMode ? (
           <ReplayControls

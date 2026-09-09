@@ -2,7 +2,23 @@ import { test, expect } from "@playwright/test";
 
 test.describe("E2E Platform User Flows A through E", () => {
   test.beforeEach(async ({ page }) => {
+    // 首頁現在是三張遊戲卡；各 Flow 從首頁進入象棋後再照原本流程跑。
+    // 對局中切換遊戲會跳確認，這裡一律同意（Flow E 會實際觸發）。
+    page.on("dialog", (d) => d.accept());
     await page.goto("/");
+    await page.getByTestId("game-card-xiangqi").click();
+    await expect(page.getByTestId("xiangqi-board")).toBeVisible();
+  });
+
+  test("Flow 0: 首頁三張卡 -> 進入遊戲 -> 回首頁", async ({ page }) => {
+    await page.getByTestId("back-to-home").click();
+    await expect(page.getByTestId("game-home")).toBeVisible();
+    await expect(page.locator(".game-card")).toHaveCount(3);
+    await expect(page.getByTestId("game-card-banqi")).toBeVisible();
+    // 上次玩過象棋 -> 首頁有快捷入口
+    await expect(page.getByTestId("resume-last-game")).toContainText("中國象棋");
+    await page.getByTestId("game-card-gomoku").click();
+    await expect(page.getByTestId("gomoku-board")).toBeVisible();
   });
 
   test("Flow A: Home -> Xiangqi -> PvP -> move -> save -> replay", async ({ page }) => {

@@ -5,7 +5,11 @@ import type { BanqiFullState, BanqiMove, BanqiPlayer, BanqiState, BanqiViewState
 
 export class BanqiEngine implements GameEngine<BanqiFullState, BanqiMove, BanqiViewState> {
   readonly id = "banqi";
-  readonly name = "暗棋 (Banqi)";
+  readonly name = "暗棋";
+  readonly description = "棋子全部倒扣，翻開才知敵我；階級相剋，吃光對方即勝。";
+  readonly boardSize = "8 × 4";
+  readonly latinName = "Banqi";
+  readonly accent = "jade" as const;
 
   createInitialState(): BanqiFullState {
     return {

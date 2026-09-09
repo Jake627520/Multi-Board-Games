@@ -9,6 +9,10 @@ export function createGomokuEngine(
   return {
     id: "gomoku",
     name: "五子棋",
+    description: "黑先白後輪流落子，橫、直、斜任一方向先連成五子者勝。",
+    boardSize: "15 × 15",
+    latinName: "Gomoku",
+    accent: "ink",
     createInitialState: () => createInitialState(ruleMode),
     getCurrentPlayer: (state) => state.currentPlayer,
     getLegalMoves,

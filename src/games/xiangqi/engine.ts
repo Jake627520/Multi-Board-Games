@@ -7,6 +7,10 @@ export function createXiangqiEngine(): GameEngine<XiangqiState, XiangqiMove> {
   return {
     id: "xiangqi",
     name: "中國象棋",
+    description: "河界分兩岸，將帥不出九宮；車馬炮各展其能，擒王者勝。",
+    boardSize: "9 × 10",
+    latinName: "Xiangqi",
+    accent: "accent",
     createInitialState,
     getCurrentPlayer: (state) => state.currentPlayer,
     getLegalMoves: (state) => getLegalMoves(state),
