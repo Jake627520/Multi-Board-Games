@@ -117,5 +117,5 @@ src/
 
 - **專案授權**：[MIT License](LICENSE) (c) 2026 Jake627520
 - **法律告示**：[NOTICE.md](NOTICE.md)（傳統棋類規則屬公有領域，本專案聲明零二進位素材）
-- **第三方套件依賴**：[docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)（全數為 MIT / Apache-2.0）
+- **第三方套件依賴**：[docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)（直接依賴全數為 MIT / Apache-2.0；間接依賴皆為寬鬆授權：MIT / ISC / BSD / Apache-2.0 等）
 - **智慧財產政策**：[docs/COPYRIGHT_POLICY.md](docs/COPYRIGHT_POLICY.md)

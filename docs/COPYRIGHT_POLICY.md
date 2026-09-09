@@ -59,6 +59,8 @@ If custom web fonts (e.g., Noto Sans CJK, 思源黑體, specialized calligraphy 
 - Fonts must be verified under permissive font licenses (e.g., SIL Open Font License 1.1 or Apache 2.0).
 - The font license file and copyright notice must be distributed alongside the font binaries.
 
+Current status: The project loads `Ma Shan Zheng`, `Noto Serif TC`, and `Noto Sans TC` remotely via Google Fonts (all under SIL Open Font License 1.1). No font binaries are bundled in this repository; per-family upstream authors and attribution requirements are recorded in [`docs/THIRD_PARTY_LICENSES.md`](./THIRD_PARTY_LICENSES.md).
+
 ---
 
 ## 7. Audio & Sound Effects

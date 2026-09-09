@@ -40,9 +40,9 @@ These web fonts are requested dynamically via Google Fonts and are governed by p
 
 | Font Family | License | Upstream Author / Project | Attribution Requirement |
 |---|---|---|---|
-| `Ma Shan Zheng` | `OFL-1.1` | Yue Zheng | SIL Open Font License notice retention |
+| `Ma Shan Zheng` | `OFL-1.1` | The Ma Shan Zheng Project Authors | SIL Open Font License notice retention |
 | `Noto Serif TC` | `OFL-1.1` | Google Inc. | SIL Open Font License notice retention |
-| `Noto Sans TC` | `OFL-1.1` | Google Inc. | SIL Open Font License notice retention |
+| `Noto Sans TC` | `OFL-1.1` | Adobe (derived from Source Han Sans) | SIL Open Font License notice retention |
 
 ---
 
