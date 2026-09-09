@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { act, createElement, useMemo } from "react";
+import { createRoot } from "react-dom/client";
+
+(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 import { GameSession } from "../../src/core/game/session";
 import { createGomokuEngine } from "../../src/games/gomoku/engine";
 import { createGomokuAiLevel1 } from "../../src/games/gomoku/ai";
@@ -6,6 +10,8 @@ import { createXiangqiEngine } from "../../src/games/xiangqi/engine";
 import { createXiangqiAiLevel1 } from "../../src/games/xiangqi/ai";
 import { createBanqiEngine } from "../../src/games/banqi/engine";
 import { createBanqiAiLevel2 } from "../../src/games/banqi/ai";
+import { useGameSession } from "../../src/ui/hooks/useGameSession";
+import type { XiangqiMove, XiangqiState } from "../../src/games/xiangqi/types";
 
 describe("UI / Hook PvE AI Integration Lifecycle", () => {
   it("executes an interactive Gomoku PvE match with AI opponent", async () => {
@@ -85,5 +91,145 @@ describe("UI / Hook PvE AI Integration Lifecycle", () => {
     session.move(aiMove);
     expect(session.getHistory()).toHaveLength(2);
     expect(session.getCurrentPlayer()).not.toBe(opponent);
+  });
+
+  it("implements decision-point based undo in PvE mode (Round 19 P1-2)", async () => {
+    let api!: ReturnType<typeof useGameSession<XiangqiState, XiangqiMove>>;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    function Harness() {
+      const engine = useMemo(() => createXiangqiEngine(), []);
+      const ai = useMemo(() => createXiangqiAiLevel1(), []);
+      const session = useGameSession<XiangqiState, XiangqiMove>(engine, {
+        aiPlayer: ai,
+        aiColor: "black",
+        aiDelayMs: 20,
+      });
+      api = session;
+      return null;
+    }
+
+    await act(async () => {
+      root.render(createElement(Harness));
+    });
+
+    // Initial state: Red (Human) turn
+    expect(api.currentPlayer).toBe("red");
+    expect(api.history).toHaveLength(0);
+
+    // Human makes Move 1 (Red Cannon 7,1 -> 7,4)
+    await act(async () => {
+      api.move({ from: { row: 7, col: 1 }, to: { row: 7, col: 4 } });
+    });
+
+    // Wait for AI to respond (AI delay 20ms)
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 60));
+    });
+
+    // Test 1: Human move + AI move -> history = 2, currentPlayer = red (Human)
+    expect(api.history).toHaveLength(2);
+    expect(api.currentPlayer).toBe("red");
+
+    // Human clicks Undo
+    await act(async () => {
+      api.undo();
+    });
+
+    // Expected Test 1 result: history reverted to 0, currentPlayer = red (Human)
+    expect(api.history).toHaveLength(0);
+    expect(api.currentPlayer).toBe("red");
+
+    // Test 3: Wait > AI delay to ensure old AI does NOT re-trigger
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 60));
+    });
+    expect(api.history).toHaveLength(0);
+    expect(api.currentPlayer).toBe("red");
+
+    // Test 2: Play 2 full rounds (Human -> AI -> Human -> AI), then Undo
+    // Round 1: Human move 1
+    await act(async () => {
+      api.move({ from: { row: 7, col: 1 }, to: { row: 7, col: 4 } });
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 60));
+    });
+    expect(api.history).toHaveLength(2);
+
+    // Round 2: Human move 2 (Horse 9,1 -> 7,2)
+    await act(async () => {
+      api.move({ from: { row: 9, col: 1 }, to: { row: 7, col: 2 } });
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 60));
+    });
+    expect(api.history).toHaveLength(4);
+    expect(api.currentPlayer).toBe("red");
+
+    // Undo: should revert to Human decision point before Round 2 (history = 2)
+    await act(async () => {
+      api.undo();
+    });
+    expect(api.history).toHaveLength(2);
+    expect(api.currentPlayer).toBe("red");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("preserves strict single-step undo in PvP mode (Round 19 P1-2)", async () => {
+    let api!: ReturnType<typeof useGameSession<XiangqiState, XiangqiMove>>;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    function PvPHarness() {
+      const engine = useMemo(() => createXiangqiEngine(), []);
+      const session = useGameSession<XiangqiState, XiangqiMove>(engine);
+      api = session;
+      return null;
+    }
+
+    await act(async () => {
+      root.render(createElement(PvPHarness));
+    });
+
+    // Move 1: Red
+    await act(async () => {
+      api.move({ from: { row: 7, col: 1 }, to: { row: 7, col: 4 } });
+    });
+    expect(api.currentPlayer).toBe("black");
+    expect(api.history).toHaveLength(1);
+
+    // Move 2: Black
+    await act(async () => {
+      api.move({ from: { row: 0, col: 1 }, to: { row: 2, col: 2 } });
+    });
+    expect(api.currentPlayer).toBe("red");
+    expect(api.history).toHaveLength(2);
+
+    // PvP Undo: should undo exactly 1 move (back to Black's turn)
+    await act(async () => {
+      api.undo();
+    });
+    expect(api.history).toHaveLength(1);
+    expect(api.currentPlayer).toBe("black");
+
+    // Second Undo: back to Red's turn
+    await act(async () => {
+      api.undo();
+    });
+    expect(api.history).toHaveLength(0);
+    expect(api.currentPlayer).toBe("red");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });

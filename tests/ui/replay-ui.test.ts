@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { act, createElement } from "react";
+import { createRoot } from "react-dom/client";
+
+(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 import { GameSession } from "../../src/core/game/session";
 import { createGomokuEngine } from "../../src/games/gomoku/engine";
 import { createBanqiEngine } from "../../src/games/banqi/engine";
 import { ReplayManager } from "../../src/core/persistence/replay-manager";
 import { SaveManager } from "../../src/core/persistence/save-manager";
+import { MoveHistory } from "../../src/ui/components/MoveHistory";
 import {
   listSaves,
   saveGameToStorage,
@@ -124,5 +129,51 @@ describe("Replay & Save UI Integration Lifecycle (Round 14)", () => {
     // 5. Delete
     deleteSave(meta.id);
     expect(listSaves("gomoku")).toHaveLength(0);
+  });
+
+  it("enables Enter and Space keyboard activation on replay move items (Round 19 P1-4)", async () => {
+    let clickedStep = -1;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    const moves = [
+      { player: "black" as const, notation: "H8" },
+      { player: "white" as const, notation: "I8" },
+    ];
+
+    await act(async () => {
+      root.render(
+        createElement(MoveHistory, {
+          moves,
+          isReplayMode: true,
+          activeStep: 1,
+          onStepClick: (s: number) => {
+            clickedStep = s;
+          },
+        })
+      );
+    });
+
+    const items = container.querySelectorAll(".move-item");
+    expect(items).toHaveLength(2);
+    expect(items[0].getAttribute("role")).toBe("button");
+    expect(items[0].getAttribute("tabindex")).toBe("0");
+
+    // Press Enter on item 1 (step 2)
+    const enterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    items[1].dispatchEvent(enterEvent);
+    expect(clickedStep).toBe(2);
+
+    // Press Space on item 0 (step 1)
+    const spaceEvent = new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true });
+    items[0].dispatchEvent(spaceEvent);
+    expect(clickedStep).toBe(1);
+    expect(spaceEvent.defaultPrevented).toBe(true);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });

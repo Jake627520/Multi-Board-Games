@@ -62,8 +62,19 @@ export function MoveHistory({
                     onStepClick(index + 1);
                   }
                 }}
+                onKeyDown={(e) => {
+                  if (isReplayMode && onStepClick && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    onStepClick(index + 1);
+                  }
+                }}
                 role={isReplayMode ? "button" : undefined}
                 tabIndex={isReplayMode ? 0 : undefined}
+                aria-label={
+                  isReplayMode
+                    ? `第 ${moveNum} 步：${formatPlayer(item.player)} ${item.notation}`
+                    : undefined
+                }
               >
                 <span className="move-index">{moveNum}.</span>
                 <span className={`move-badge ${item.player}`}>

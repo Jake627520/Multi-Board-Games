@@ -101,7 +101,26 @@ export function useGameSession<State, Move, ViewState = State>(
   function undo(): void {
     if (isReplayMode || isAiThinkingRef.current) return;
     setError("");
-    setState(session.undo());
+    setIsAiThinking(false);
+
+    if (!aiColor || !aiPlayer) {
+      // PvP 模式：保持嚴格單步回退，完全不改變 PvP 行為
+      setState(session.undo());
+      return;
+    }
+
+    // PvE 模式：回退至上一個「人類玩家可決策點（Human decision point）」
+    if (session.getHistory().length === 0) return;
+
+    let nextState = session.undo();
+    while (
+      session.getHistory().length > 0 &&
+      engine.getCurrentPlayer(nextState) === aiColor
+    ) {
+      nextState = session.undo();
+    }
+
+    setState(nextState);
   }
 
   function reset(): void {

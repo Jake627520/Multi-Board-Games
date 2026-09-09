@@ -157,7 +157,6 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 @media (max-width: 900px) {
   .game-layout { grid-template-columns: 1fr; }
-  .side-panel { order: -1; }
 }
 
 /* Game Mode & AI Styling */
@@ -600,12 +599,18 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   background: var(--accent-soft);
 }
 
+.move-item.clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 /* ── 暗色（自動跟隨系統）：反轉 UI 外框；棋盤/棋子維持暖木島嶼 ── */
 @media (prefers-color-scheme: dark){
   :root{
     --paper:#171310; --paper-2:#1e1813;
     --ink:#ece2cd; --ink-2:#b0a184;
     --line:#4a3f2d; --line-soft:#3a3123;
+    --jade:#7ea698;
     --card:#221c14; --card-2:#2a2318; --card-edge:#3a3020;
     --accent-soft:#3a2420; --good-soft:#243029; --info:#7f9fb0; --info-soft:#232c30;
     --danger:#d0685b; --danger-soft:#33221e;
