@@ -772,6 +772,10 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 @media (max-width: 900px) {
   .topbar { flex-wrap: wrap; }
   .home-link { min-height: 44px; }
+  .mode-btn,
+  .side-btn {
+    min-height: 44px;
+  }
   .resume-bar { min-height: 44px; width: 100%; justify-content: center; }
 }
 

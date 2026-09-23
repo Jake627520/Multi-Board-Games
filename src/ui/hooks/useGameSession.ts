@@ -18,6 +18,12 @@ import {
   type SaveMeta,
 } from "../../core/persistence/local-storage";
 
+/**
+ * 模組層級常數：若每次 render 都新建這個物件，下面 useMemo 的依賴陣列
+ * 會每次都變，projectView 等於沒有被 memo 保護。
+ */
+const DEFAULT_VIEW_CONTEXT: GameViewContext = { role: "spectator", player: null };
+
 export interface UseGameSessionOptions<State, Move, ViewState = State> {
   readonly aiPlayer?: AiPlayer<State, Move>;
   readonly aiColor?: Player;
@@ -62,10 +68,7 @@ export function useGameSession<State, Move, ViewState = State>(
   const aiPlayer = options?.aiPlayer;
   const aiColor = options?.aiColor;
   const aiDelayMs = options?.aiDelayMs ?? 400;
-  const viewContext: GameViewContext = options?.viewContext ?? {
-    role: "spectator",
-    player: null,
-  };
+  const viewContext: GameViewContext = options?.viewContext ?? DEFAULT_VIEW_CONTEXT;
 
   const viewState: ViewState = useMemo(() => {
     if (isReplayMode && replaySession) {
