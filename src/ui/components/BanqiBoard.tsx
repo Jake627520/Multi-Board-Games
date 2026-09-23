@@ -152,10 +152,11 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
   }
 
   function handleAiLevelChange(level: AiLevel) {
+    // 只換對手，不動棋局（見 XiangqiBoard 的同名函式）。
+    // establishedP1Color 也不清：棋局既然留著，首翻決定的執色就仍然成立，
+    // 清掉只會讓鏡像與 viewState.player1Color 短暫不一致。
     setAiLevel(level);
-    reset();
     setSelected(null);
-    setEstablishedP1Color(null);
   }
 
   function handleReset() {

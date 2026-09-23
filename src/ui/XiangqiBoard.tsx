@@ -119,8 +119,9 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
   }
 
   function handleAiLevelChange(level: AiLevel) {
+    // 只換對手，不動棋局。切換難度把進行中的對局清掉是無預警的資料遺失，
+    // 與切換遊戲時會先確認的處理自相矛盾。
     setAiLevel(level);
-    reset();
     setSelected(null);
   }
 
