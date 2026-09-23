@@ -224,6 +224,11 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 @media (max-width: 900px) {
   .game-layout { grid-template-columns: 1fr; }
 
+  /* 手機斷點：收窄外層內距，讓象棋／暗棋棋盤吃滿可用寬度以放大觸控格。
+     只在此斷點生效，不影響桌機；.side-panel/.placeholder 內距不變。 */
+  .app-shell { padding-left: 8px; padding-right: 8px; }
+  .board-panel { padding: 6px; }
+
   /* 窄螢幕主要操作按鈕觸控友善目標（WCAG 2.5.5 / 2.5.8 ≥ 44×44px，不動棋盤格） */
   .actions button {
     min-height: 44px;
@@ -831,6 +836,17 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
     min-height: 44px;
   }
   .resume-bar { min-height: 44px; width: 100%; justify-content: center; }
+
+  /* 暗棋棋盤本身的內距/邊框/格線間距吃掉了大半可用寬度
+     （原本 12px×2 padding + 4px×2 border + 7×6px gap ≈ 74px）——
+     手機上收窄這三者，把讓出的寬度還給格子。aspect-ratio 不動。
+     此覆寫必須放在本檔中 .banqi-board 基礎規則（line ~445）之後，
+     否則同層級 media query 的宣告順序會被後面的基礎規則蓋掉。 */
+  .banqi-board {
+    padding: 3px;
+    border-width: 2px;
+    gap: 2px;
+  }
 }
 
 /* ===== 鍵盤焦點指示（WCAG 2.4.7） ===== */
