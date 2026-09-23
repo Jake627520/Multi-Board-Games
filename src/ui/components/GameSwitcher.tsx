@@ -20,7 +20,7 @@ export function GameSwitcher({
         id="game-select"
         data-testid="game-switcher-select"
         value={currentGameId}
-        onChange={(e) => onSelectGame(e.target.value)}
+        onChange={(e) => onSelectGame(e.target.value as GameId)}
         aria-label="選擇棋類遊戲"
       >
         {availableGames.map((game) => (

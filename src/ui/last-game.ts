@@ -10,7 +10,9 @@ const LAST_GAME_KEY = "mbg:last-game";
 export function readLastGame(): GameId | null {
   try {
     const raw = window.localStorage.getItem(LAST_GAME_KEY);
-    return raw && raw.length > 0 ? raw : null;
+    // localStorage 是外部持久化狀態（可能來自舊版棋種、被手動竄改），
+    // 執行期本來就不驗證內容是否仍是合法 GameId，此處純粹是型別斷言。
+    return raw && raw.length > 0 ? (raw as GameId) : null;
   } catch {
     return null;
   }

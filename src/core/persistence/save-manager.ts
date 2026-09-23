@@ -1,4 +1,4 @@
-import type { GameEngine, MoveRecord } from "../game/types";
+import type { GameEngine, MoveRecord, Player } from "../game/types";
 import type { GameSession, SessionRestorePayload } from "../game/session";
 import type { GameSaveEnvelope, SaveFormatVersion } from "./types";
 
@@ -138,7 +138,9 @@ export class SaveManager {
       }
       return {
         move: record.move as Move,
-        player: record.player,
+        // 存檔來自外部 JSON，執行期只驗證過是字串（見上方 typeof 檢查），
+        // 未驗證是否落在目前的 Player 聯集內——維持既有寬鬆行為，此處純粹是型別斷言。
+        player: record.player as Player,
         notation: record.notation as string | undefined,
       };
     });

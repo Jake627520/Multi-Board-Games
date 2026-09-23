@@ -32,7 +32,7 @@ const LABELS: Record<BanqiPlayer, Record<PieceType, string>> = {
   },
 };
 
-const AVAILABLE_PLAYERS = [
+const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "red", label: "先手 (玩家先翻)" },
   { id: "black", label: "後手 (電腦先翻)" },
 ];
@@ -92,13 +92,14 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
 
+  // BanqiMove 本身就是判別聯集（type: "flip" | "move"），用 flatMap 讓 TS
+  // 在同一個運算式裡完成窄化，不必再手寫一份重複描述 "move" 分支形狀的 type predicate。
   const targets = selected && !isReplayMode
-    ? legalMoves
-        .filter(
-          (m): m is { type: "move"; from: { row: number; col: number }; to: { row: number; col: number } } =>
-            m.type === "move" && m.from.row === selected.row && m.from.col === selected.col
-        )
-        .map((m) => m.to)
+    ? legalMoves.flatMap((m) =>
+        m.type === "move" && m.from.row === selected.row && m.from.col === selected.col
+          ? [m.to]
+          : []
+      )
     : [];
 
   function handleModeChange(newMode: GameMode) {

@@ -1,5 +1,18 @@
-export type Player = string;
-export type GameId = string;
+/**
+ * 所有棋種合法玩家值的聯集。
+ *
+ * 理想做法是讓 GameEngine 帶一個 Player 型別參數、各棋種自帶聯集
+ * （例如 XiangqiPlayer = "red" | "black"），但 Player 目前貫穿共用 UI
+ * 層（StatusBar／MoveHistory／BoardSidePanel／GameModeSelector／
+ * useGameSession 等），加型別參數會讓那些每個棋種共用的 hook 與元件
+ * 全部多背一個泛型參數，波及面過大、不符合 side project 的可讀性成本。
+ * 因此退而求其次：一個涵蓋所有棋種合法值的聯集。仍能擋住 typo
+ * （例如 "reed"），只是擋不住「把 white 傳給象棋」這種跨棋種誤用。
+ */
+export type Player = "red" | "black" | "white";
+
+/** 已註冊棋種的封閉聯集；新增棋種時要在此多加一個字面值。 */
+export type GameId = "xiangqi" | "gomoku" | "banqi";
 
 export interface Position {
   readonly row: number;

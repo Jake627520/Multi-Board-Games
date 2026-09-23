@@ -14,7 +14,7 @@ import type { GomokuMove, GomokuPlayer, GomokuRuleMode, GomokuState } from "../.
 import type { Player } from "../../core/game/types";
 import type { BoardProps } from "../board-props";
 
-const AVAILABLE_PLAYERS = [
+const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "black", label: "⚫ 黑子（先手）" },
   { id: "white", label: "⚪ 白子（後手）" },
 ];

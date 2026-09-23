@@ -25,7 +25,7 @@ const labels: Record<Piece["type"], string> = {
   soldier: "卒",
 };
 
-const AVAILABLE_PLAYERS = [
+const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "red", label: "🟥 紅方（先手）" },
   { id: "black", label: "⬛ 黑方（後手）" },
 ];

@@ -52,7 +52,10 @@ describe("GameRegistry", () => {
       currentPlayer: GomokuPlayer;
     }
     const othelloEngine: GameEngine<GomokuState, { row: number; col: number }> = {
-      id: "othello-custom",
+      // GameId 現在是已註冊三種棋的封閉聯集；這裡刻意用型別斷言繞過，
+      // 因為這個測試驗證的是 GameRegistry 本身在「執行期」對任意 id 沒有限制
+      // （見上方案名：accepts arbitrary game IDs ... without core modifications）。
+      id: "othello-custom" as GameId,
       name: "Othello / Reversi",
       createInitialState: () => ({ board: [], currentPlayer: "black" }),
       getCurrentPlayer: (s) => s.currentPlayer,
@@ -67,6 +70,6 @@ describe("GameRegistry", () => {
     };
 
     registry.register(othelloEngine);
-    expect(registry.get("othello-custom")).toBe(othelloEngine);
+    expect(registry.get("othello-custom" as GameId)).toBe(othelloEngine);
   });
 });
