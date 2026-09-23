@@ -14,6 +14,7 @@
 import type { Piece, PieceType, XiangqiPlayer, XiangqiState } from "./types";
 import { decodeBoard as sharedDecodeBoard, encodeBoard as sharedEncodeBoardRows } from "../shared/board-fen";
 import { decodePieceLetter, encodePieceLetter, extractStandardIdSuffix, buildStandardId } from "../shared/piece-codes";
+import { hashSignature, isHashSignature } from "../shared/hash";
 import {
   ABSENT,
   assertPartCount,
@@ -231,10 +232,26 @@ function validateLegacyXiangqiState(obj: unknown): XiangqiState {
   return s as unknown as XiangqiState;
 }
 
+/**
+ * positionHistory 就地正規化：把舊格式（完整局面簽章字串，例如
+ * `red:black-advisor@0,3;...`）轉成雜湊，讓新舊資料混在同一陣列裡也不會
+ * 出現「有些是雜湊、有些是完整字串」的混形狀態。已經是雜湊格式（32 個
+ * 十六進位字元）的項目原樣保留，避免重複雜湊造成值改變。
+ */
+function normalizePositionHistory(history: unknown): readonly string[] | undefined {
+  if (history === undefined) return undefined;
+  if (!Array.isArray(history)) return history as readonly string[] | undefined;
+  return history.map((entry) => {
+    if (typeof entry !== "string") return entry;
+    return isHashSignature(entry) ? entry : hashSignature(entry);
+  });
+}
+
 export function deserializeXiangqiState(serialized: string): XiangqiState {
   if (typeof serialized !== "string" || serialized.length === 0) {
     throw new Error("Invalid xiangqi serialized payload: expected a non-empty string");
   }
+  let state: XiangqiState;
   if (serialized.startsWith("{")) {
     let parsed: unknown;
     try {
@@ -242,10 +259,14 @@ export function deserializeXiangqiState(serialized: string): XiangqiState {
     } catch (err) {
       throw new Error(`Malformed legacy xiangqi JSON: ${err instanceof Error ? err.message : String(err)}`);
     }
-    return validateLegacyXiangqiState(parsed);
+    state = validateLegacyXiangqiState(parsed);
+  } else if (serialized.startsWith(`${VERSION_TAG}|`)) {
+    state = decodeCompactXiangqiState(serialized);
+  } else {
+    throw new Error(`Unrecognized xiangqi serialized format (expected legacy JSON or "${VERSION_TAG}|...")`);
   }
-  if (serialized.startsWith(`${VERSION_TAG}|`)) {
-    return decodeCompactXiangqiState(serialized);
-  }
-  throw new Error(`Unrecognized xiangqi serialized format (expected legacy JSON or "${VERSION_TAG}|...")`);
+  return {
+    ...state,
+    positionHistory: normalizePositionHistory(state.positionHistory),
+  };
 }

@@ -1,6 +1,7 @@
 import { cloneBoard, crossedRiver, inBounds, isPalace } from "./board";
 import type { Piece, XiangqiMove, XiangqiPlayer, XiangqiState } from "./types";
 import type { Player, Position } from "../../core/game/types";
+import { hashSignature } from "../shared/hash";
 
 const dirs = [[1,0],[-1,0],[0,1],[0,-1]] as const;
 
@@ -139,6 +140,23 @@ export function isInCheck(state: XiangqiState, player: Player): boolean {
   return false;
 }
 
+/**
+ * 只算移動後的盤面，不建立 positionHistory / checkHistory / terminationReason
+ * 等衍生欄位。合法性檢查（是否讓自己的將被將軍）只需要盤面本身，若改呼叫
+ * 完整的 applyMoveUnchecked，會為了一個馬上就丟棄的中間局面白算一次
+ * boardSignature + hashSignature——這條路徑是每次合法走法枚舉都會大量
+ * 呼叫的熱點（getLegalMoves 對每個偽合法走法都呼叫一次），值得省。
+ */
+function applyMoveBoardOnly(state: XiangqiState, move: XiangqiMove): (Piece | null)[][] {
+  const board = cloneBoard(state.board);
+  const piece = board[move.from.row][move.from.col];
+  if (!piece) throw new Error("No piece at source");
+  const moved = { ...piece, position: { ...move.to } };
+  board[move.from.row][move.from.col] = null;
+  board[move.to.row][move.to.col] = moved;
+  return board;
+}
+
 export function getLegalMoves(state: XiangqiState, player = state.currentPlayer): XiangqiMove[] {
   const moves: XiangqiMove[] = [];
 
@@ -146,8 +164,8 @@ export function getLegalMoves(state: XiangqiState, player = state.currentPlayer)
     if (!piece || piece.player !== player) continue;
     for (const to of pseudoMoves(state, piece)) {
       const move = { from: piece.position, to };
-      const next = applyMoveUnchecked(state, move);
-      if (!isInCheck(next, player)) moves.push(move);
+      const nextBoard = applyMoveBoardOnly(state, move);
+      if (!isInCheck({ ...state, board: nextBoard }, player)) moves.push(move);
     }
   }
 
@@ -196,10 +214,13 @@ export function applyMoveUnchecked(state: XiangqiState, move: XiangqiMove): Xian
   const isCheck = isInCheck(tentativeState, nextPlayer);
   const checkHistory = state.checkHistory ? [...state.checkHistory, isCheck] : [isCheck];
 
-  const initialSig = state.positionHistory ? null : boardSignature(state);
+  // positionHistory 只存局面簽章的雜湊，不存完整簽章字串本身：
+  // 三次重複偵測只需要「是否相等」，雜湊值保留了這個性質，卻把每筆
+  // 從幾百字元壓到固定 32 個十六進位字元，是長局存檔體積的主要瘦身來源。
+  const initialSig = state.positionHistory ? null : hashSignature(boardSignature(state));
   const positionHistory = state.positionHistory ? [...state.positionHistory] : [initialSig!];
 
-  const currentSig = boardSignature(tentativeState);
+  const currentSig = hashSignature(boardSignature(tentativeState));
   positionHistory.push(currentSig);
 
   let isDraw = false;

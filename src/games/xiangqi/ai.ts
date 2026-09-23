@@ -87,26 +87,33 @@ function evaluateMoveScore(
   return score;
 }
 
-/** 走法排序：吃子 > 將軍 > 其餘（提升 Alpha-Beta 剪枝效率） */
+/**
+ * 走法排序：吃子 > 將軍 > 其餘（提升 Alpha-Beta 剪枝效率）。
+ *
+ * 效能注意：每個走法「吃子價值」與「是否將軍」只算一次並快取起來，
+ * 不要放進 sort 的 comparator 裡——comparator 在 n 個元素上會被呼叫
+ * O(n log n) 次，若每次都呼叫 applyMoveUnchecked（内含完整 positionHistory
+ * 簽章／雜湊計算）重算一次，會被重複呼叫掉好幾倍，在 Minimax 遞迴中呈
+ * 指數放大，是效能熱點。
+ */
 function orderMoves(state: XiangqiState, moves: XiangqiMove[]): XiangqiMove[] {
   const opponent: XiangqiPlayer =
     state.currentPlayer === "red" ? "black" : "red";
 
-  return [...moves].sort((a, b) => {
-    const capA = state.board[a.to.row][a.to.col]
-      ? getPieceValue(state.board[a.to.row][a.to.col]!)
-      : 0;
-    const capB = state.board[b.to.row][b.to.col]
-      ? getPieceValue(state.board[b.to.row][b.to.col]!)
-      : 0;
-    if (capA !== capB) return capB - capA;
-
-    const nextA = applyMoveUnchecked(state, a);
-    const nextB = applyMoveUnchecked(state, b);
-    const checkA = isInCheck(nextA, opponent) ? 1 : 0;
-    const checkB = isInCheck(nextB, opponent) ? 1 : 0;
-    return checkB - checkA;
+  const scored = moves.map((move) => {
+    const target = state.board[move.to.row][move.to.col];
+    const captureValue = target ? getPieceValue(target) : 0;
+    const next = applyMoveUnchecked(state, move);
+    const givesCheck = isInCheck(next, opponent) ? 1 : 0;
+    return { move, captureValue, givesCheck };
   });
+
+  scored.sort((a, b) => {
+    if (a.captureValue !== b.captureValue) return b.captureValue - a.captureValue;
+    return b.givesCheck - a.givesCheck;
+  });
+
+  return scored.map((s) => s.move);
 }
 
 // ---------- Level 1 ----------
