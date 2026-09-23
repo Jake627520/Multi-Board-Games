@@ -150,6 +150,60 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   animation: winPulse 1.2s ease-in-out infinite;
 }
 
+/* 觸控裝置兩段式落子：半透明預覽子，點錯零代價（尚未提交）。
+   不新增顏色字面值 —— 沿用 .stone.black/.stone.white 既有顏色，只疊加 opacity。 */
+.stone.preview {
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* 觸控確認列：預覽座標 + 一個 ≥44×44 的「落子」大按鈕，取代 20px 棋盤格作為確認的點擊目標 */
+.tap-confirm-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--card-2);
+  border: 1px solid var(--card-edge);
+  border-radius: 4px;
+  box-shadow: 0 12px 24px -20px var(--shadow);
+}
+
+.tap-confirm-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.tap-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tap-confirm-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.tap-confirm-commit {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #f6ecd8;
+}
+
+.tap-confirm-btn:hover {
+  opacity: 0.9;
+}
+
 @keyframes winPulse {
   0%, 100% { transform: scale(1); box-shadow: 0 0 8px 2px rgba(193, 151, 47, 0.6); }
   50% { transform: scale(1.08); box-shadow: 0 0 16px 6px rgba(193, 151, 47, 0.9); }
@@ -794,6 +848,7 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 .actions button:focus-visible,
 .mode-btn:focus-visible,
 .side-btn:focus-visible,
+.tap-confirm-btn:focus-visible,
 .replay-toolbar button:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;

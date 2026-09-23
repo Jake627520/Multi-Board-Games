@@ -3,7 +3,10 @@ import { createGomokuEngine } from "../../games/gomoku/engine";
 import { createGomokuAiLevel1, createGomokuAiLevel2 } from "../../games/gomoku/ai";
 import { toGomokuNotation } from "../../games/gomoku/notation";
 import { useGameSession } from "../hooks/useGameSession";
+import { useCoarsePointer } from "../hooks/useCoarsePointer";
+import { useTapConfirmPlacement } from "../hooks/useTapConfirmPlacement";
 import { StatusBar } from "./StatusBar";
+import { TapConfirmBar } from "./TapConfirmBar";
 import { type GameMode } from "./GameModeSelector";
 import { BoardSidePanel } from "./BoardSidePanel";
 import type { AiLevel } from "./AiLevelSelector";
@@ -58,23 +61,54 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     return set;
   }, [viewState.winningLine]);
 
+  // 觸控裝置（手機）改成兩段式落子：第一次點格子只放預覽子，按確認列的
+  // 大按鈕才真的提交。滑鼠／鍵盤（isTouch === false）維持點一下直接落子。
+  const isTouch = useCoarsePointer();
+  const canPlace = () =>
+    !isGameOver && !isAiThinking && !isReplayMode && (mode !== "pve" || currentPlayer === humanPlayer);
+  const tapConfirm = useTapConfirmPlacement<{ row: number; col: number }>({
+    enabled: isTouch,
+    onCommit: (coord) => move(coord),
+    canAct: canPlace,
+  });
+
   function handleCellClick(row: number, col: number) {
     if (isGameOver || isAiThinking || isReplayMode || viewState.board[row][col] !== null) return;
     if (mode === "pve" && currentPlayer !== humanPlayer) return;
-    move({ row, col });
+    tapConfirm.selectCell({ row, col });
+  }
+
+  // 復盤模式的進出由 BoardSidePanel/ReplayControls 深層觸發，這裡用 effect 攔截，
+  // 避免復盤中殘留一顆看似可提交的預覽子。
+  useEffect(() => {
+    tapConfirm.cancelPending();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReplayMode]);
+
+  function handleReset() {
+    tapConfirm.cancelPending();
+    reset();
+  }
+
+  function handleUndo() {
+    tapConfirm.cancelPending();
+    undo();
   }
 
   function handleModeChange(newMode: GameMode) {
+    tapConfirm.cancelPending();
     setMode(newMode);
     reset();
   }
 
   function handleHumanPlayerChange(p: Player) {
+    tapConfirm.cancelPending();
     setHumanPlayer(p);
     reset();
   }
 
   function handleRuleModeChange(newRuleMode: GomokuRuleMode) {
+    tapConfirm.cancelPending();
     setRuleMode(newRuleMode);
     reset();
   }
@@ -97,8 +131,8 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
           isDraw={isDraw}
           error={error}
           isAiThinking={isAiThinking}
-          onUndo={undo}
-          onReset={reset}
+          onUndo={handleUndo}
+          onReset={handleReset}
           formatPlayer={formatPlayer}
         />
 
@@ -112,6 +146,10 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
             row.map((stone: GomokuPlayer | null, c: number) => {
               const isEmpty = stone === null;
               const isWinning = winningSet.has(`${r},${c}`);
+              const isPreview =
+                tapConfirm.pending !== null &&
+                tapConfirm.pending.row === r &&
+                tapConfirm.pending.col === c;
               return (
                 <button
                   key={`${r}-${c}`}
@@ -126,11 +164,25 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
                       data-testid={`stone-${stone}`}
                     />
                   )}
+                  {!stone && isPreview && (
+                    <span
+                      className={`stone ${currentPlayer} preview`}
+                      data-testid="stone-preview"
+                    />
+                  )}
                 </button>
               );
             })
           )}
         </div>
+
+        {tapConfirm.pending && (
+          <TapConfirmBar
+            label={`${formatPlayer(currentPlayer)} → ${toGomokuNotation(tapConfirm.pending)}`}
+            onConfirm={tapConfirm.confirmPending}
+            onCancel={tapConfirm.cancelPending}
+          />
+        )}
       </div>
 
       <BoardSidePanel
