@@ -159,7 +159,13 @@ export class SaveManager {
       );
     }
 
-    if (engine.serialize(replayed) !== env.state) {
+    // 不能直接比對 engine.serialize(replayed) 與原始字串 env.state：
+    // 舊存檔的 env.state 可能是舊版序列化格式（例如舊版 JSON.stringify 輸出），
+    // 而目前的 engine.serialize 可能已經改版（例如緊湊格式）。
+    // 兩者字串格式不同不代表資料損毀，所以改成都用「目前」的序列化器
+    // 各自重新序列化一次再比對——只要邏輯上是同一個局面，兩次輸出就會相同
+    // （新格式是欄位固定順序的 canonical 輸出，不受物件 key 插入順序影響）。
+    if (engine.serialize(replayed) !== engine.serialize(candidateState)) {
       throw new Error(
         "Corrupted history payload: Replaying the saved history does not reproduce the saved state"
       );

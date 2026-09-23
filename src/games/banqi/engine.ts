@@ -2,6 +2,7 @@ import type { GameEngine, GameViewContext, Player } from "../../core/game/types"
 import { createInitialBoard } from "./board";
 import { applyMoveUnchecked, getLegalMoves, getWinner, isGameOver, projectBanqiView } from "./rules";
 import type { BanqiFullState, BanqiMove, BanqiPlayer, BanqiState, BanqiViewState } from "./types";
+import { deserializeBanqiState, serializeBanqiState } from "./serialization";
 
 export class BanqiEngine implements GameEngine<BanqiFullState, BanqiMove, BanqiViewState> {
   readonly id = "banqi";
@@ -64,7 +65,7 @@ export class BanqiEngine implements GameEngine<BanqiFullState, BanqiMove, BanqiV
   }
 
   serialize(state: BanqiFullState): string {
-    return JSON.stringify(state);
+    return serializeBanqiState(state);
   }
 
   serializeView(viewState: BanqiViewState): string {
@@ -76,7 +77,7 @@ export class BanqiEngine implements GameEngine<BanqiFullState, BanqiMove, BanqiV
   }
 
   deserialize(serialized: string): BanqiFullState {
-    return JSON.parse(serialized) as BanqiFullState;
+    return deserializeBanqiState(serialized);
   }
 }
 

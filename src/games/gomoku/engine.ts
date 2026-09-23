@@ -2,6 +2,7 @@ import type { GameEngine } from "../../core/game/types";
 import { createInitialState } from "./board";
 import { applyMove, getLegalMoves, getWinner, isGameOver } from "./rules";
 import type { GomokuMove, GomokuRuleMode, GomokuState } from "./types";
+import { deserializeGomokuState, serializeGomokuState } from "./serialization";
 
 export function createGomokuEngine(
   ruleMode: GomokuRuleMode = "freestyle"
@@ -20,8 +21,8 @@ export function createGomokuEngine(
     applyMove,
     isGameOver,
     getWinner,
-    serialize: (state) => JSON.stringify(state),
-    deserialize: (serialized) => JSON.parse(serialized) as GomokuState,
+    serialize: serializeGomokuState,
+    deserialize: deserializeGomokuState,
     projectView: (state) => ({ ...state, board: state.board.map((row) => [...row]) }),
     serializeView: (viewState) => JSON.stringify(viewState),
   };

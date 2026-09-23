@@ -20,15 +20,38 @@ describe("012 Serialization Policy & Persistence Boundary", () => {
     const context: GameViewContext = { role: "spectator", player: null };
     const publicExport = exportPublicView(session, engine, context);
 
-    // Raw full serialization would contain piece types/ranks/players for all pieces
-    const rawFull = engine.serialize(session.getState());
-    expect(rawFull).toContain("general");
-    expect(rawFull).toContain("chariot");
+    const state = session.getState();
+    const rawFull = engine.serialize(state);
 
-    // Public export MUST NOT contain secret piece types for face-down pieces
-    expect(publicExport).not.toContain("general");
-    expect(publicExport).not.toContain("chariot");
-    expect(publicExport).not.toContain("soldier");
+    // Premise: the authoritative state really does carry every piece's identity.
+    const hidden = state.board
+      .flat()
+      .filter((piece): piece is NonNullable<typeof piece> => piece !== null)
+      .filter((piece) => !piece.isRevealed);
+
+    expect(hidden.length).toBeGreaterThan(0);
+    expect(hidden.every((piece) => piece.type && piece.player)).toBe(true);
+    expect(rawFull).not.toBe(publicExport);
+
+    // The public export must be structurally incapable of identifying a
+    // face-down piece. Asserted on the parsed shape, not on literal words:
+    // an absence assertion pinned to one encoding turns vacuously true the
+    // moment the format changes, which is exactly how a leak slips through
+    // unnoticed. Every face-down entry must expose nothing but its coordinate
+    // placeholder and the flag saying it is face-down.
+    const exported = JSON.parse(publicExport) as {
+      board: ({ id: string; isRevealed: boolean } | null)[][];
+    };
+    const exportedHidden = exported.board
+      .flat()
+      .filter((cell): cell is NonNullable<typeof cell> => cell !== null)
+      .filter((cell) => cell.isRevealed === false);
+
+    expect(exportedHidden).toHaveLength(hidden.length);
+    for (const cell of exportedHidden) {
+      expect(Object.keys(cell).sort()).toEqual(["id", "isRevealed"]);
+      expect(cell.id).toMatch(/^hidden-\d+-\d+$/);
+    }
   });
 
   it("exportPublicView works seamlessly for perfect information games", () => {

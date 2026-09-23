@@ -2,6 +2,7 @@ import type { GameEngine } from "../../core/game/types";
 import { createInitialState } from "./setup";
 import { applyMove, getLegalMoves, getWinner, isGameOver } from "./rules";
 import type { XiangqiMove, XiangqiState } from "./types";
+import { deserializeXiangqiState, serializeXiangqiState } from "./serialization";
 
 export function createXiangqiEngine(): GameEngine<XiangqiState, XiangqiMove> {
   return {
@@ -18,8 +19,8 @@ export function createXiangqiEngine(): GameEngine<XiangqiState, XiangqiMove> {
     applyMove,
     isGameOver,
     getWinner,
-    serialize: (state) => JSON.stringify(state),
-    deserialize: (serialized) => JSON.parse(serialized) as XiangqiState,
+    serialize: serializeXiangqiState,
+    deserialize: deserializeXiangqiState,
     projectView: (state) => ({ ...state, board: state.board.map((row) => [...row]) }),
     serializeView: (viewState) => JSON.stringify(viewState),
   };
