@@ -4,10 +4,9 @@ import { createGomokuAiLevel1, createGomokuAiLevel2 } from "../../games/gomoku/a
 import { toGomokuNotation } from "../../games/gomoku/notation";
 import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
-import { GameModeSelector, type GameMode } from "./GameModeSelector";
-import { MoveHistory } from "./MoveHistory";
-import { ReplayControls } from "./ReplayControls";
-import { SaveManagerPanel } from "./SaveManagerPanel";
+import { type GameMode } from "./GameModeSelector";
+import { BoardSidePanel } from "./BoardSidePanel";
+import type { AiLevel } from "./AiLevelSelector";
 import type { GomokuMove, GomokuPlayer, GomokuRuleMode, GomokuState } from "../../games/gomoku/types";
 import type { Player } from "../../core/game/types";
 import type { BoardProps } from "../board-props";
@@ -19,7 +18,7 @@ const AVAILABLE_PLAYERS = [
 
 export function GomokuBoard({ onProgressChange }: BoardProps) {
   const [ruleMode, setRuleMode] = useState<GomokuRuleMode>("freestyle");
-  const [aiLevel, setAiLevel] = useState<"l1" | "l2">("l1");
+  const [aiLevel, setAiLevel] = useState<AiLevel>("l1");
   const [mode, setMode] = useState<GameMode>("pvp");
   const [humanPlayer, setHumanPlayer] = useState<Player>("black");
 
@@ -31,6 +30,12 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
 
   const aiColor: Player | undefined =
     mode === "pve" ? (humanPlayer === "black" ? "white" : "black") : undefined;
+
+  const session = useGameSession<GomokuState, GomokuMove>(engine, {
+    aiPlayer: mode === "pve" ? aiPlayer : undefined,
+    aiColor,
+    formatMove: (m) => toGomokuNotation(m),
+  });
 
   const {
     viewState,
@@ -44,30 +49,8 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     move,
     undo,
     reset,
-    // Replay
     isReplayMode,
-    replayStep,
-    replayStepCount,
-    isPlaying,
-    replaySpeed,
-    setReplaySpeed,
-    setIsPlaying,
-    enterReplay,
-    exitReplay,
-    replayStepTo,
-    replayNext,
-    replayPrev,
-    // Local Save
-    listLocalSaves,
-    saveToLocal,
-    loadFromLocal,
-    deleteLocalSave,
-    renameLocalSave,
-  } = useGameSession<GomokuState, GomokuMove>(engine, {
-    aiPlayer: mode === "pve" ? aiPlayer : undefined,
-    aiColor,
-    formatMove: (m) => toGomokuNotation(m),
-  });
+  } = session;
 
   const winningSet = useMemo(() => {
     const set = new Set<string>();
@@ -150,136 +133,73 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
         </div>
       </div>
 
-      <aside className="side-panel">
-        {engine.latinName && (
-          <span className="latin-name">{engine.latinName}</span>
-        )}
-        <h2>{engine.name}</h2>
-        <p className="engine-badge">15 × 15 棋盤</p>
-
-        {isReplayMode ? (
-          <ReplayControls
-            currentStep={replayStep}
-            totalSteps={replayStepCount}
-            isPlaying={isPlaying}
-            speed={replaySpeed}
-            onPrev={replayPrev}
-            onNext={replayNext}
-            onStepTo={replayStepTo}
-            onTogglePlay={() => setIsPlaying(!isPlaying)}
-            onSpeedChange={setReplaySpeed}
-            onExit={exitReplay}
-          />
-        ) : (
-          <>
-            <div className="actions">
+      <BoardSidePanel
+        session={session}
+        latinName={engine.latinName}
+        name={engine.name}
+        badge="15 × 15 棋盤"
+        mode={mode}
+        humanPlayer={humanPlayer}
+        availablePlayers={AVAILABLE_PLAYERS}
+        onModeChange={handleModeChange}
+        onHumanPlayerChange={handleHumanPlayerChange}
+        aiLevel={aiLevel}
+        onAiLevelChange={setAiLevel}
+        formatPlayer={formatPlayer}
+        disabled={isAiThinking}
+        extraControls={
+          /* 規則模式選擇 */
+          <div className="game-mode-selector" data-testid="rule-mode-selector">
+            <span className="side-label">規則模式：</span>
+            <div className="mode-tabs">
               <button
                 type="button"
-                onClick={() => enterReplay()}
-                disabled={history.length === 0}
-                data-testid="enter-replay-btn"
+                className={`mode-btn ${ruleMode === "freestyle" ? "active" : ""}`}
+                onClick={() => handleRuleModeChange("freestyle")}
+                disabled={isAiThinking}
+                data-testid="rule-freestyle"
               >
-                🎬 復盤回放本局
+                自由規則 (Freestyle)
+              </button>
+              <button
+                type="button"
+                className={`mode-btn ${ruleMode === "forbidden_moves" ? "active" : ""}`}
+                onClick={() => handleRuleModeChange("forbidden_moves")}
+                disabled={isAiThinking}
+                data-testid="rule-forbidden"
+              >
+                黑方禁手 (Forbidden)
               </button>
             </div>
-
-            {/* 規則模式選擇 */}
-            <div className="game-mode-selector" data-testid="rule-mode-selector">
-              <span className="side-label">規則模式：</span>
-              <div className="mode-tabs">
-                <button
-                  type="button"
-                  className={`mode-btn ${ruleMode === "freestyle" ? "active" : ""}`}
-                  onClick={() => handleRuleModeChange("freestyle")}
-                  disabled={isAiThinking}
-                  data-testid="rule-freestyle"
-                >
-                  自由規則 (Freestyle)
-                </button>
-                <button
-                  type="button"
-                  className={`mode-btn ${ruleMode === "forbidden_moves" ? "active" : ""}`}
-                  onClick={() => handleRuleModeChange("forbidden_moves")}
-                  disabled={isAiThinking}
-                  data-testid="rule-forbidden"
-                >
-                  黑方禁手 (Forbidden)
-                </button>
-              </div>
-            </div>
-
-            <GameModeSelector
-              mode={mode}
-              humanPlayer={humanPlayer}
-              availablePlayers={AVAILABLE_PLAYERS}
-              onModeChange={handleModeChange}
-              onHumanPlayerChange={handleHumanPlayerChange}
-              disabled={isAiThinking}
-            />
-
-            {/* AI 難度選擇 */}
-            {mode === "pve" && (
-              <div className="game-mode-selector" data-testid="ai-level-selector">
-                <span className="side-label">電腦難度：</span>
-                <div className="mode-tabs">
-                  <button
-                    type="button"
-                    className={`mode-btn ${aiLevel === "l1" ? "active" : ""}`}
-                    onClick={() => setAiLevel("l1")}
-                    disabled={isAiThinking}
-                    data-testid="ai-level-1"
-                  >
-                    Level 1 (啟發式)
-                  </button>
-                  <button
-                    type="button"
-                    className={`mode-btn ${aiLevel === "l2" ? "active" : ""}`}
-                    onClick={() => setAiLevel("l2")}
-                    disabled={isAiThinking}
-                    data-testid="ai-level-2"
-                  >
-                    Level 2 (Minimax)
-                  </button>
-                </div>
-              </div>
+          </div>
+        }
+      >
+        <div className="muted">
+          <p>
+            {ruleMode === "freestyle" ? (
+              <>
+                <strong>五子棋 Free-style 規則 (Rules)</strong>：
+                <br />
+                黑方先行，先在橫、直、斜任一方向連成五子者獲勝。
+                <span className="en-rule">Black moves first. The first player to align five stones horizontally, vertically, or diagonally wins.</span>
+              </>
+            ) : (
+              <>
+                <strong>五子棋 禁手規則 (Standard Renju/Forbidden Rules)</strong>：
+                <br />
+                黑方先行，禁止三三、四四與長連（≥6）；成五優先勝。白方無禁手限制。
+                <span className="en-rule">Black plays first with forbidden moves (double-three, double-four, overline ≥6). Five-in-a-row wins immediately. White has no restrictions.</span>
+              </>
             )}
-          </>
-        )}
-
-        <MoveHistory
-          moves={history.map((h) => ({
-            player: h.player,
-            notation: h.notation ?? "",
-          }))}
-          formatPlayer={formatPlayer}
-          isReplayMode={isReplayMode}
-          activeStep={replayStep}
-          onStepClick={replayStepTo}
-        />
-
-        {!isReplayMode && (
-          <SaveManagerPanel
-            listSaves={listLocalSaves}
-            onSave={saveToLocal}
-            onLoad={loadFromLocal}
-            onDelete={deleteLocalSave}
-            onRename={renameLocalSave}
-            disabled={isAiThinking}
-          />
-        )}
-
-        <p className="muted">
-          {ruleMode === "freestyle"
-            ? "五子棋 Free-style 規則：黑方先行，先在橫、直、斜任一方向連成五子者獲勝。"
-            : "五子棋 禁手規則：黑方先行，禁止三三、四四與長連（≥6）；成五優先勝。白方無禁手限制。"}
-        </p>
+          </p>
+        </div>
 
         <div className="legend">
-          <div>⚫ 黑子：先行方</div>
-          <div>⚪ 白子：後行方</div>
-          <div>🏆 5 連珠即勝（高亮金光顯示）</div>
+          <div>⚫ 黑子 (Black)：先行方 (First)</div>
+          <div>⚪ 白子 (White)：後行方 (Second)</div>
+          <div>🏆 5 連珠即勝 (5-in-a-row wins)</div>
         </div>
-      </aside>
+      </BoardSidePanel>
     </section>
   );
 }

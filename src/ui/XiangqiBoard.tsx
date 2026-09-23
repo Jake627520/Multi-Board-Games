@@ -8,10 +8,9 @@ import { toXiangqiNotation } from "../games/xiangqi/notation";
 import { isInCheck } from "../games/xiangqi/rules";
 import { useGameSession } from "./hooks/useGameSession";
 import { StatusBar } from "./components/StatusBar";
-import { GameModeSelector, type GameMode } from "./components/GameModeSelector";
-import { MoveHistory } from "./components/MoveHistory";
-import { ReplayControls } from "./components/ReplayControls";
-import { SaveManagerPanel } from "./components/SaveManagerPanel";
+import { type GameMode } from "./components/GameModeSelector";
+import { BoardSidePanel } from "./components/BoardSidePanel";
+import type { AiLevel } from "./components/AiLevelSelector";
 import type { Piece, XiangqiMove, XiangqiState } from "../games/xiangqi/types";
 import type { Player } from "../core/game/types";
 import type { BoardProps } from "./board-props";
@@ -33,7 +32,7 @@ const AVAILABLE_PLAYERS = [
 
 export function XiangqiBoard({ onProgressChange }: BoardProps) {
   const engine = useMemo(() => createXiangqiEngine(), []);
-  const [aiLevel, setAiLevel] = useState<"l1" | "l2">("l1");
+  const [aiLevel, setAiLevel] = useState<AiLevel>("l1");
   const aiPlayer = useMemo(
     () => (aiLevel === "l2" ? createXiangqiAiLevel2() : createXiangqiAiLevel1()),
     [aiLevel]
@@ -44,6 +43,12 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
 
   const aiColor: Player | undefined =
     mode === "pve" ? (humanPlayer === "red" ? "black" : "red") : undefined;
+
+  const session = useGameSession<XiangqiState, XiangqiMove>(engine, {
+    aiPlayer: mode === "pve" ? aiPlayer : undefined,
+    aiColor,
+    formatMove: toXiangqiNotation,
+  });
 
   const {
     viewState,
@@ -58,30 +63,8 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
     move,
     undo,
     reset,
-    // Replay
     isReplayMode,
-    replayStep,
-    replayStepCount,
-    isPlaying,
-    replaySpeed,
-    setReplaySpeed,
-    setIsPlaying,
-    enterReplay,
-    exitReplay,
-    replayStepTo,
-    replayNext,
-    replayPrev,
-    // Local Save
-    listLocalSaves,
-    saveToLocal,
-    loadFromLocal,
-    deleteLocalSave,
-    renameLocalSave,
-  } = useGameSession<XiangqiState, XiangqiMove>(engine, {
-    aiPlayer: mode === "pve" ? aiPlayer : undefined,
-    aiColor,
-    formatMove: toXiangqiNotation,
-  });
+  } = session;
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(
     null
@@ -131,6 +114,12 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
 
   function handleHumanPlayerChange(p: Player) {
     setHumanPlayer(p);
+    reset();
+    setSelected(null);
+  }
+
+  function handleAiLevelChange(level: AiLevel) {
+    setAiLevel(level);
     reset();
     setSelected(null);
   }
@@ -211,123 +200,40 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
         </div>
       </div>
 
-      <aside className="side-panel">
-        {engine.latinName && (
-          <span className="latin-name">{engine.latinName}</span>
-        )}
-        <h2>{engine.name}</h2>
-        <p className="engine-badge">9 × 10 棋盤</p>
-
-        {isReplayMode ? (
-          <ReplayControls
-            currentStep={replayStep}
-            totalSteps={replayStepCount}
-            isPlaying={isPlaying}
-            speed={replaySpeed}
-            onPrev={replayPrev}
-            onNext={replayNext}
-            onStepTo={replayStepTo}
-            onTogglePlay={() => setIsPlaying(!isPlaying)}
-            onSpeedChange={setReplaySpeed}
-            onExit={exitReplay}
-          />
-        ) : (
-          <>
-            <div className="actions">
-              <button
-                type="button"
-                onClick={() => enterReplay()}
-                disabled={history.length === 0}
-                data-testid="enter-replay-btn"
-              >
-                🎬 復盤回放本局
-              </button>
-            </div>
-
-            <GameModeSelector
-              mode={mode}
-              humanPlayer={humanPlayer}
-              availablePlayers={AVAILABLE_PLAYERS}
-              onModeChange={handleModeChange}
-              onHumanPlayerChange={handleHumanPlayerChange}
-              disabled={isAiThinking}
-            />
-
-            {/* AI 難度選擇 */}
-            {mode === "pve" && (
-              <div className="game-mode-selector" data-testid="ai-level-selector">
-                <span className="side-label">電腦難度：</span>
-                <div className="mode-tabs">
-                  <button
-                    type="button"
-                    className={`mode-btn ${aiLevel === "l1" ? "active" : ""}`}
-                    onClick={() => {
-                      setAiLevel("l1");
-                      reset();
-                      setSelected(null);
-                    }}
-                    disabled={isAiThinking}
-                    data-testid="ai-level-1"
-                  >
-                    Level 1 (啟發式)
-                  </button>
-                  <button
-                    type="button"
-                    className={`mode-btn ${aiLevel === "l2" ? "active" : ""}`}
-                    onClick={() => {
-                      setAiLevel("l2");
-                      reset();
-                      setSelected(null);
-                    }}
-                    disabled={isAiThinking}
-                    data-testid="ai-level-2"
-                  >
-                    Level 2 (Minimax)
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        <MoveHistory
-          moves={history.map((h) => ({
-            player: h.player,
-            notation: h.notation ?? "",
-          }))}
-          formatPlayer={formatPlayer}
-          isReplayMode={isReplayMode}
-          activeStep={replayStep}
-          onStepClick={replayStepTo}
-        />
-
-        {!isReplayMode && (
-          <SaveManagerPanel
-            listSaves={listLocalSaves}
-            onSave={saveToLocal}
-            onLoad={loadFromLocal}
-            onDelete={deleteLocalSave}
-            onRename={renameLocalSave}
-            disabled={isAiThinking}
-          />
-        )}
-
-        <p className="muted">
-          規則說明：
-          <br />
-          • <strong>走法</strong>：車直行、炮隔一子吃、馬走日（蹩馬腳不可行）、象走田（塞象眼不可行）且不過河；士與將帥限走九宮，士走斜、將帥走直線一格。兵/卒過河前只能前進，過河後可左右平移。
-          <br />
-          • <strong>將軍</strong>：任一著法使對方將帥立即受攻擊即為將軍，被將方必須應將；兩方將帥不可在同一直線上直接照面（白臉將）。
-          <br />
-          • <strong>勝負</strong>：對方被將死或無合法著法（困斃）即獲勝；長將、長捉等循環局面依規則判負或和局。
-        </p>
+      <BoardSidePanel
+        session={session}
+        latinName={engine.latinName}
+        name={engine.name}
+        badge="9 × 10 棋盤"
+        mode={mode}
+        humanPlayer={humanPlayer}
+        availablePlayers={AVAILABLE_PLAYERS}
+        onModeChange={handleModeChange}
+        onHumanPlayerChange={handleHumanPlayerChange}
+        aiLevel={aiLevel}
+        onAiLevelChange={handleAiLevelChange}
+        formatPlayer={formatPlayer}
+        disabled={isAiThinking}
+      >
+        <div className="muted">
+          <p>
+            <strong>規則說明 (Rules)</strong>：
+            <br />
+            • <strong>走法 (Movement)</strong>：車直行、炮隔一子吃、馬走日（蹩馬腳不可行）、象走田（塞象眼不可行）且不過河；士與將帥限走九宮，士走斜、將帥走直線一格。兵/卒過河前只能前進，過河後可左右平移。
+            <span className="en-rule">Chariots move straight. Cannons jump over one piece to capture. Horses move in an L-step (blockable). Elephants move 2 diagonal steps on home side. Advisors &amp; Generals stay in palace. Soldiers move forward, gaining horizontal moves across river.</span>
+            • <strong>將軍 (Check)</strong>：任一著法使對方將帥立即受攻擊即為將軍，被將方必須應將；兩方將帥不可在同一直線上直接照面（白臉將）。
+            <span className="en-rule">Direct threat to the enemy General is Check. Players must respond. Generals cannot face each other directly on an open file (Flying General rule).</span>
+            • <strong>勝負 (End Game)</strong>：對方被將死或無合法著法（困斃）即獲勝；長將、長捉等循環局面依規則判負或和局。
+            <span className="en-rule">Checkmate or stalemate the enemy King to win. Perpetual check results in a loss or draw.</span>
+          </p>
+        </div>
 
         <div className="legend">
-          <div>🟥 紅方：先行</div>
-          <div>⬛ 黑方：後行</div>
-          <div>● 可移動之合法落點</div>
+          <div>🟥 紅方 (Red)：先行 (First)</div>
+          <div>⬛ 黑方 (Black)：後行 (Second)</div>
+          <div>● 可移動之合法落點 (Legal Target)</div>
         </div>
-      </aside>
+      </BoardSidePanel>
     </section>
   );
 }
