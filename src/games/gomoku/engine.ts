@@ -10,6 +10,7 @@ export function createGomokuEngine(
     id: "gomoku",
     name: "五子棋",
     description: "黑先白後輪流落子，橫、直、斜任一方向先連成五子者勝。",
+    descriptionEn: "Players alternate placing black and white stones; the first to align five stones in any direction wins.",
     boardSize: "15 × 15",
     latinName: "Gomoku",
     accent: "ink",

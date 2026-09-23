@@ -61,12 +61,15 @@ export function GameHome({ games, lastGameId, onSelectGame }: GameHomeProps) {
           <span className="resume-mark" aria-hidden="true">
             ▶
           </span>
-          繼續上次的{lastGame.name}
+          繼續上次的{lastGame.name} <span className="resume-en">/ Resume {lastGame.latinName ?? lastGame.name}</span>
         </button>
       )}
 
       <p className="home-lede">
-        一個棋盤，三種下法。選一種開始，或接續上一局。
+        <span>一個棋盤，三種下法。選一種開始，或接續上一局。</span>
+        <span className="home-lede-en">
+          One board, three games. Choose one to begin, or resume your last match.
+        </span>
       </p>
 
       <ul className="game-card-grid">
@@ -84,13 +87,18 @@ export function GameHome({ games, lastGameId, onSelectGame }: GameHomeProps) {
               )}
               <span className="card-name">{game.name}</span>
               {game.description && (
-                <span className="card-desc">{game.description}</span>
+                <div className="card-desc">
+                  <p className="card-desc-zh">{game.description}</p>
+                  {game.descriptionEn && (
+                    <p className="card-desc-en">{game.descriptionEn}</p>
+                  )}
+                </div>
               )}
               <span className="card-foot">
                 {game.boardSize && (
                   <span className="card-size">{game.boardSize}</span>
                 )}
-                <span className="card-cta">開始對局 →</span>
+                <span className="card-cta">開始對局 Play →</span>
               </span>
             </button>
           </li>

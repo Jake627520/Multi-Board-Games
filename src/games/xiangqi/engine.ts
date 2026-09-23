@@ -8,6 +8,7 @@ export function createXiangqiEngine(): GameEngine<XiangqiState, XiangqiMove> {
     id: "xiangqi",
     name: "中國象棋",
     description: "河界分兩岸，將帥不出九宮；車馬炮各展其能，擒王者勝。",
+    descriptionEn: "Divided by the river, generals stay in palace; deploy chariots, horses, and cannons to checkmate the enemy King.",
     boardSize: "9 × 10",
     latinName: "Xiangqi",
     accent: "accent",

@@ -32,6 +32,8 @@ export type GameAccent = "accent" | "ink" | "jade" | "gold";
 export interface GamePresentation {
   /** 一句話規則摘要（給玩家看，不是架構自述） */
   readonly description?: string;
+  /** 英文版規則摘要 */
+  readonly descriptionEn?: string;
   /** 盤面尺寸，例如 "9 × 10"、"15 × 15" */
   readonly boardSize?: string;
   /**

@@ -71,7 +71,7 @@ export default function App() {
       <header className="topbar">
         <div>
           <div className="eyebrow">MULTI BOARD GAMES PLATFORM</div>
-          <h1>多棋類遊戲平台</h1>
+          <h1>多棋類遊戲平台 <span className="title-en">Multi Board Games Platform</span></h1>
         </div>
         {gameId !== null && (
           <div className="topbar-nav">
@@ -81,7 +81,7 @@ export default function App() {
               data-testid="back-to-home"
               onClick={goHome}
             >
-              ← 回首頁
+              ← 回首頁 Home
             </button>
             <GameSwitcher
               currentGameId={gameId}

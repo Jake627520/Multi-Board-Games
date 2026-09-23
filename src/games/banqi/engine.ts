@@ -7,6 +7,7 @@ export class BanqiEngine implements GameEngine<BanqiFullState, BanqiMove, BanqiV
   readonly id = "banqi";
   readonly name = "暗棋";
   readonly description = "棋子全部倒扣，翻開才知敵我；階級相剋，吃光對方即勝。";
+  readonly descriptionEn = "Pieces start face-down. Flip to reveal allegiance and use rank hierarchy to eliminate the opponent.";
   readonly boardSize = "8 × 4";
   readonly latinName = "Banqi";
   readonly accent = "jade" as const;
