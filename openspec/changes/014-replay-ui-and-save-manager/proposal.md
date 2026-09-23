@@ -1,5 +1,9 @@
 # Change Proposal: 014-replay-ui-and-save-manager
 
+
+> **後續變更（2026-09，commit `7e98da6`）**
+> 第 3 節 Non-Goals 的最後一項「繼續使用既有 Envelope v1」在 Round 14 當時成立，之後已不再適用：存檔格式已升級到 v2（新增 `history` 與 `initialState`），以便載入存檔後悔棋與復盤仍可用。本提案的其餘範圍不受影響。
+
 ## 1. Why
 
 Round 12（`012-save-load-replay`）已在核心層完成：

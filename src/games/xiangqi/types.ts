@@ -20,6 +20,7 @@ export interface XiangqiState {
     | "checkmate"
     | "stalemate"
     | "perpetual_check"
+    // 保留值：長捉判負尚未實作，目前不會有任何程式路徑產出它（見 openspec/specs/xiangqi/game-end/spec.md §5.2）
     | "perpetual_chase"
     | "threefold_repetition"
     | "sixty_move_draw";

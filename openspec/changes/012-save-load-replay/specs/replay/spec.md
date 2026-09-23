@@ -1,5 +1,9 @@
 # Specification: Action-Based Replay Architecture
 
+
+> **後續變更（2026-09，commit `7e98da6`）**
+> Replay envelope 仍是 `formatVersion = 1`，但版本號已與存檔格式脫鉤：改由 `CURRENT_REPLAY_FORMAT_VERSION`（`src/core/persistence/replay-manager.ts`）獨立管理，存檔升到 v2 並不牽動 replay envelope。下文其餘內容仍然有效。
+
 ## Requirements
 
 1. **Replay Envelope**:

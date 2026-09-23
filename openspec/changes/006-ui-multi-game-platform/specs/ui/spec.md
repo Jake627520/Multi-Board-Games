@@ -1,5 +1,12 @@
 # UI Platform Specification (Change 006)
 
+> **後續變更（2026-09，commit `39525ed`）**
+> 本文件記錄 Round 6 當時的 UI 行為，保留原樣。App 進入流程之後有變，下文第一個 Scenario 的前提已不同：
+> - App 現在以首頁 `GameHome` 開場（`gameId === null`），三張遊戲卡由 `registry.list()` 產生；先選一種棋才會掛載棋盤。
+> - `GameSwitcher` 只在已進入某局時出現於 topbar，旁邊另有「← 回首頁」。
+> - 對局進行中切換遊戲或回首頁會先跳 `window.confirm` 確認放棄本局；取消則維持原狀。
+> 其餘 Scenario（下子、狀態列、悔棋）仍然成立。
+
 ## 1. Scope
 Governs UI rendering, user interaction, game switching, and session synchronization across board games.
 

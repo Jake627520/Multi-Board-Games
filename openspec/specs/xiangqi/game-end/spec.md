@@ -75,6 +75,22 @@ If an identical board state with the same player turn occurs 3 times during a ma
 - `getWinner(state) === null`
 - `state.isDraw === true`
 
+> **Implementation gap — perpetual chase (長捉) is NOT implemented.**
+> The exclusion above names both perpetual check *and* perpetual chase, but only
+> perpetual check is detected (`src/games/xiangqi/rules.ts` sets
+> `perpetual_check`; nothing ever produces `perpetual_chase`, which exists only
+> as a reserved member of the termination-reason union in
+> `src/games/xiangqi/types.ts`).
+>
+> Consequence: a one-sided perpetual chase that repeats a position three times
+> is currently adjudicated as a **DRAW** under 5.2, where the rule above intends
+> a **LOSS** for the chasing player.
+>
+> This is recorded rather than silently corrected in either direction: chase
+> detection in Xiangqi is a large body of case law (what counts as 捉, the
+> soldier/pawn exemptions, protected-piece exceptions), so it is deliberately
+> deferred rather than approximated.
+
 ### 5.3 Sixty-Move Non-Capture Rule (自然限招)
 If 120 consecutive half-moves (60 full rounds by both players) occur without any piece capture, either side may claim a draw or the match automatically terminates as a **DRAW (和棋)**.
 - `isGameOver(state) === true`

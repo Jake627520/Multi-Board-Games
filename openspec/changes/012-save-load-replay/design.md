@@ -1,5 +1,13 @@
 # Architecture Design: 012-save-load-replay
 
+
+> **後續變更（2026-09，commit `7e98da6`）**
+> 本文件保留 Round 12 當時的設計原樣。第 3.1 節的 `GameSaveEnvelope` 與第 4 節的 `SaveManager` 載入流程已被存檔格式 v2 取代：
+> - `formatVersion` 現為 `1 | 2`，載入時接受兩者（`SUPPORTED_SAVE_FORMAT_VERSIONS`），而非硬性 `=== 1`。
+> - v2 envelope 多出 `history` 與 `initialState`；載入 v2 時會重放棋譜重建悔棋快照，再以 `session.restoreFrom()` 原子寫入，而非 `session.loadState()`。
+> - `session.loadState()` 語義未變，現在只用於 v1 舊存檔（clean baseline）。
+> - 第 3.2 節的 `GameReplayEnvelope` 未變，但其版本號改由 `CURRENT_REPLAY_FORMAT_VERSION` 獨立管理。
+
 ## 1. System Context & Boundaries
 
 ```text

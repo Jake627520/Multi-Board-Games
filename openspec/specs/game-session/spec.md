@@ -6,11 +6,14 @@ This specification defines the behavior of `GameSession`, the orchestrator respo
 
 `GameSession` encapsulates:
 - Current match state
+- The match's initial state (the baseline that undo and replay wind back to)
 - Turn and player progression
 - Move execution and validation against the engine
 - History tracking (`MoveRecord`)
 - Undo / rollback capability
 - Match reset
+- Restoration from a persisted match (state, history and undo snapshots)
+- View projection for the UI (`getView(context)`, delegated to `engine.projectView`)
 
 ---
 
@@ -19,15 +22,18 @@ This specification defines the behavior of `GameSession`, the orchestrator respo
 ```text
 create session
     ↓
-initial state
-    ↓
+initial state ←──────────────┐
+    ↓                        │
 move (validating against engine)
-    ↓
+    ↓                        │
 record history & push snapshot
-    ↓
+    ↓                        │
 undo (revert to previous snapshot)
-    ↓
+    ↓                        │
 reset (restore initial state & clear stacks)
+
+loadState(state)      → single state, clean baseline (history & snapshots cleared)
+restoreFrom(payload)  → state + initialState + history + snapshots (undo & replay stay usable)
 ```
 
 ---
@@ -99,7 +105,60 @@ reset (restore initial state & clear stacks)
 
 ---
 
+### 3.5 Loading & Restoring a Persisted Match
+
+`GameSession` offers two distinct entry points for putting an external state into the session. They differ in what happens to the move history, and callers must pick deliberately.
+
+```ts
+loadState(state: State): void;
+restoreFrom(payload: SessionRestorePayload<State, Move>): void;
+getInitialState(): State;
+```
+
+`SessionRestorePayload` carries `state`, `initialState`, `history` and `snapshots`, where `snapshots[i]` is the position immediately **before** `history[i]` was played.
+
+#### Scenario: Loading a bare state (clean baseline)
+- **Given** a `GameSession` with moves already played
+- **When** `session.loadState(S)` is invoked
+- **Then** `session.getState()` returns $S$
+- **And** `session.getInitialState()` also returns $S$ — the loaded position becomes the new replay origin
+- **And** `session.getHistory()` is empty
+- **And** all undo snapshots are purged, so the next `undo()` is a no-op.
+
+#### Scenario: Restoring a full match (history preserved)
+- **Given** a payload containing the authoritative state $S_N$, the match's `initialState` $S_0$, an $N$-entry `history`, and $N$ `snapshots`
+- **When** `session.restoreFrom(payload)` is invoked
+- **Then** `session.getState()` returns $S_N$
+- **And** `session.getInitialState()` returns $S_0$
+- **And** `session.getHistory().length` equals $N$
+- **And** `session.undo()` walks back through the restored snapshots exactly as if the moves had been played in this session.
+
+#### Scenario: Rejecting an incoherent restore payload
+- **Given** a payload whose `snapshots.length` differs from its `history.length`
+- **When** `session.restoreFrom(payload)` is invoked
+- **Then** an error is thrown describing the mismatch
+- **And** the session is left completely unmodified — nothing is written before the check passes.
+
+#### Scenario: Reset after a restore
+- **Given** a session restored from a persisted match
+- **When** `session.reset()` is invoked
+- **Then** the state is a fresh `engine.createInitialState()` — the restored `initialState` is discarded, not reused
+- **And** history and snapshots are empty.
+
+---
+
+### 3.6 View Projection
+
+#### Scenario: Handing state to the UI
+- **Given** an active `GameSession` and a `GameViewContext`
+- **When** `session.getView(context)` is invoked
+- **Then** the session returns `engine.projectView(state, context)`
+- **And** the session performs no masking of its own — hiding hidden information is entirely the engine's responsibility.
+
+---
+
 ## 4. Invariants
 
 1. **Rule Delegation**: `GameSession` MUST NEVER implement game rules directly; all move legality checks and state transformations are delegated to `GameEngine`.
-2. **History-State Coherence**: For any state $S$ reachable via $N$ moves, `history.length` must equal $N$, and calling `undo()` $N$ times must return to the initial state without drift.
+2. **History-State Coherence**: For any state $S$ reachable via $N$ moves, `history.length` must equal $N$, and calling `undo()` $N$ times must return to the initial state without drift. This must hold equally for a session restored via `restoreFrom`, which is why the payload must supply one snapshot per history entry.
+3. **Atomic Restoration**: `restoreFrom` validates before it writes. A rejected payload must never leave the session in a partially-restored state.

@@ -2,7 +2,9 @@
 
 ## 1. Scope & Purpose
 
-This specification governs the rules and engine contract for standard Free-style Gomoku (Five-in-a-Row / 五子棋) on the Multi Board Games Platform.
+This specification governs the rules and engine contract for Gomoku (Five-in-a-Row / 五子棋) on the Multi Board Games Platform.
+
+The engine supports two rule modes, selected once when the engine is created: **Free-style** (the default, no restrictions on either side) and **Forbidden Moves** (競技禁手, which constrains Black only). Sections 2 through 4.4 describe behaviour common to both modes; section 4.5 describes the additional constraints that apply in Forbidden Moves mode.
 
 ---
 
@@ -35,6 +37,8 @@ This specification governs the rules and engine contract for standard Free-style
 - **And** `currentPlayer` is `"black"`
 - **And** `winner` is `null`
 - **And** `isGameOver` is `false`
+- **And** `ruleMode` carries the mode the engine was created with (`"freestyle"` when unspecified)
+- **And** `winningLine` is `undefined`
 - **And** `getLegalMoves()` returns all 225 board positions.
 
 ---
@@ -64,7 +68,7 @@ This specification governs the rules and engine contract for standard Free-style
 
 ### 4.3 Victory Conditions (Five-in-a-Row)
 
-A player wins immediately upon placing a stone that forms an unbroken line of **5 or more stones** of their color horizontally, vertically, or diagonally.
+A player wins immediately upon placing a stone that forms an unbroken line of **5 or more stones** of their color horizontally, vertically, or diagonally. (In Forbidden Moves mode an overline of 6 or more is unreachable for Black, because such a placement is rejected as illegal before it can be played — see 4.5.)
 
 #### Scenario: Horizontal 5-in-a-row
 - **Given** Black stones at `(7, 3), (7, 4), (7, 5), (7, 6)`
@@ -106,9 +110,71 @@ A player wins immediately upon placing a stone that forms an unbroken line of **
 
 ---
 
-### 4.5 Serialization Round-Trip
+### 4.5 Rule Modes & Black Forbidden Moves (禁手)
+
+The mode is fixed for the whole match: `createGomokuEngine(ruleMode)` bakes it into `createInitialState()`, and every state carries `ruleMode` so it survives serialization.
+
+In `"forbidden_moves"` mode, three placements are illegal **for Black only**, evaluated on the board as it would look after the stone is placed:
+
+1. **Overline (長連)** — any line of 6 or more Black stones. Checked first, ahead of the five-in-a-row exemption.
+2. **Double Open Three (三三)** — the placement creates two or more open threes (a run of exactly 3 with both ends empty).
+3. **Double Four (四四)** — the placement creates two or more lines of exactly 4.
+
+White is never restricted: White may play any empty intersection, and an overline by White is a win.
+
+#### Scenario: Free-style mode places no restriction on Black
+- **Given** an engine created with `ruleMode` `"freestyle"`
+- **And** a placement for Black that would create a double open three
+- **When** `getLegalMoves(state)` is evaluated
+- **Then** that intersection is still included
+- **And** `applyMove` accepts it.
+
+#### Scenario: Black double-three is excluded from legal moves
+- **Given** an engine created with `ruleMode` `"forbidden_moves"`
+- **And** `currentPlayer` is `"black"`
+- **And** an empty intersection where placing a Black stone would create two open threes
+- **When** `getLegalMoves(state)` is evaluated
+- **Then** that intersection is absent from the returned list
+- **And** `applyMove` on that move throws an error identifying it as a forbidden move for Black.
+
+#### Scenario: Black overline is forbidden rather than winning
+- **Given** `ruleMode` `"forbidden_moves"`
+- **And** a placement that would give Black an unbroken line of 6
+- **When** legality is evaluated
+- **Then** the move is rejected as forbidden
+- **And** Black does not win by that placement.
+
+#### Scenario: Five-in-a-row outranks a foul
+- **Given** `ruleMode` `"forbidden_moves"`
+- **And** a placement that makes exactly five in a row for Black while also forming a double three or double four
+- **When** legality is evaluated
+- **Then** the move is legal
+- **And** Black wins immediately.
+
+#### Scenario: White is unaffected by the forbidden rules
+- **Given** `ruleMode` `"forbidden_moves"`
+- **And** `currentPlayer` is `"white"`
+- **When** `getLegalMoves(state)` is evaluated
+- **Then** every empty intersection is legal
+- **And** a White line of 6 or more is a win, not a foul.
+
+---
+
+### 4.6 Winning Line Coordinates
+
+#### Scenario: Reporting the exact five winning stones
+- **Given** a placement that ends the game with 5 or more in a row
+- **When** the resulting state is inspected
+- **Then** `winningLine` contains exactly 5 positions, all on the winning line and including the stone just played
+- **And** when the unbroken run is longer than 5 (only reachable by White in Forbidden Moves mode, or by either side in Free-style), the reported window is centred on the stone just played and clamped to stay inside the run
+- **And** for any non-terminal placement `winningLine` is `undefined`.
+
+---
+
+### 4.7 Serialization Round-Trip
 
 #### Scenario: Lossless state restoration
 - **Given** any in-progress or terminal Gomoku state
 - **When** `serialize(state)` is called followed by `deserialize(string)`
-- **Then** the restored state is strictly equal in board layout, current player, and win status.
+- **Then** the restored state is strictly equal in board layout, current player, and win status
+- **And** `ruleMode` is preserved, so a loaded Forbidden Moves match keeps enforcing Black's constraints.
