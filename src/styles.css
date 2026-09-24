@@ -229,6 +229,37 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   .app-shell { padding-left: 8px; padding-right: 8px; }
   .board-panel { padding: 6px; }
 
+  /* 手機整頁高度是螢幕的 2.3–2.7 倍，玩家往下捲動看步譜/存檔時，
+     悔棋／重新開始／輪到誰不該隨捲動消失 —— 釘在視窗頂端。
+     背景／邊框用既有 token 補實，避免棋盤從底下透出來變成一團糊。 */
+  .status-bar-container {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--card);
+    border-bottom: 1px solid var(--card-edge);
+    box-shadow: 0 10px 18px -14px var(--shadow);
+    padding: 8px 6px;
+    margin: 0 -6px 14px;
+  }
+
+  /* 確保五子棋兩段式落子確認列即使與釘住的 StatusBar 在視覺上重疊，
+     仍然疊在上層、點得到（confirm bar 本身沒有 z-index，預設會被
+     sticky 元素蓋住）。 */
+  .tap-confirm-bar {
+    position: relative;
+    z-index: 21;
+  }
+
+  /* StatusBar 釘住後會佔掉視窗頂端一段高度；scroll-margin-top 讓瀏覽器
+     自動捲動（例如鍵盤 focus）把棋盤捲入可視範圍時，不會被蓋住最上面
+     一排。手動捲動仍可能短暫貼近，但不影響操作。 */
+  .xiangqi-board,
+  .gomoku-board,
+  .banqi-board {
+    scroll-margin-top: 96px;
+  }
+
   /* 窄螢幕主要操作按鈕觸控友善目標（WCAG 2.5.5 / 2.5.8 ≥ 44×44px，不動棋盤格） */
   .actions button {
     min-height: 44px;
