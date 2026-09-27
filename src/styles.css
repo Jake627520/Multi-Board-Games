@@ -229,26 +229,46 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   .app-shell { padding-left: 8px; padding-right: 8px; }
   .board-panel { padding: 6px; }
 
-  /* 手機整頁高度是螢幕的 2.3–2.7 倍，玩家往下捲動看步譜/存檔時，
-     悔棋／重新開始／輪到誰不該隨捲動消失 —— 釘在視窗頂端。
-     背景／邊框用既有 token 補實，避免棋盤從底下透出來變成一團糊。 */
+  /* 手機整頁高度是螢幕的 2.3–2.7 倍，悔棋／重新開始／輪到誰不該隨捲動消失。
+     用 fixed 而非 sticky：sticky 受限於容器（本元件在 .board-panel 內），
+     捲到側欄深處就會鬆開。固定在「底部」而非頂部，是因為頂部有 topbar
+     （回首頁／遊戲切換），scrollY=0 時 top:0 的固定元素會直接蓋住它；
+     底部沒有這個衝突，也落在拇指可及範圍。 */
   .status-bar-container {
-    position: sticky;
-    top: 0;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 20;
+    min-height: 60px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    justify-content: space-between;
     background: var(--card);
-    border-bottom: 1px solid var(--card-edge);
-    box-shadow: 0 10px 18px -14px var(--shadow);
-    padding: 8px 6px;
-    margin: 0 -6px 14px;
+    border-top: 1px solid var(--card-edge);
+    box-shadow: 0 -10px 18px -14px var(--shadow);
+    padding: 8px 12px;
+    margin: 0;
   }
 
-  /* 確保五子棋兩段式落子確認列即使與釘住的 StatusBar 在視覺上重疊，
-     仍然疊在上層、點得到（confirm bar 本身沒有 z-index，預設會被
-     sticky 元素蓋住）。 */
+  /* 並排進固定列後，原本用於上下堆疊的邊距會讓內容偏上 */
+  .status-bar-container .status-row { margin-bottom: 0; }
+
+  /* 確認列也跟著固定，疊在操作列正上方。原本它固定接在棋盤下方，
+     某些捲動位置會落在視窗外——改成固定後永遠在畫面內，順帶解掉那個殘留問題。
+     z-index 必須高於操作列，否則會變成「格子點得到、落子按不到」。 */
   .tap-confirm-bar {
-    position: relative;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 60px;
     z-index: 21;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: 0 -10px 18px -14px var(--shadow);
   }
 
   /* StatusBar 釘住後會佔掉視窗頂端一段高度；scroll-margin-top 讓瀏覽器
@@ -257,8 +277,12 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
   .xiangqi-board,
   .gomoku-board,
   .banqi-board {
-    scroll-margin-top: 96px;
+    scroll-margin-bottom: 140px;
   }
+
+  /* 固定元素脫離文件流，頁面最後一段（存檔管理）會被永久蓋住。
+     留白要同時涵蓋操作列（60px）與可能出現的確認列（約 60px）。 */
+  .app-shell { padding-bottom: 140px; }
 
   /* 窄螢幕主要操作按鈕觸控友善目標（WCAG 2.5.5 / 2.5.8 ≥ 44×44px，不動棋盤格） */
   .actions button {
