@@ -962,15 +962,6 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 }
 
 /* English bilingual typography */
-.title-en {
-  font-size: clamp(14px, 1.8vw, 18px);
-  color: var(--ink-2);
-  font-weight: 500;
-  margin-left: 10px;
-  font-family: var(--font-sans, system-ui, sans-serif);
-  letter-spacing: 0.04em;
-  vertical-align: middle;
-}
 
 .home-lede-en {
   display: block;
