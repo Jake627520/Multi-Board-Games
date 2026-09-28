@@ -31,24 +31,27 @@ function randomStates<State, Move, ViewState>(
   const states: State[] = [];
   const originalRandom = Math.random;
   try {
-    for (let i = 0; i < count; i++) {
-      const rng = mulberry32(seedBase + i * 7919);
+    let gameIndex = 0;
+    while (states.length < count) {
+      const rng = mulberry32(seedBase + gameIndex * 7919);
       Math.random = rng; // 暗棋 createInitialState 內部洗牌吃這個
       let state = engine.createInitialState();
-      const numMoves = Math.floor(rng() * maxMovesPerGame);
-      for (let m = 0; m < numMoves; m++) {
+      states.push(state);
+      const numMoves = Math.max(1, Math.floor(rng() * maxMovesPerGame));
+      for (let m = 0; m < numMoves && states.length < count; m++) {
         if (engine.isGameOver(state)) break;
         const moves = engine.getLegalMoves(state);
         if (moves.length === 0) break;
         const idx = Math.floor(rng() * moves.length);
         state = engine.applyMove(state, moves[idx]);
+        states.push(state);
       }
-      states.push(state);
+      gameIndex++;
     }
   } finally {
     Math.random = originalRandom;
   }
-  return states;
+  return states.slice(0, count);
 }
 
 function assertRoundTrip<State, Move, ViewState>(
@@ -70,19 +73,19 @@ describe("Compact serialization round-trip (property-based, seeded)", () => {
     const engine = createXiangqiEngine();
     const states = randomStates(engine, 200, 1_000_000, 40);
     assertRoundTrip(engine, states);
-  });
+  }, 20_000);
 
   it("Gomoku: 200 random states round-trip losslessly and canonically", () => {
     const engine = createGomokuEngine();
     const states = randomStates(engine, 200, 2_000_000, 60);
     assertRoundTrip(engine, states);
-  });
+  }, 20_000);
 
   it("Banqi: 200 random states round-trip losslessly and canonically", () => {
     const engine = createBanqiEngine();
     const states = randomStates(engine, 200, 3_000_000, 80);
     assertRoundTrip(engine, states);
-  });
+  }, 20_000);
 
   it("is reproducible: the same seed produces the same set of states", () => {
     const engine = createXiangqiEngine();

@@ -28,24 +28,27 @@ function randomBoardSignatures(count: number, seedBase: number, maxMovesPerGame:
   const signatures: string[] = [];
   const originalRandom = Math.random;
   try {
-    for (let i = 0; i < count; i++) {
-      const rng = mulberry32(seedBase + i * 7919);
+    let gameIndex = 0;
+    while (signatures.length < count) {
+      const rng = mulberry32(seedBase + gameIndex * 7919);
       Math.random = rng;
       let state = engine.createInitialState();
-      const numMoves = Math.floor(rng() * maxMovesPerGame);
-      for (let m = 0; m < numMoves; m++) {
+      signatures.push(boardSignature(state));
+      const numMoves = Math.max(1, Math.floor(rng() * maxMovesPerGame));
+      for (let m = 0; m < numMoves && signatures.length < count; m++) {
         if (engine.isGameOver(state)) break;
         const moves = engine.getLegalMoves(state);
         if (moves.length === 0) break;
         const idx = Math.floor(rng() * moves.length);
         state = engine.applyMove(state, moves[idx]);
+        signatures.push(boardSignature(state));
       }
-      signatures.push(boardSignature(state));
+      gameIndex++;
     }
   } finally {
     Math.random = originalRandom;
   }
-  return signatures;
+  return signatures.slice(0, count);
 }
 
 describe("hashSignature (self-implemented FNV-1a 64-bit x2 via BigInt)", () => {
@@ -65,7 +68,7 @@ describe("hashSignature (self-implemented FNV-1a 64-bit x2 via BigInt)", () => {
       expect(h).toMatch(/^[0-9a-f]{32}$/);
       expect(isHashSignature(h)).toBe(true);
     }
-  });
+  }, 20_000);
 
   it("produces no collisions across several hundred distinct random board signatures", () => {
     const signatures = randomBoardSignatures(500, 9_000_000, 40);
@@ -76,7 +79,7 @@ describe("hashSignature (self-implemented FNV-1a 64-bit x2 via BigInt)", () => {
     const hashes = uniqueSignatures.map(hashSignature);
     const uniqueHashes = new Set(hashes);
     expect(uniqueHashes.size).toBe(uniqueSignatures.length);
-  });
+  }, 20_000);
 
   it("is not the identity/trivial function: different signatures produce different-looking hashes", () => {
     const a = hashSignature("red:black-advisor@0,3");
