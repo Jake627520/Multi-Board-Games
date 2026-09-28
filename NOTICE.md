@@ -12,7 +12,7 @@ The underlying rules, mechanics, and names of traditional games (Xiangqi, Gomoku
 - **Fonts**: No proprietary font files or binary typography assets are bundled within this repository. Web typography utilizes open-source web fonts (`Ma Shan Zheng` and `Noto Serif TC` / `Noto Sans TC`, governed by the SIL Open Font License 1.1) fetched dynamically via Google Fonts, with seamless fallback to the viewer's local system fonts (`system-ui`, `-apple-system`, `PingFang TC`, `Microsoft YaHei`, `serif`, `sans-serif`, `monospace`), plus the operating system's emoji font for `🀄`.
 
 ## 4. Third-Party Dependencies
-This platform uses external open-source packages governed by permissive licenses (MIT, ISC, BSD, Apache-2.0). A complete, up-to-date inventory of dependencies and upstream licenses is maintained in:
+This platform uses external open-source packages governed by permissive licenses (MIT, MIT-0, ISC, BSD-2-Clause, BSD-3-Clause, Apache-2.0, and CC-BY-4.0 for a development-only browser-compatibility dataset). A complete, up-to-date inventory of dependencies and upstream licenses is maintained in:
 👉 [`docs/THIRD_PARTY_LICENSES.md`](./docs/THIRD_PARTY_LICENSES.md)
 
 Detailed intellectual property policies can be reviewed in:

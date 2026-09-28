@@ -4,7 +4,7 @@
 [![CI](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml/badge.svg)](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml)
 [![GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success.svg)](https://jake627520.github.io/Multi-Board-Games/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-47%20files%20%7C%20192%20passed-brightgreen.svg)](tests/)
+[![Vitest](https://img.shields.io/badge/Tests-60%20files%20%7C%20242%20passed-brightgreen.svg)](tests/)
 [![Version](https://img.shields.io/badge/Version-0.6.0-orange.svg)](package.json)
 
 高可擴充的多棋類抽象對弈平台，嚴格遵循三層解耦架構（UI 層、Core Session / Persistence 層、Game Engine 規則層）。全專案**零外部二進位素材**、**零傳染性依賴**，以規格導向（OpenSpec）與測試驅動（TDD）打造。
@@ -31,7 +31,7 @@
 - **視覺化復盤回放 (Replay Controls)**：
   - 支援步譜單步前進/後退、進度滑桿拖曳跳轉、步譜項目點選跳轉。
   - 支援自動播放與 3 檔播放速度切換（慢 1.2s / 正常 0.8s / 快 0.4s），回放期間 AI 與操作安全互斥。
-- **古典水墨視覺體系**：宣紙暖調底色、朱砂與水墨對比、雙層圓章象棋子與行楷楚河漢界；字體採用開源 Web 字型（Ma Shan Zheng / Noto Serif TC），無任何打包二進位素材。
+- **古典水墨視覺體系**：宣紙暖調底色、朱砂與水墨對比、雙層圓章象棋子與行楷楚河漢界；字體採用開源 Web 字型（Ma Shan Zheng / Noto Serif TC / Noto Sans TC，皆 OFL-1.1），無任何打包二進位素材。
 
 ---
 
@@ -64,7 +64,7 @@ npm run dev
 本專案遵循嚴格的 TDD 與品質防線，全專案無任何警告或跳過測試：
 
 ```bash
-# 執行全量單元與整合測試（47 個測試檔案、192 個測試）
+# 執行全量單元與整合測試（60 個測試檔案、242 個測試）
 npm run test
 
 # 執行 TypeScript 靜態型別嚴格檢查
@@ -103,12 +103,14 @@ src/
 │   └── persistence/   # SaveManager、ReplayManager、Serialization Policy
 ├── games/
 │   ├── banqi/         # 暗棋引擎、規則、視角投影 (projectBanqiView)
-│   ├── gomoku/        # 五子棋引擎、規則、Level 1 AI、座標記譜
-│   ├── xiangqi/       # 象棋引擎、規則、Level 1 AI、中文記譜
+│   ├── gomoku/        # 五子棋引擎、規則、Level 1/2 AI、座標記譜
+│   ├── xiangqi/       # 象棋引擎、規則、Level 1/2 AI、中文記譜
+│   ├── shared/        # 跨棋種共用：FEN 式盤面編碼、棋子代碼、緊湊欄位、局面雜湊
 │   └── registry.ts    # 遊戲註冊中心
 └── ui/
-    ├── components/    # 棋盤組件 (XiangqiBoard, GomokuBoard, BanqiBoard, GameSwitcher)
-    └── hooks/         # useGameSession (統一走步、視角投影、存檔與重播介面)
+    ├── XiangqiBoard.tsx   # 象棋盤（其餘棋盤在 components/）
+    ├── components/    # 棋盤與側欄組件 (GomokuBoard, BanqiBoard, GameHome, BoardSidePanel…)
+    └── hooks/         # useGameSession、useCoarsePointer、useTapConfirmPlacement
 ```
 
 ---
@@ -117,5 +119,5 @@ src/
 
 - **專案授權**：[MIT License](LICENSE) (c) 2026 Jake627520
 - **法律告示**：[NOTICE.md](NOTICE.md)（傳統棋類規則屬公有領域，本專案聲明零二進位素材）
-- **第三方套件依賴**：[docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)（直接依賴全數為 MIT / Apache-2.0；間接依賴皆為寬鬆授權：MIT / ISC / BSD / Apache-2.0 等）
+- **第三方套件依賴**：[docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)（直接依賴全數為 MIT / Apache-2.0；間接依賴皆為寬鬆授權：MIT / MIT-0 / ISC / BSD / Apache-2.0，另有一筆僅開發期使用的 CC-BY-4.0 相容性資料集）
 - **智慧財產政策**：[docs/COPYRIGHT_POLICY.md](docs/COPYRIGHT_POLICY.md)
