@@ -4,7 +4,7 @@
 [![CI](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml/badge.svg)](https://github.com/Jake627520/Multi-Board-Games/actions/workflows/ci.yml)
 [![GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success.svg)](https://jake627520.github.io/Multi-Board-Games/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-60%20files%20%7C%20242%20passed-brightgreen.svg)](tests/)
+[![Vitest](https://img.shields.io/badge/Tests-vitest-brightgreen.svg)](tests/)
 [![Version](https://img.shields.io/badge/Version-0.6.0-orange.svg)](package.json)
 
 **[繁體中文](#繁體中文) | [简体中文](#简体中文) | [English](#english)**
@@ -17,14 +17,14 @@
 
 ---
 
-## 🌐 線上遊玩（Live Demo）
+### 🌐 線上遊玩（Live Demo）
 
 可以直接在瀏覽器線上遊玩本平台（GitHub Pages 自動部署）：
 👉 **[https://jake627520.github.io/Multi-Board-Games/](https://jake627520.github.io/Multi-Board-Games/)**
 
 ---
 
-## 🎮 目前支援棋種與功能
+### 🎮 目前支援棋種與功能
 
 - **中國象棋 (Xiangqi)**：完整傳統規則（含將軍、困斃、長將判負、三次重複和棋、自然限招等）與中文傳統記譜，PvE 支援 Level 1（單層啟發式）與 Level 2（2-ply Minimax + Alpha-Beta 剪枝 + 走法排序）AI 切換。
 - **五子棋 (Gomoku)**：$15 \times 15$ 棋盤，支援自由規則 (Freestyle) 與黑方禁手規則（三三、四四、長連禁手，成五優先；白方無禁手），具備精確五連金光高亮與 Level 2 Minimax（含鄰近剪枝與 Alpha-Beta 搜尋）AI。
@@ -41,7 +41,7 @@
 
 ---
 
-## 🚀 快速一鍵啟動
+### 🚀 快速一鍵啟動
 
 ### macOS / Linux
 執行一鍵啟動腳本（自動檢查安裝依賴並啟動）：
@@ -65,12 +65,12 @@ npm run dev
 
 ---
 
-## 🧪 驗證與自動化測試
+### 🧪 驗證與自動化測試
 
 本專案遵循嚴格的 TDD 與品質防線，全專案無任何警告或跳過測試：
 
 ```bash
-# 執行全量單元與整合測試（60 個測試檔案、242 個測試）
+# 執行全量單元與整合測試
 npm run test
 
 # 執行 TypeScript 靜態型別嚴格檢查
@@ -82,7 +82,7 @@ npm run build
 
 ---
 
-## 🏛️ 系統架構圖
+### 🏛️ 系統架構圖
 
 ```text
                     Game Platform
@@ -121,7 +121,7 @@ src/
 
 ---
 
-## License & IP（授權與合規聲明）
+### License & IP（授權與合規聲明）
 
 - **專案授權**：[MIT License](LICENSE) (c) 2026 Jake627520
 - **法律告示**：[NOTICE.md](NOTICE.md)（傳統棋類規則屬公有領域，本專案聲明零二進位素材）
@@ -188,6 +188,13 @@ npx tsc --noEmit
 npm run build
 ```
 
+### 📄 许可与合规
+
+- **项目许可**：[MIT License](LICENSE) © 2026 Jake627520
+- **法律告示**：[NOTICE.md](NOTICE.md)（传统棋类规则属公有领域，本项目声明零二进制素材）
+- **第三方依赖**：[docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md)（直接依赖全部为 MIT / Apache-2.0；间接依赖均为宽松许可：MIT / MIT-0 / ISC / BSD / Apache-2.0，另有一项仅开发期使用的 CC-BY-4.0 兼容性数据集）
+- **知识产权政策**：[docs/COPYRIGHT_POLICY.md](docs/COPYRIGHT_POLICY.md)
+
 ---
 
 ## English
@@ -250,10 +257,10 @@ npm run build
 
 ---
 
-## 📄 License & Compliance
+### 📄 License & Compliance
 
 - **Project License**: [MIT License](LICENSE) © 2026 Jake627520
 - **Legal Notice**: [NOTICE.md](NOTICE.md) (Traditional board game rules in public domain; zero bundled binary assets)
-- **Third-Party Dependencies**: [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md) (Direct dependencies MIT / Apache-2.0; indirect dependencies all permissive licenses)
+- **Third-Party Dependencies**: [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md) (Direct dependencies MIT / Apache-2.0; indirect dependencies MIT / MIT-0 / ISC / BSD / Apache-2.0, plus one development-only CC-BY-4.0 browser-compatibility dataset)
 - **Copyright Policy**: [docs/COPYRIGHT_POLICY.md](docs/COPYRIGHT_POLICY.md)
 
