@@ -9,6 +9,17 @@ import type {
   BanqiViewState,
 } from "./types";
 import type { GameViewContext, Position } from "../../core/game/types";
+import { hashSignature } from "../shared/hash";
+
+/**
+ * 連續多少手「沒有翻子也沒有吃子」就判和。
+ *
+ * 取 60 手（雙方各 30 手）。依據：暗棋盤面只有 4×8，任一子走到任一格最多 10 步，
+ * 所以任何真有內容的攻殺計畫，在雙方各 30 手內一定能完成或被化解；
+ * 超過就只是在原地兜圈子。象棋那邊用 120 手（60 回合），暗棋盤面約為象棋的
+ * 1/3、且子力只減不增、沒有兵種升變之類的長期計畫，因此取其一半。
+ */
+export const BANQI_NO_PROGRESS_LIMIT = 60;
 
 const DIRS = [
   [0, 1],
@@ -153,6 +164,9 @@ export function isGameOver(state: BanqiState): boolean {
 
 export function getWinner(state: BanqiState): BanqiPlayer | null {
   if (state.winner !== null) return state.winner;
+  // 和局沒有贏家。少了這一行，下面的「無步可走者負」會把和局誤判成一方獲勝——
+  // 因為 getLegalMoves 對 isDraw 局面一律回傳空陣列。
+  if (state.isDraw === true) return null;
 
   let redCount = 0;
   let blackCount = 0;
@@ -181,9 +195,39 @@ export function getWinner(state: BanqiState): BanqiPlayer | null {
   return null;
 }
 
+/**
+ * 局面簽章：三次重複偵測的比對單位。
+ *
+ * ⚠️ 隱藏資訊紅線：未翻開的棋子一律只寫成 "#"，**絕對不能**寫入它的
+ * player / type / rank / id。暗棋的核心機制就是隱藏身分，簽章若帶上真實身分，
+ * 簽章本身（以及它進到存檔、進到任何除錯輸出）就變成洩漏管道。
+ * 「哪些格子已翻開」本來就是公開資訊，所以要寫進簽章——否則翻子前後
+ * 會被誤判成同一個局面。
+ */
+export function positionSignature(state: BanqiState): string {
+  const cells: string[] = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const piece = state.board[r][c];
+      if (!piece) continue;
+      cells.push(
+        piece.isRevealed ? `${r},${c}:${piece.player}-${piece.type}` : `${r},${c}:#`
+      );
+    }
+  }
+  const p1 = state.player1Color ?? "-";
+  return `${state.currentPlayer}|${p1}|${cells.join(";")}`;
+}
+
+/** 三次重複偵測存的是簽章的雜湊（32 個十六進位字元），與象棋共用同一套，避免存檔膨脹。 */
+function hashedSignature(state: BanqiState): string {
+  return hashSignature(positionSignature(state));
+}
+
 export function applyMoveUnchecked(state: BanqiState, move: BanqiMove): BanqiState {
   const board = cloneBoard(state.board);
   let player1Color = state.player1Color;
+  let captured = false;
 
   if (move.type === "flip") {
     const piece = board[move.pos.row][move.pos.col];
@@ -206,6 +250,7 @@ export function applyMoveUnchecked(state: BanqiState, move: BanqiMove): BanqiSta
       throw new Error("No piece at source");
     }
 
+    captured = board[move.to.row][move.to.col] !== null;
     board[move.from.row][move.from.col] = null;
     board[move.to.row][move.to.col] = piece;
   }
@@ -218,6 +263,10 @@ export function applyMoveUnchecked(state: BanqiState, move: BanqiMove): BanqiSta
     nextPlayer = state.currentPlayer === "red" ? "black" : "red";
   }
 
+  // 翻子與吃子都讓局面不可逆地前進：翻開的子不會再蓋回去、被吃的子不會回來。
+  // 因此這兩種手一出現，先前累積的重複局面紀錄全部作廢，可以直接清空。
+  const isProgress = move.type === "flip" || captured;
+
   const nextState: BanqiState = {
     board,
     currentPlayer: nextPlayer,
@@ -228,9 +277,38 @@ export function applyMoveUnchecked(state: BanqiState, move: BanqiMove): BanqiSta
 
   const winner = getWinner(nextState);
 
+  if (winner !== null) {
+    return { ...nextState, winner };
+  }
+
+  if (isProgress) {
+    return { ...nextState, winner, nonProgressCount: 0 };
+  }
+
+  const nonProgressCount = (state.nonProgressCount ?? 0) + 1;
+
+  // 上一段紀錄若不存在（剛剛才結束一段有進展的手），就以「走這一手之前的局面」開頭。
+  const positionHistory: string[] =
+    state.positionHistory !== undefined && state.positionHistory.length > 0
+      ? [...state.positionHistory]
+      : [hashedSignature(state)];
+
+  const currentSig = hashedSignature(nextState);
+  positionHistory.push(currentSig);
+
+  let occurrences = 0;
+  for (const sig of positionHistory) {
+    if (sig === currentSig) occurrences++;
+  }
+
+  const isDraw = occurrences >= 3 || nonProgressCount >= BANQI_NO_PROGRESS_LIMIT;
+
   return {
     ...nextState,
     winner,
+    isDraw: isDraw ? true : undefined,
+    positionHistory,
+    nonProgressCount,
   };
 }
 

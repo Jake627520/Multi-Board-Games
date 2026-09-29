@@ -22,6 +22,15 @@ export interface BanqiFullState {
   readonly winner: BanqiPlayer | null;
   readonly isDraw?: boolean;
   readonly moveNumber: number;
+  /**
+   * 三次重複局面偵測用的局面簽章「雜湊」（32 個十六進位字元，見 shared/hash.ts）。
+   * 只涵蓋「上一次有進展（翻子或吃子）之後」的這一段局面——翻子與吃子都是
+   * 不可逆的，之前的局面永遠不可能再出現，所以每次有進展就清空這個陣列。
+   * 簽章本身不含未翻開棋子的真實身分（見 rules.ts 的 positionSignature）。
+   */
+  readonly positionHistory?: readonly string[];
+  /** 連續「未翻子且未吃子」的手數；翻子或吃子時歸零。 */
+  readonly nonProgressCount?: number;
 }
 
 // Backward-compatible alias for engine/rules internal state
