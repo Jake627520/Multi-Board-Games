@@ -25,7 +25,12 @@ import {
 const DEFAULT_VIEW_CONTEXT: GameViewContext = { role: "spectator", player: null };
 
 export interface UseGameSessionOptions<State, Move, ViewState = State> {
-  readonly aiPlayer?: AiPlayer<State, Move>;
+  /**
+   * AI 收到的是「投影後的 view」（ViewState），不是權威完整狀態——
+   * 這是決策邊界上的隱藏資訊防線：暗棋的完整狀態含每顆蓋著的子的真實身分。
+   * 象棋與五子棋是完全資訊，view 與 state 等價。
+   */
+  readonly aiPlayer?: AiPlayer<ViewState, Move>;
   readonly aiColor?: Player;
   readonly aiDelayMs?: number;
   readonly formatMove?: (move: Move, stateBefore: State) => string;
@@ -257,8 +262,12 @@ export function useGameSession<State, Move, ViewState = State>(
       let cancelled = false;
       const timer = setTimeout(async () => {
         try {
+          const aiView = engine.projectView(stateRef.current, {
+            role: "player",
+            player: aiColor,
+          });
           const chosenMove = await aiPlayer.selectMove(
-            stateRef.current,
+            aiView,
             legalMovesRef.current
           );
           if (cancelled) return;
@@ -287,6 +296,7 @@ export function useGameSession<State, Move, ViewState = State>(
     aiColor,
     aiPlayer,
     isGameOver,
+    engine,
     session,
     aiDelayMs,
     formatMove,

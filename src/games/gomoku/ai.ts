@@ -1,4 +1,5 @@
 import type { AiPlayer } from "../../core/ai/types";
+import { pickWithinEpsilon, resolveRng, type AiOptions, type Rng } from "../../core/ai/random";
 import { BOARD_SIZE, inBounds } from "./board";
 import { getLegalMoves, applyMoveUnchecked } from "./rules";
 import type { GomokuMove, GomokuPlayer, GomokuState } from "./types";
@@ -86,23 +87,40 @@ function evaluateMoveScore(
   return totalScore;
 }
 
+/**
+ * Level 1 的並列容忍度。單點分數是整數（棋型 200 以上 + 離中心的 0~20 整數加成），
+ * 0.5 只吸收「完全並列」（例如以天元為軸對稱的四個鄰點）。不能更大：
+ * 差 1 就是「離中心近一格」，那已經是評估函式有意的偏好。
+ */
+export const GOMOKU_L1_EPSILON = 0.5;
+
+/**
+ * Level 2 的並列容忍度。葉節點評分裡最小的「棋型」單位是一個乾淨視窗的 +1，
+ * 其餘是 5／18／20／180…；置中偏好只有 0.01 一格。取 ε = 1 的依據：
+ * 它吸收置中 tie-break 與浮點累加誤差造成的差距（對稱局面本來就該並列），
+ * 也最多容許差「一個乾淨視窗」的走法——遠小於任何真正的棋型
+ * （眠二 20、活二 200、活三 5000），不會因此放掉一個活三或漏防對手活三。
+ * 是否真的沒變弱，見 tests/gomoku/ai-randomness.test.ts 與配對對打數據。
+ */
+export const GOMOKU_L2_EPSILON = 1;
+
 /** Level 1：純啟發式 */
 export class GomokuAiLevel1 implements AiPlayer<GomokuState, GomokuMove> {
   readonly id = "gomoku-ai-l1";
   readonly name = "Gomoku AI (Level 1 - Heuristic)";
+  private readonly rng: Rng;
+
+  constructor(options?: AiOptions) {
+    this.rng = resolveRng(options);
+  }
 
   async selectMove(state: GomokuState, legalMoves: GomokuMove[]): Promise<GomokuMove> {
     if (!legalMoves || legalMoves.length === 0) throw new Error("No legal moves available");
-    let best = legalMoves[0];
-    let bestScore = -Infinity;
-    for (const m of legalMoves) {
-      const score = evaluateMoveScore(state.board, m.row, m.col, state.currentPlayer);
-      if (score > bestScore) {
-        bestScore = score;
-        best = m;
-      }
-    }
-    return best;
+    const scored = legalMoves.map((m) => ({
+      item: m,
+      score: evaluateMoveScore(state.board, m.row, m.col, state.currentPlayer),
+    }));
+    return pickWithinEpsilon(scored, GOMOKU_L1_EPSILON, this.rng);
   }
 }
 
@@ -307,6 +325,11 @@ export class GomokuAiLevel2 implements AiPlayer<GomokuState, GomokuMove> {
   readonly name = "Gomoku AI (Level 2 - Minimax)";
 
   private readonly maxDepth = 2;
+  private readonly rng: Rng;
+
+  constructor(options?: AiOptions) {
+    this.rng = resolveRng(options);
+  }
 
   async selectMove(state: GomokuState, legalMoves: GomokuMove[]): Promise<GomokuMove> {
     if (!legalMoves || legalMoves.length === 0) throw new Error("No legal moves available");
@@ -314,18 +337,13 @@ export class GomokuAiLevel2 implements AiPlayer<GomokuState, GomokuMove> {
     const candidates = orderedCandidates(state, ROOT_CANDIDATE_LIMIT, legalMoves);
     const moves = candidates.length > 0 ? candidates : legalMoves;
 
-    let bestMove = moves[0];
-    let bestScore = -Infinity;
-
-    for (const move of moves) {
+    // 根節點每一手都用完整視窗搜尋，分數是精確值，才能公平地比較「是否在 ε 內」。
+    const scored = moves.map((move) => {
       const next = applyMoveUnchecked(state, move);
       const score = this.minimax(next, this.maxDepth - 1, -Infinity, Infinity, false, state.currentPlayer);
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = move;
-      }
-    }
-    return bestMove;
+      return { item: move, score };
+    });
+    return pickWithinEpsilon(scored, GOMOKU_L2_EPSILON, this.rng, WIN_SCORE);
   }
 
   private minimax(
@@ -375,10 +393,10 @@ export class GomokuAiLevel2 implements AiPlayer<GomokuState, GomokuMove> {
   }
 }
 
-export function createGomokuAiLevel1(): GomokuAiLevel1 {
-  return new GomokuAiLevel1();
+export function createGomokuAiLevel1(options?: AiOptions): GomokuAiLevel1 {
+  return new GomokuAiLevel1(options);
 }
 
-export function createGomokuAiLevel2(): GomokuAiLevel2 {
-  return new GomokuAiLevel2();
+export function createGomokuAiLevel2(options?: AiOptions): GomokuAiLevel2 {
+  return new GomokuAiLevel2(options);
 }
