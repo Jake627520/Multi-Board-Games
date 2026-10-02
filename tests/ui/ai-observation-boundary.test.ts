@@ -33,10 +33,22 @@ describe("AI 決策邊界：hook 傳給 AI 的是投影後的 view", () => {
     const root = createRoot(container);
 
     function Harness() {
-      const engine = useMemo(() => createBanqiEngine(), []);
+      // 暗棋每次 createInitialState 都重新洗牌，而首翻翻出的顏色決定誰先走。
+      // 不固定種子的話，約一半的情況下輪不到 AI，received 會是空的 —— 實測
+      // 連跑 8 次是 4 綠 4 紅。種子固定後翻出的是黑子，AI（紅）必然接著走。
+      const engine = useMemo(() => {
+        const realRandom = Math.random;
+        let seed = 0x2f6e2b1 >>> 0;
+        Math.random = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+        try {
+          return createBanqiEngine();
+        } finally {
+          Math.random = realRandom;
+        }
+      }, []);
       api = useGameSession<BanqiState, BanqiMove, BanqiViewState>(engine, {
         aiPlayer: spy,
-        aiColor: "black", // 首翻前的佔位：人類（紅）先翻，AI 接著走
+        aiColor: "red", // 固定種子下首翻翻出黑子 → 紅方（AI）接著走
         aiDelayMs: 10,
       });
       return null;
@@ -48,9 +60,13 @@ describe("AI 決策邊界：hook 傳給 AI 的是投影後的 view", () => {
     await act(async () => {
       api.move({ type: "flip", pos: { row: 0, col: 0 } });
     });
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 50));
-    });
+    // 輪詢而非賭單一時間點：AI 由 setTimeout(aiDelayMs) 觸發，固定等待時間
+    // 在機器忙碌時仍可能太短。
+    for (let i = 0; i < 50 && received.length === 0; i++) {
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10));
+      });
+    }
 
     expect(received.length).toBeGreaterThanOrEqual(1);
     for (const view of received) {
