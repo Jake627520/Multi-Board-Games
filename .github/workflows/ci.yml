@@ -1,8 +1,9 @@
 name: CI
 
+# 只跑 PR。推上 main 時由 deploy.yml 做同一套驗證後才部署——
+# 先前兩個 workflow 都掛在 main push 上，等於每次推送把 install、
+# 測試、型別檢查、build 整套各跑兩遍。
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -32,3 +33,26 @@ jobs:
 
       - name: Run production build
         run: npm run build
+
+      # e2e 是唯一會走完「首頁 → 進入遊戲 → 落子 → 存檔 → 復盤」整條
+      # 使用者路徑的測試，先前從未在 CI 跑過。只裝 chromium：
+      # playwright.config.ts 沒有宣告其他 project。
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

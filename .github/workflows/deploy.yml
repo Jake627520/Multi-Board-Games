@@ -42,6 +42,28 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+      # 部署前的最後一道：e2e 是唯一會走完整條使用者路徑的測試。
+      # 它先前從未在任何 workflow 跑過，等於這條路徑從沒被自動驗證過。
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
