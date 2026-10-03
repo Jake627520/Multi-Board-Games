@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { GameModeSelector, type GameMode } from "./GameModeSelector";
-import { AiLevelSelector, type AiLevel } from "./AiLevelSelector";
+import { AiLevelSelector, type AiLevel, type AiLevelLabels } from "./AiLevelSelector";
 import { MoveHistory } from "./MoveHistory";
 import { ReplayControls } from "./ReplayControls";
 import { SaveManagerPanel } from "./SaveManagerPanel";
@@ -53,6 +53,7 @@ export interface BoardSidePanelProps {
 
   /** AI 難度（僅 PvE 顯示） */
   readonly aiLevel: AiLevel;
+  readonly aiLevelLabels?: AiLevelLabels;
   readonly onAiLevelChange: (level: AiLevel) => void;
 
   readonly formatPlayer: (player: string) => string;
@@ -82,6 +83,7 @@ export function BoardSidePanel({
   onModeChange,
   onHumanPlayerChange,
   aiLevel,
+  aiLevelLabels,
   onAiLevelChange,
   formatPlayer,
   disabled = false,
@@ -158,6 +160,7 @@ export function BoardSidePanel({
           {/* AI 難度選擇 */}
           {mode === "pve" && (
             <AiLevelSelector
+              labels={aiLevelLabels}
               aiLevel={aiLevel}
               onAiLevelChange={onAiLevelChange}
               disabled={disabled}

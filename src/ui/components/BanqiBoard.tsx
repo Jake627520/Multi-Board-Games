@@ -3,6 +3,7 @@ import { createBanqiEngine } from "../../games/banqi/engine";
 import { useGameSession } from "../hooks/useGameSession";
 import { StatusBar } from "./StatusBar";
 import { BoardSidePanel } from "./BoardSidePanel";
+import type { AiLevelLabels } from "./AiLevelSelector";
 import type { AiLevel } from "./AiLevelSelector";
 import { type GameMode } from "./GameModeSelector";
 import { createBanqiAiLevel1, createBanqiAiLevel2 } from "../../games/banqi/ai";
@@ -36,6 +37,17 @@ const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "red", label: "先手 (玩家先翻)" },
   { id: "black", label: "後手 (電腦先翻)" },
 ];
+
+/**
+ * 暗棋的兩個 AI 等強（配對對打 14:14），差別在風格而非強弱，所以不用
+ * 「難度」措辭——那會是個不實的宣稱。象棋與五子棋維持 Level 1/2，
+ * 因為它們確實是階梯（8:0 與 11:1）。
+ */
+const BANQI_AI_LABELS: AiLevelLabels = {
+  heading: "對手風格：",
+  l1: "進取 (Aggressive)",
+  l2: "穩健 (Cautious)",
+};
 
 export function BanqiBoard({ onProgressChange }: BoardProps) {
   const engine = useMemo(() => createBanqiEngine(), []);
@@ -248,6 +260,7 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
         onHumanPlayerChange={handleHumanPlayerChange}
         aiLevel={aiLevel}
         onAiLevelChange={handleAiLevelChange}
+        aiLevelLabels={BANQI_AI_LABELS}
         formatPlayer={formatPlayer}
         disabled={isAiThinking}
         beforeHistory={
