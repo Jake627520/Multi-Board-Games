@@ -9,6 +9,7 @@ import {
 import { determinize, type BanqiObservation } from "./determinize";
 import {
   applyMoveUnchecked,
+  canCapture,
   getLegalMoves,
   isGameOver,
 } from "./rules";
@@ -126,18 +127,83 @@ export class BanqiAiLevel1 implements AiPlayer<BanqiViewState, BanqiMove> {
 }
 
 /**
- * Level 2：2-ply Minimax + Alpha-Beta，搭配 determinization（少量取樣）。
+ * Level 2：穩健型貪婪（與 Level 1 的「見子就吃」形成風格對比）。
  *
- * 舊版直接吃權威完整狀態，等於偷看每一顆蓋著的棋子：開局首手翻子實測
- * 200 局有 100% 翻到將、平均階級 7.00。現在只看 view，蓋著的子由
- * 「32 子 − 已翻開的子」洗牌填入，取 K 次取樣的平均分數，所以翻哪一格
- * 的期望值與真實身分無關（近似取捨見 determinize.ts 的 unseenPieces）。
- * 這會讓 Level 2 變弱——它本來就是靠作弊贏的。
+ * 為什麼不是更深的搜尋：原本的 2-ply minimax + determinization 實測打不過
+ * Level 1（40 局配對 11:14）。試過四個方向都沒改善——取樣 5→25（13:19）、
+ * 深度 2→3（10:20）、加入受威脅評估（11:11，差距在雜訊內）、ε→0（10:12）。
+ * 給它越多算力反而越弱，表示錯的是評估不是搜尋。根因是 determinization 下
+ * 翻子的期望值約為 0，而深度 2 的吃子因對手必然反吃常常是負的，於是
+ * 「0 分的翻子」打敗「負分的吃子」——推理本身沒錯，是視界太淺。
+ *
+ * 所以改成一個誠實的設計：Level 2 是**不同風格**的貪婪，而不是假裝更深。
+ *   1. 只吃划算的子——吃完若會被更大的子反吃就不吃（Level 1 會照吃）
+ *   2. 不把子走到會被吃的位置，並優先把已被威脅的子救走
+ *   3. 翻子挑安全的格——相鄰強敵越多越不想翻
+ *
+ * 附帶的結構性好處：它只讀已翻開的子，完全不需要 determinization，
+ * 「看不到蓋著的身分」因此是架構保證，而不是統計上看不出偏差。
  */
+
+const OFFSETS: readonly (readonly [number, number])[] = [
+  [-1, 0],
+  [1, 0],
+  [0, -1],
+  [0, 1],
+];
+
+/**
+ * 翻子的基礎價值。暗棋只能靠翻子取得子力，所以它必須與子力同量級——
+ * 設成 60（低於一顆卒）時實測翻子率從 88% 崩到 28%、空走 46%，AI 光顧著
+ * 搬救被威脅的子而不發展，40 局 13:20。取 200，介於卒(120)與士(400)之間：
+ * 划算的吃子仍然優先，但不會為了閃避而放棄翻子。最終取 110——必須低於
+ * 最小的子（卒 120），否則 AI 會為了翻子放棄白吃一顆卒，把確定的收益
+ * 排在投機之後。次序是：確定的子力 > 投機的發展 > 位置調整。
+ */
+const FLIP_BASE = 200;
+
+/** 翻開的子立刻被相鄰強敵吃掉的風險權重。 */
+const FLIP_RISK = 0.35;
+
+/** 把自己的子送到會被吃的位置，以及把被威脅的子救走，各自的權重。 */
+const HANGING_WEIGHT = 0.5;
+
+type ViewBoard = BanqiViewState["board"];
+
+function revealedAt(board: ViewBoard, r: number, c: number) {
+  if (r < 0 || r >= board.length) return null;
+  const row = board[r];
+  if (!row || c < 0 || c >= row.length) return null;
+  const piece = row[c];
+  return piece && piece.isRevealed ? piece : null;
+}
+
+/** 這一格上的子，是否有相鄰敵子吃得掉它。只看正交相鄰，不算炮的隔子吃。 */
+function attackedAt(board: ViewBoard, r: number, c: number): boolean {
+  const target = revealedAt(board, r, c);
+  if (!target) return false;
+  for (const [dr, dc] of OFFSETS) {
+    const attacker = revealedAt(board, r + dr, c + dc);
+    if (!attacker || attacker.player === target.player) continue;
+    if (canCapture(attacker, target)) return true;
+  }
+  return false;
+}
+
+/** 相鄰敵子裡最大的價值——翻開一顆子時，這代表它可能立刻損失多少。 */
+function adjacentThreatValue(board: ViewBoard, r: number, c: number, me: BanqiPlayer): number {
+  let worst = 0;
+  for (const [dr, dc] of OFFSETS) {
+    const neighbour = revealedAt(board, r + dr, c + dc);
+    if (!neighbour || neighbour.player === me) continue;
+    worst = Math.max(worst, RANK_VALUE[neighbour.rank] ?? 100);
+  }
+  return worst;
+}
+
 export class BanqiAiLevel2 implements AiPlayer<BanqiViewState, BanqiMove> {
   readonly id = "banqi-ai-l2";
-  readonly name = "Banqi AI (Level 2 - Minimax)";
-  private readonly maxDepth = 2;
+  readonly name = "Banqi AI (Level 2 - Cautious)";
   private readonly rng: Rng;
 
   constructor(options?: AiOptions) {
@@ -147,80 +213,45 @@ export class BanqiAiLevel2 implements AiPlayer<BanqiViewState, BanqiMove> {
   async selectMove(observation: BanqiObservation, legalMoves: BanqiMove[]): Promise<BanqiMove> {
     if (!legalMoves.length) throw new Error("No legal moves available");
 
-    // 首手（顏色尚未決定）：翻哪一格都對稱——翻到什麼顏色就成為那一方，
-    // 而 evaluateState 以「輪到的人」當 root，此時 root 只是佔位值，
-    // 分數沒有意義。與其讓取樣雜訊決定，直接均勻隨機。
-    if (observation.player1Color === null) {
-      return legalMoves[randomIndex(this.rng, legalMoves.length)];
-    }
+    const view = observation as BanqiViewState;
+    const board = view.board;
+    const me = view.currentPlayer;
 
-    const samples: BanqiState[] = [];
-    for (let k = 0; k < BANQI_L2_SAMPLES; k++) samples.push(determinize(observation, this.rng));
-
-    const root = observation.currentPlayer;
-    // 走法排序只看「翻開的棋子」（吃子價值），各取樣結果相同，用第一份即可。
-    const ordered = orderMoves(samples[0], legalMoves);
-
-    // 根節點用完整視窗搜尋，每一手都拿到精確分數才能取平均。
-    const scored = ordered.map((m) => {
-      let total = 0;
-      for (const sample of samples) {
-        const next = applyMoveUnchecked(sample, m);
-        total += this.minimax(next, this.maxDepth - 1, -Infinity, Infinity, false, root);
-      }
-      return { item: m, score: total / samples.length };
-    });
-    return pickWithinEpsilon(scored, BANQI_L2_EPSILON, this.rng, BANQI_DECISIVE_SCORE);
+    const scored = legalMoves.map((move) => ({
+      item: move,
+      score: this.scoreMove(board, me, move),
+    }));
+    return pickWithinEpsilon(scored, BANQI_L2_EPSILON, this.rng);
   }
 
-  private minimax(
-    state: BanqiState,
-    depth: number,
-    alpha: number,
-    beta: number,
-    maximizing: boolean,
-    root: BanqiPlayer
-  ): number {
-    if (depth === 0 || isGameOver(state) || state.winner != null || state.isDraw) {
-      return evaluateState(state, root);
+  private scoreMove(board: ViewBoard, me: BanqiPlayer, move: BanqiMove): number {
+    if (move.type === "flip") {
+      // 翻在強敵旁邊，翻出來的子可能立刻被吃；翻在空曠處最安全。
+      return FLIP_BASE - adjacentThreatValue(board, move.pos.row, move.pos.col, me) * FLIP_RISK;
     }
 
-    const moves = orderMoves(state, getLegalMoves(state));
-    if (!moves.length) return evaluateState(state, root);
+    const mover = revealedAt(board, move.from.row, move.from.col);
+    if (!mover) return 0;
+    const moverValue = RANK_VALUE[mover.rank] ?? 100;
+    const target = revealedAt(board, move.to.row, move.to.col);
 
-    if (maximizing) {
-      let maxEval = -Infinity;
-      for (const m of moves) {
-        const val = this.minimax(
-          applyMoveUnchecked(state, m),
-          depth - 1,
-          alpha,
-          beta,
-          false,
-          root
-        );
-        maxEval = Math.max(maxEval, val);
-        alpha = Math.max(alpha, val);
-        if (beta <= alpha) break;
-      }
-      return maxEval;
+    let score = 0;
+    if (target) score += RANK_VALUE[target.rank] ?? 100;
+
+    // 走完之後自己會不會被吃。這是與 Level 1 最大的差別：
+    // Level 1 只看吃到什麼，不看吃完會不會被反吃。
+    const after = board.map((row) => row.slice());
+    after[move.to.row][move.to.col] = mover;
+    after[move.from.row][move.from.col] = null;
+    if (attackedAt(after, move.to.row, move.to.col)) {
+      score -= moverValue * HANGING_WEIGHT;
     }
 
-    let minEval = Infinity;
-    for (const m of moves) {
-      const val = this.minimax(
-        applyMoveUnchecked(state, m),
-        depth - 1,
-        alpha,
-        beta,
-        true,
-        root
-      );
-      minEval = Math.min(minEval, val);
-      beta = Math.min(beta, val);
-      if (beta <= alpha) break;
+    // 把原本就被威脅的子救走，本身就有價值。
+    if (attackedAt(board, move.from.row, move.from.col)) {
+      score += moverValue * HANGING_WEIGHT;
     }
-    return minEval;
+    return score;
   }
 }
 
