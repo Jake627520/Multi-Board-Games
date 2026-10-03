@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { GameSession } from "../../core/game/session";
 import type { GameEngine, GameViewContext, Player } from "../../core/game/types";
 import type { AiPlayer } from "../../core/ai/types";
@@ -17,6 +17,11 @@ import {
   renameSave,
   type SaveMeta,
 } from "../../core/persistence/local-storage";
+import {
+  clearAutosave,
+  readAutosave,
+  writeAutosave,
+} from "../../core/persistence/autosave";
 
 /**
  * 模組層級常數：若每次 render 都新建這個物件，下面 useMemo 的依賴陣列
@@ -35,6 +40,12 @@ export interface UseGameSessionOptions<State, Move, ViewState = State> {
   readonly aiDelayMs?: number;
   readonly formatMove?: (move: Move, stateBefore: State) => string;
   readonly viewContext?: GameViewContext;
+  /**
+   * 開啟自動存檔：掛載時還原該棋種的自動存檔，之後每次局面改變就寫回；
+   * 對局結束、棋譜被清空（重新開始 / 悔棋到起點）時清除。預設關閉。
+   * 注意：只保存棋局本身（局面 + 棋譜），不含對戰模式 / 執方 / AI 風格這些 UI 選項。
+   */
+  readonly autosave?: boolean;
 }
 
 export type ReplaySpeed = 400 | 800 | 1200;
@@ -141,6 +152,42 @@ export function useGameSession<State, Move, ViewState = State>(
   // ---------- Save / Load ----------
   const saveManager = useMemo(() => new SaveManager(), []);
   const replayManager = useMemo(() => new ReplayManager(), []);
+
+  // ---------- 自動存檔 ----------
+  const autosaveEnabled = options?.autosave ?? false;
+
+  // 只在掛載時還原一次（不是每次 engine/session 重建都還原：五子棋切換規則會重建
+  // session，那是「開新局」，不該把舊局倒回來）。useLayoutEffect 讓還原後的盤面
+  // 在第一次繪製前就位，不會閃一下空棋盤。還原失敗（壞檔 / 格式不符）時
+  // SaveManager.load 保證不動 live session，這裡再把壞檔清掉，避免首頁一直顯示「繼續」。
+  useLayoutEffect(() => {
+    if (!autosaveEnabled) return;
+    const raw = readAutosave(engine.id);
+    if (!raw) return;
+    try {
+      saveManager.load(raw, session, engine);
+      setState(session.getState());
+    } catch {
+      clearAutosave(engine.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 局面每次改變後同步自動存檔。直接讀 session 而非 React state：
+  // 五子棋切換規則時 session 會被重建，session 才是權威來源。
+  const sessionState = session.getState();
+  useEffect(() => {
+    if (!autosaveEnabled) return;
+    if (session.getHistory().length === 0 || engine.isGameOver(session.getState())) {
+      clearAutosave(engine.id);
+      return;
+    }
+    try {
+      writeAutosave(engine.id, saveManager.save(session, engine));
+    } catch {
+      clearAutosave(engine.id);
+    }
+  }, [autosaveEnabled, engine, session, saveManager, state, sessionState]);
 
   function saveGame(): string {
     return saveManager.save(session, engine);

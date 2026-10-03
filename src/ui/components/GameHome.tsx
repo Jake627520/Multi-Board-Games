@@ -6,6 +6,12 @@ interface GameHomeProps {
   readonly games: readonly GameEngine<unknown, unknown>[];
   /** 上次玩的棋種（localStorage 不可用時為 null） */
   readonly lastGameId: GameId | null;
+  /**
+   * 該棋種是否真的有可續的局（自動存檔存在且走過至少一步）。
+   * 只有「上次的棋種」且「真的可續」才顯示「繼續」按鈕——
+   * 只看 lastGameId 會讓按鈕成為空頭支票（點進去是全新棋局）。
+   */
+  readonly canResume: (id: GameId) => boolean;
   readonly onSelectGame: (id: GameId) => void;
 }
 
@@ -44,10 +50,11 @@ function Thumbnail({ gameId }: { readonly gameId: GameId }): ReactNode {
   return <span className="card-thumb thumb-generic" aria-hidden="true" />;
 }
 
-export function GameHome({ games, lastGameId, onSelectGame }: GameHomeProps) {
-  const lastGame = lastGameId
+export function GameHome({ games, lastGameId, canResume, onSelectGame }: GameHomeProps) {
+  const found = lastGameId
     ? games.find((g) => g.id === lastGameId) ?? null
     : null;
+  const lastGame = found && canResume(found.id) ? found : null;
 
   return (
     <section className="game-home" data-testid="game-home">

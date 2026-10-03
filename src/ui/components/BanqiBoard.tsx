@@ -79,6 +79,7 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
       m.type === "flip"
         ? `翻 (${m.pos.row},${m.pos.col})`
         : `(${m.from.row},${m.from.col})→(${m.to.row},${m.to.col})`,
+    autosave: true,
   });
 
   const {

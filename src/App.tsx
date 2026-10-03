@@ -7,6 +7,7 @@ import { BanqiBoard } from "./ui/components/BanqiBoard";
 import { GameSwitcher } from "./ui/components/GameSwitcher";
 import { GameHome } from "./ui/components/GameHome";
 import { readLastGame, writeLastGame } from "./ui/last-game";
+import { hasAutosave } from "./core/persistence/autosave";
 import type { GameId } from "./core/game/types";
 
 /**
@@ -30,12 +31,19 @@ export default function App() {
     inProgressRef.current = inProgress;
   }, []);
 
+  /**
+   * 離開前的確認。有了自動存檔之後，離開通常不會失去任何東西，所以只在
+   * 「真的會丟局」時才問——也就是自動存檔不可用的時候（localStorage 被
+   * 停用、配額滿、寫入失敗）。先前無條件警告「會放棄目前棋局」，在棋局
+   * 其實已經保存的情況下是不實的，而不實的警告會訓練使用者忽略它。
+   */
   const confirmLeave = useCallback(
     (message: string) => {
       if (!inProgressRef.current) return true;
+      if (gameId !== null && hasAutosave(gameId)) return true;
       return window.confirm(message);
     },
-    []
+    [gameId]
   );
 
   const enterGame = useCallback((id: GameId) => {
@@ -48,7 +56,7 @@ export default function App() {
   const switchGame = useCallback(
     (id: GameId) => {
       if (id === gameId) return;
-      if (!confirmLeave("本局尚未結束，切換遊戲會放棄目前棋局。確定要離開嗎？")) {
+      if (!confirmLeave("本局無法自動保存，切換遊戲會放棄目前棋局。確定要離開嗎？")) {
         return;
       }
       enterGame(id);
@@ -57,7 +65,7 @@ export default function App() {
   );
 
   const goHome = useCallback(() => {
-    if (!confirmLeave("本局尚未結束，回首頁會放棄目前棋局。確定要離開嗎？")) {
+    if (!confirmLeave("本局無法自動保存，回首頁會放棄目前棋局。確定要離開嗎？")) {
       return;
     }
     inProgressRef.current = false;
@@ -96,6 +104,7 @@ export default function App() {
         <GameHome
           games={registry.list()}
           lastGameId={lastGameId}
+          canResume={hasAutosave}
           onSelectGame={enterGame}
         />
       ) : Board ? (

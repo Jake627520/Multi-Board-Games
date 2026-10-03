@@ -15,10 +15,29 @@ test.describe("E2E Platform User Flows A through E", () => {
     await expect(page.getByTestId("game-home")).toBeVisible();
     await expect(page.locator(".game-card")).toHaveCount(3);
     await expect(page.getByTestId("game-card-banqi")).toBeVisible();
-    // 上次玩過象棋 -> 首頁有快捷入口
-    await expect(page.getByTestId("resume-last-game")).toContainText("中國象棋");
+
+    // 進了棋盤但一步沒走，沒有可續的局 —— 不該出現「繼續」。
+    // 這條原本斷言相反，而那正是自動存檔要修掉的空頭支票：
+    // 按鈕當時只看 mbg:last-game 有沒有值，點下去是空棋盤。
+    await expect(page.getByTestId("resume-last-game")).toHaveCount(0);
+
     await page.getByTestId("game-card-gomoku").click();
     await expect(page.getByTestId("gomoku-board")).toBeVisible();
+  });
+
+  test("Flow 0b: 走一步 -> 回首頁 -> 繼續 -> 棋譜還原", async ({ page }) => {
+    await page.locator(".cell").nth(7 * 9 + 1).click();
+    await page.locator(".cell").nth(7 * 9 + 4).click();
+    await expect(page.locator(".move-history-container")).toContainText("炮八平五");
+
+    await page.getByTestId("back-to-home").click();
+    const resume = page.getByTestId("resume-last-game");
+    await expect(resume).toContainText("中國象棋");
+
+    await resume.click();
+    await expect(page.getByTestId("xiangqi-board")).toBeVisible();
+    // 真的續上，不是開新局
+    await expect(page.locator(".move-history-container")).toContainText("炮八平五");
   });
 
   test("Flow A: Home -> Xiangqi -> PvP -> move -> save -> replay", async ({ page }) => {

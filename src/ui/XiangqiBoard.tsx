@@ -40,6 +40,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
     formatMove: toXiangqiNotation,
+    autosave: true,
   });
 
   const {

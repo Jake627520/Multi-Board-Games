@@ -45,6 +45,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
     formatMove: (m) => toGomokuNotation(m),
+    autosave: true,
   });
 
   const {
