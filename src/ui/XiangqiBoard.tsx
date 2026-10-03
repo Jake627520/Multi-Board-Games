@@ -12,18 +12,10 @@ import { type GameMode } from "./components/GameModeSelector";
 import { BoardSidePanel } from "./components/BoardSidePanel";
 import type { AiLevel } from "./components/AiLevelSelector";
 import type { Piece, XiangqiMove, XiangqiState } from "../games/xiangqi/types";
+import { PIECE_NAMES } from "../games/xiangqi/notation";
 import type { Player } from "../core/game/types";
 import type { BoardProps } from "./board-props";
 
-const labels: Record<Piece["type"], string> = {
-  general: "將",
-  advisor: "士",
-  elephant: "象",
-  horse: "馬",
-  chariot: "車",
-  cannon: "炮",
-  soldier: "卒",
-};
 
 const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "red", label: "🟥 紅方（先手）" },
@@ -184,7 +176,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
                       className={`piece ${piece.player}`}
                       data-testid={`piece-${piece.player}-${piece.type}`}
                     >
-                      {labels[piece.type]}
+                      {PIECE_NAMES[piece.player][piece.type]}
                     </span>
                   )}
                 </button>

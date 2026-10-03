@@ -3,7 +3,11 @@ import type { Piece, PieceType, XiangqiMove, XiangqiPlayer, XiangqiState } from 
 const RED_NUMERALS = ["一", "二", "三", "四", "五", "六", "七", "八", "九"] as const;
 const BLACK_NUMERALS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
 
-const PIECE_NAMES: Record<XiangqiPlayer, Record<PieceType, string>> = {
+/**
+ * 紅黑各自的棋子字。棋盤與記譜共用同一份——先前棋盤自己另存一組只有黑方字
+ * 的對照，導致紅方棋子被畫成「將士象卒」，而同一局的步譜卻寫「帥」「兵」。
+ */
+export const PIECE_NAMES: Record<XiangqiPlayer, Record<PieceType, string>> = {
   red: {
     general: "帥",
     advisor: "仕",

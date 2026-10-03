@@ -26,6 +26,13 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
   const [humanPlayer, setHumanPlayer] = useState<Player>("black");
 
   const engine = useMemo(() => createGomokuEngine(ruleMode), [ruleMode]);
+
+  /**
+   * 畫面要顯示的規則模式以「實際狀態」為準，不是本地 state。
+   * ruleMode 這個 state 的角色是「開新局時要用哪個模式」，而載入存檔會
+   * 連同存檔裡的 ruleMode 一起還原——引擎依狀態執行禁手，本地 state 卻
+   * 還停在 freestyle，於是按鈕與說明顯示自由規則、黑方下三三卻被擋。
+   */
   const aiPlayer = useMemo(
     () => (aiLevel === "l2" ? createGomokuAiLevel2() : createGomokuAiLevel1()),
     [aiLevel]
@@ -54,6 +61,8 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     reset,
     isReplayMode,
   } = session;
+
+  const activeRuleMode = viewState.ruleMode ?? ruleMode;
 
   const winningSet = useMemo(() => {
     const set = new Set<string>();
@@ -206,7 +215,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
             <div className="mode-tabs">
               <button
                 type="button"
-                className={`mode-btn ${ruleMode === "freestyle" ? "active" : ""}`}
+                className={`mode-btn ${activeRuleMode === "freestyle" ? "active" : ""}`}
                 onClick={() => handleRuleModeChange("freestyle")}
                 disabled={isAiThinking}
                 data-testid="rule-freestyle"
@@ -215,7 +224,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
               </button>
               <button
                 type="button"
-                className={`mode-btn ${ruleMode === "forbidden_moves" ? "active" : ""}`}
+                className={`mode-btn ${activeRuleMode === "forbidden_moves" ? "active" : ""}`}
                 onClick={() => handleRuleModeChange("forbidden_moves")}
                 disabled={isAiThinking}
                 data-testid="rule-forbidden"
@@ -228,7 +237,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
       >
         <div className="muted">
           <p>
-            {ruleMode === "freestyle" ? (
+            {activeRuleMode === "freestyle" ? (
               <>
                 <strong>五子棋 Free-style 規則 (Rules)</strong>：
                 <br />
