@@ -3,10 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#e7ddc8" />
+    <meta name="theme-color" content="#e7ddc8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#171310" media="(prefers-color-scheme: dark)" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" />
+    <!--
+      字型用非阻塞方式載入。先前是 rel="stylesheet"，瀏覽器會等字型 CSS
+      回應才開始渲染——量測顯示字型 CSS 延遲 15 秒時，首頁要 15.3 秒才出現，
+      等於整個 app（含 JS）被第三方請求綁住。改成 preload + onload 換成
+      stylesheet：畫面立刻用系統字體渲染，字型到了再換上（URL 已帶 display=swap）。
+    -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+      onload="this.onload=null;this.rel=&quot;stylesheet&quot;" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" /></noscript>
     <title>Multi Board Games</title>
   </head>
   <body>
