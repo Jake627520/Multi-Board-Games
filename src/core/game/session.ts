@@ -83,8 +83,14 @@ export class GameSession<State, Move, ViewState = State> {
       throw new Error("Illegal move");
     }
     this.snapshots.push(this.state);
-    const player = this.engine.getCurrentPlayer(this.state);
+    const before = this.state;
     this.state = this.engine.applyMove(this.state, move);
+    // 走完才決定記錄的走棋者：暗棋首翻前沒有顏色，走棋前的 currentPlayer 只是
+    // 佔位標籤，翻出黑子時會把黑方的首翻記成紅方，步譜於是寫「紅方 翻」接著
+    // 「輪到紅方」，看起來回合沒換——而且這個錯誤會寫進存檔與復盤。
+    const player = this.engine.moverOf
+      ? this.engine.moverOf(before, this.state)
+      : this.engine.getCurrentPlayer(before);
     this.history.push({ move, player, notation });
     return this.state;
   }

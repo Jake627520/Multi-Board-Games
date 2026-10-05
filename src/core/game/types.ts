@@ -66,6 +66,12 @@ export interface GameEngine<State, Move, ViewState = State>
   readonly name: string;
   createInitialState(): State;
   getCurrentPlayer(state: State): Player;
+  /**
+   * 這一步是誰走的。預設是走棋前的 getCurrentPlayer，絕大多數遊戲就是如此。
+   * 只有「走完才知道身分」的遊戲需要覆寫：暗棋開局時雙方還沒有顏色，
+   * getCurrentPlayer 回傳的是「先手」的佔位標籤，要等首翻翻出顏色才確定。
+   */
+  moverOf?(before: State, after: State): Player;
   getLegalMoves(state: State): Move[];
   applyMove(state: State, move: Move): State;
   isGameOver(state: State): boolean;

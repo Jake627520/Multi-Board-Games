@@ -27,6 +27,18 @@ export class BanqiEngine implements GameEngine<BanqiFullState, BanqiMove, BanqiV
     return state.currentPlayer;
   }
 
+  /**
+   * 首翻決定顏色：翻之前沒有人有顏色，currentPlayer 只是「先手」的佔位。
+   * 這一手若讓 player1Color 從無到有，翻的人就是那個顏色（player1Color 即
+   * 先手的顏色）。其餘每一手顏色早已確定，走棋前的 currentPlayer 就是走的人。
+   */
+  moverOf(before: BanqiFullState, after: BanqiFullState): Player {
+    if (before.player1Color === null && after.player1Color !== null) {
+      return after.player1Color;
+    }
+    return before.currentPlayer;
+  }
+
   getLegalMoves(state: BanqiFullState): BanqiMove[] {
     return getLegalMoves(state);
   }

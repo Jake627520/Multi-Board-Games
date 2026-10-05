@@ -308,14 +308,20 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
           <p>
             <strong>規則說明 (Rules)</strong>：
             <br />
-            • <strong>階級 (Hierarchy)</strong>：將/帥(7) &gt; 士/仕(6) &gt; 象/相(5) &gt; 車/俥(4) &gt; 馬/傌(3) &gt; 炮/包(2) &gt; 卒/兵(1)
-            <span className="en-rule">Rank order: General(7) &gt; Advisor(6) &gt; Elephant(5) &gt; Chariot(4) &gt; Horse(3) &gt; Cannon(2) &gt; Soldier(1).</span>
+            • <strong>回合 (Turn)</strong>：每回合二選一——翻開一顆暗子，或移動自己的一顆明子。首翻翻出的顏色就是你的顏色；首翻之前不能移動。
+            <span className="en-rule">Each turn, either flip a face-down piece or move one of your revealed pieces. Your colour is whatever your first flip reveals; nothing can move before then.</span>
+            • <strong>走法 (Movement)</strong>：所有棋子都直走一格。吃子時只能吃<strong>階級相同或較低</strong>的敵子。
+            <span className="en-rule">Every piece moves one step orthogonally. It may capture an enemy of equal or lower rank.</span>
+            • <strong>階級 (Hierarchy)</strong>：將/帥(7)、士/仕(6)、象/相(5)、車/俥(4)、馬/傌(3)、炮/包(2)、卒/兵(1)。同階可以互吃。
+            <span className="en-rule">Ranks: General 7, Advisor 6, Elephant 5, Chariot 4, Horse 3, Cannon 2, Soldier 1. Equal ranks can capture each other.</span>
             • <strong>特殊相剋 (Special Capture)</strong>：卒/兵可吃將/帥；將/帥不可吃卒/兵。
             <span className="en-rule">Soldiers can capture Generals; Generals cannot capture Soldiers.</span>
-            • <strong>炮/包 (Cannon)</strong>：相鄰走 1 格（不可吃子）；跳吃時中間須隔恰好 1 顆棋子，可吃任意階級敵子。
-            <span className="en-rule">Cannons move 1 step without capturing. To capture, jump over exactly one piece of any rank.</span>
-            • <strong>勝負 (Victory)</strong>：暗棋不可被吃，吃光對方所有棋子即獲勝。
-            <span className="en-rule">Face-down pieces cannot be captured. Eliminate all enemy pieces to win.</span>
+            • <strong>炮/包 (Cannon)</strong>：移動時直走一格到空格；吃子時沿直線跳過<strong>恰好一顆</strong>棋子（明暗、敵我皆可當砲架），可吃任意階級的敵子。
+            <span className="en-rule">Cannons move one step into an empty square. To capture, jump over exactly one piece of any kind onto an enemy of any rank.</span>
+            • <strong>勝負 (Victory)</strong>：吃光對方所有棋子，或對方輪到時無棋可走，即獲勝。暗子不可被吃。
+            <span className="en-rule">Win by capturing every enemy piece, or when your opponent has no legal move on their turn. Face-down pieces cannot be captured.</span>
+            • <strong>和局 (Draw)</strong>：同一局面出現三次，或雙方合計連續 60 手都沒有翻子也沒有吃子。
+            <span className="en-rule">Drawn when the same position occurs three times, or after 60 consecutive moves by both sides with no flip or capture.</span>
           </p>
         </div>
       </BoardSidePanel>
