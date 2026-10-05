@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 
 /**
@@ -45,7 +46,13 @@ export function saveCurrentGame(name: string): void {
   fireEvent.click(screen.getByTestId("save-submit-btn"));
 }
 
-/** 透過 SaveManagerPanel 載入列表中的第一筆存檔（等同使用者按「載入」）。 */
+/**
+ * 透過 SaveManagerPanel 載入列表中的第一筆存檔：等同使用者按「載入」並在確認框按確定。
+ *
+ * 載入會取代進行中的局，所以在有棋譜時會先跳確認。jsdom 的 window.confirm 沒有實作、
+ * 回傳 undefined——不在這裡明確同意的話，載入會被靜默擋下，而呼叫端斷言「步譜仍在」
+ * 照樣會過（棋步本來就在畫面上），測試就分不出「載入成功」和「根本沒載入」。
+ */
 export function loadFirstSave(): void {
   const button = document.querySelector<HTMLButtonElement>(
     '[data-testid^="save-load-"]'
@@ -53,7 +60,12 @@ export function loadFirstSave(): void {
   if (!button) {
     throw new Error("No save entry rendered in SaveManagerPanel");
   }
-  fireEvent.click(button);
+  const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  try {
+    fireEvent.click(button);
+  } finally {
+    confirmSpy.mockRestore();
+  }
 }
 
 /** 直接把一筆存檔寫進 localStorage，用於構造舊格式（v1）存檔情境。 */

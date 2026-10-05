@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { GameModeSelector, type GameMode } from "./GameModeSelector";
 import { AiLevelSelector, type AiLevel, type AiLevelLabels } from "./AiLevelSelector";
 import { MoveHistory } from "./MoveHistory";
+import { confirmDiscardGame } from "../confirm-discard";
 import { ReplayControls } from "./ReplayControls";
 import { SaveManagerPanel } from "./SaveManagerPanel";
 import type { ReplaySpeed } from "../hooks/useGameSession";
@@ -32,6 +33,8 @@ export interface BoardSidePanelSession {
   readonly listLocalSaves: () => SaveMeta[];
   readonly saveToLocal: (name?: string) => void;
   readonly loadFromLocal: (id: string) => void;
+  /** 有棋譜且尚未結束。決定載入存檔前要不要確認（判準與其他破壞性操作相同）。 */
+  readonly inProgress: boolean;
   readonly deleteLocalSave: (id: string) => void;
   readonly renameLocalSave: (id: string, name: string) => void;
 }
@@ -108,6 +111,7 @@ export function BoardSidePanel({
     listLocalSaves,
     saveToLocal,
     loadFromLocal,
+    inProgress,
     deleteLocalSave,
     renameLocalSave,
   } = session;
@@ -186,7 +190,12 @@ export function BoardSidePanel({
         <SaveManagerPanel
           listSaves={listLocalSaves}
           onSave={saveToLocal}
-          onLoad={loadFromLocal}
+          onLoad={(id) => {
+            // 載入存檔會取代進行中的局，下一次自動存檔也跟著覆寫——它跟重新開始、
+            // 切模式一樣會丟掉對局，先前卻是唯一不經確認的破壞性操作。
+            if (!confirmDiscardGame(inProgress, "載入存檔")) return;
+            loadFromLocal(id);
+          }}
           onDelete={deleteLocalSave}
           onRename={renameLocalSave}
           disabled={disabled}

@@ -33,11 +33,7 @@ import type {
 export const BANQI_L1_EPSILON = 4;
 export const BANQI_L2_EPSILON = 25;
 
-/** 平均後仍達此絕對值＝各取樣都看到必勝／必敗，此時不隨機（見 pickWithinEpsilon）。 */
-const BANQI_DECISIVE_SCORE = 100_000;
 
-/** Level 2 的 determinization 取樣次數（設計範圍 3~5，取上限求穩定）。 */
-export const BANQI_L2_SAMPLES = 5;
 
 /** 階級分數（對齊 rank 1~7） */
 const RANK_VALUE: Record<number, number> = {
@@ -179,23 +175,28 @@ function revealedAt(board: ViewBoard, r: number, c: number) {
 }
 
 /** 這一格上的子，是否有相鄰敵子吃得掉它。只看正交相鄰，不算炮的隔子吃。 */
-function attackedAt(board: ViewBoard, r: number, c: number): boolean {
+export function attackedAt(board: ViewBoard, r: number, c: number): boolean {
   const target = revealedAt(board, r, c);
   if (!target) return false;
   for (const [dr, dc] of OFFSETS) {
     const attacker = revealedAt(board, r + dr, c + dc);
     if (!attacker || attacker.player === target.player) continue;
+    // 炮只能隔子跳吃，相鄰的炮吃不到任何子。canCapture 只比階級（炮 2 ≥ 卒 1），
+    // 不知道炮的走法，先前直接沿用它會把相鄰的敵炮誤判成威脅，讓穩健型 AI
+    // 系統性高估危險。
+    if (attacker.type === "cannon") continue;
     if (canCapture(attacker, target)) return true;
   }
   return false;
 }
 
 /** 相鄰敵子裡最大的價值——翻開一顆子時，這代表它可能立刻損失多少。 */
-function adjacentThreatValue(board: ViewBoard, r: number, c: number, me: BanqiPlayer): number {
+export function adjacentThreatValue(board: ViewBoard, r: number, c: number, me: BanqiPlayer): number {
   let worst = 0;
   for (const [dr, dc] of OFFSETS) {
     const neighbour = revealedAt(board, r + dr, c + dc);
     if (!neighbour || neighbour.player === me) continue;
+    if (neighbour.type === "cannon") continue; // 相鄰的炮吃不到翻開的子
     worst = Math.max(worst, RANK_VALUE[neighbour.rank] ?? 100);
   }
   return worst;

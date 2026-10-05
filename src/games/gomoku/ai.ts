@@ -100,7 +100,7 @@ export const GOMOKU_L1_EPSILON = 0.5;
  * 它吸收置中 tie-break 與浮點累加誤差造成的差距（對稱局面本來就該並列），
  * 也最多容許差「一個乾淨視窗」的走法——遠小於任何真正的棋型
  * （眠二 20、活二 200、活三 5000），不會因此放掉一個活三或漏防對手活三。
- * 是否真的沒變弱，見 tests/gomoku/ai-randomness.test.ts 與配對對打數據。
+ * 是否真的沒變弱，見 tests/ai/move-variety.test.ts 與配對對打數據。
  */
 export const GOMOKU_L2_EPSILON = 1;
 
