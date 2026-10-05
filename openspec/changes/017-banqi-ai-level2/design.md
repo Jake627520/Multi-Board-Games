@@ -1,5 +1,7 @@
 # Design Document: 017-banqi-ai-level2
 
+> **現行規格見 `openspec/specs/ai/spec.md`（本文件說 AI 拿完整狀態，現行程式碼相反：AI 只收投影後的 view）。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## 1. Search Architecture & Evaluation
 
 ```text

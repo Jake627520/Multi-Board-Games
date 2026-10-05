@@ -1,5 +1,7 @@
 # Change Proposal: 014-replay-ui-and-save-manager
 
+> **現行規格見 `openspec/specs/replay/spec.md`、`openspec/specs/persistence/spec.md` 與 `openspec/specs/autosave/spec.md`。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 
 > **後續變更（2026-09，commit `7e98da6`）**
 > 第 3 節 Non-Goals 的最後一項「繼續使用既有 Envelope v1」在 Round 14 當時成立，之後已不再適用：存檔格式已升級到 v2（新增 `history` 與 `initialState`），以便載入存檔後悔棋與復盤仍可用。本提案的其餘範圍不受影響。

@@ -1,5 +1,7 @@
 # Change Proposal: 016-xiangqi-ai-level2
 
+> **現行規格見 `openspec/specs/ai/spec.md`（象棋 AI 現況與難度階梯的守門範圍）。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## 1. Why
 
 五子棋已具備 Level 2（Minimax + Alpha-Beta + 鄰近剪枝），象棋仍只有 Level 1 單層貪婪啟發式，單機對弈深度明顯不足。

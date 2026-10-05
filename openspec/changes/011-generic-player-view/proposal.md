@@ -1,5 +1,7 @@
 # Change 011: Generic Player View (011-generic-player-view)
 
+> **現行規格見 `openspec/specs/banqi/spec.md` §8（視圖投影）與 `openspec/specs/ai/spec.md` §3（AI 觀察邊界）。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## Why
 Currently, the Multi Board Games Platform engines and sessions operate directly with the authoritative game state (`State`). In Round 8 & 9, Banqi introduced hidden information (face-down pieces) and used a one-off helper `maskHiddenState(state)` and `serializeMasked(state)` within Banqi to mitigate data leakage. However, this remains a game-specific workaround. As the platform prepares for spectators, replay, AI, and network architecture, the separation between authoritative full state and projected view state must be promoted to a formal, platform-level contract.
 

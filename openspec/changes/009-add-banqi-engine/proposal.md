@@ -1,5 +1,7 @@
 # Change 009: Add Banqi Game Engine (009-add-banqi-engine)
 
+> **現行規格見 `openspec/specs/banqi/spec.md`（盤面、首翻定色、相剋、炮、和局、視圖投影）。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## 1. Problem Statement
 The platform currently supports two perfect-information abstract board games (Xiangqi and Gomoku). To validate the platform's multi-game abstraction against hidden information (face-down pieces), stochastic board setup (shuffled tokens), and heterogeneous action types (flip vs orthogonal move vs cannon jump capture), a 3rd game engine—**Banqi (半盤暗棋)**—is introduced.
 

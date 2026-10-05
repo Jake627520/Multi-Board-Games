@@ -1,5 +1,7 @@
 # Specification: Action-Based Replay Architecture
 
+> **現行規格見 `openspec/specs/replay/spec.md`。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 
 > **後續變更（2026-09，commit `7e98da6`）**
 > Replay envelope 仍是 `formatVersion = 1`，但版本號已與存檔格式脫鉤：改由 `CURRENT_REPLAY_FORMAT_VERSION`（`src/core/persistence/replay-manager.ts`）獨立管理，存檔升到 v2 並不牽動 replay envelope。下文其餘內容仍然有效。

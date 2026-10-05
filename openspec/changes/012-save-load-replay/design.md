@@ -1,5 +1,7 @@
 # Architecture Design: 012-save-load-replay
 
+> **現行規格見 `openspec/specs/persistence/spec.md` 與 `openspec/specs/replay/spec.md`。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 
 > **後續變更（2026-09，commit `7e98da6`）**
 > 本文件保留 Round 12 當時的設計原樣。第 3.1 節的 `GameSaveEnvelope` 與第 4 節的 `SaveManager` 載入流程已被存檔格式 v2 取代：

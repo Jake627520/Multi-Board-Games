@@ -1,5 +1,7 @@
 # Specification: Save / Load Lifecycle & Envelope
 
+> **現行規格見 `openspec/specs/persistence/spec.md`。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 
 > **後續變更（2026-09，commit `7e98da6`）**
 > 本文件記錄的是 Round 12 當時的決策，保留原樣。存檔格式後來升級到 **v2**，與下文有三處出入：

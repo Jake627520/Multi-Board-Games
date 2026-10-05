@@ -1,5 +1,7 @@
 # Change Proposal: 012-save-load-replay
 
+> **現行規格見 `openspec/specs/persistence/spec.md`（存檔／載入，現行為 v2）與 `openspec/specs/replay/spec.md`（復盤）。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## 1. Why
 
 The platform supports three distinct board games (`Xiangqi`, `Gomoku`, `Banqi`). While Round 10 established the generic `GameEngine<State, Move, ViewState>` contract and separated `Authoritative Full State` from `ViewState`, the platform currently lacks:

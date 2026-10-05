@@ -1,5 +1,7 @@
 # Change 010: Banqi Rules & Hidden Information Audit (010-banqi-rules-audit)
 
+> **現行規格見 `openspec/specs/banqi/spec.md`（規則與隱藏資訊邊界）及 `openspec/specs/persistence/spec.md`。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## 1. Problem Statement
 Banqi introduces hidden information (face-down pieces) and stochastic elements to the Multi Board Games Platform. While initial implementation and tests passed in Round 8, two critical architectural questions must be audited and locked down:
 1. **Information Security**: Standard `JSON.stringify(state)` serializes the full board, exposing the true identity (`player`, `type`, `rank`) of face-down pieces to spectators, network clients, or external callers.

@@ -1,5 +1,7 @@
 # Change 007: AI Framework (007-ai-framework)
 
+> **現行規格見 `openspec/specs/ai/spec.md`（AI 契約、觀察邊界、各棋種 AI 現況）。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## 1. Problem Statement
 The platform currently supports two fully implemented games (Xiangqi and Gomoku) playable in local Hot-seat PvP mode (two human players sharing the same device). However, a solo player cannot play against a computer opponent. To make the platform enjoyable for individual players without introducing heavy server infrastructure, a client-side, decoupled AI framework is needed.
 

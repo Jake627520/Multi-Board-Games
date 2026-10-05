@@ -42,6 +42,11 @@ openspec/
 │   ├── game-session/spec.md        # Session lifecycle, move validation, history, undo, reset
 │   ├── licensing/spec.md           # Open-source license and IP boundary specification
 │   ├── gomoku/spec.md              # Gomoku (五子棋) board, rules, and win conditions
+│   ├── banqi/spec.md               # Banqi (暗棋) board, first-flip colour, capture rules, draws, view projection
+│   ├── persistence/spec.md         # Save envelope (v1/v2), load validation & replay-consistency, compact formats
+│   ├── replay/spec.md              # Replay entry/stepping/isolation; what a Banqi replay shows
+│   ├── ai/spec.md                  # AiPlayer contract, observation boundary, per-game AIs, injectable RNG
+│   ├── autosave/spec.md            # Autosave slot, resume, home "continue", leave/discard confirmations
 │   └── xiangqi/
 │       ├── board/spec.md           # 9x10 grid, coordinates, river, palaces
 │       ├── pieces/spec.md          # 7 piece types, 32 pieces, setup, colors
@@ -140,6 +145,12 @@ openspec/
             └── integration/
                 └── spec.md
 ```
+
+## How the Two Directories Relate
+
+- `specs/` is the **Source of Truth** for current behaviour. Every Requirement and Scenario in the specs added in this round (`banqi`, `persistence`, `replay`, `ai`, `autosave`) carries a `Source:` line with a repository-relative `file:line`; behaviour the code does not implement is written as a **Known Limitation**, never as a feature. If a spec and the code disagree, the code is right and the spec has a bug.
+- `changes/` holds **historical proposals**. They record the decision made at the time and are *not* updated when code later diverges (for example `changes/017-banqi-ai-level2/design.md` says the AI receives the full state; today it receives only the projected view). Changes superseded by a living spec carry a one-line pointer under their title.
+- Older specs (`game-platform`, `game-session`, `licensing`, `gomoku`, `xiangqi/*`) predate the `Source:`-line convention.
 
 ## Spec Governance & TDD Workflow
 

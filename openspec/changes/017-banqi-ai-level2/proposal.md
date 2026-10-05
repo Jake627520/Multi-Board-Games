@@ -1,5 +1,7 @@
 # Change Proposal: 017-banqi-ai-level2
 
+> **現行規格見 `openspec/specs/ai/spec.md` 與 `openspec/specs/banqi/spec.md`（暗棋 AI 現為「進取／穩健」兩種等強風格，且只拿投影後的 view）。** 本文件保留當時的決策，不再作為事實來源；與程式碼或現行 spec 不一致處以後者為準。
+
 ## 1. Why
 
 象棋與五子棋皆已具備 Level 1 / Level 2 AI，暗棋仍僅支援本地雙人，單機 PvE 模式缺失。
