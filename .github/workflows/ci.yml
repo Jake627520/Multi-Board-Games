@@ -36,7 +36,7 @@ jobs:
 
       # e2e 是唯一會走完「首頁 → 進入遊戲 → 落子 → 存檔 → 復盤」整條
       # 使用者路徑的測試，先前從未在 CI 跑過。只裝 chromium：
-      # playwright.config.ts 沒有宣告其他 project。
+      # playwright.config.ts 宣告了 chromium 與 webkit 兩個 project。
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -44,7 +44,7 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run end-to-end tests
         run: npm run test:e2e

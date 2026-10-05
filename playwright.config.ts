@@ -1,8 +1,17 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
   testMatch: "**/*.spec.ts",
+  // webkit 是 Safari 的引擎。在沒有 iOS 實機的情況下，這是最接近的自動化驗證：
+  // 觸控兩段式落子、固定底部操作列、aspect-ratio 都靠它守。firefox 不加——
+  // 實測三個引擎各 9/9 全過，而 firefox 在這個專案沒有 webkit 那種獨有風險。
+  // 誠實的限制：Linux 上的 WebKit 不等於 iOS Safari，工具列伸縮、ITP、
+  // 雙擊縮放、iOS 字型都測不到。
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+  ],
   timeout: 30000,
   webServer: {
     // 測 production build 而非開發伺服器：dev server 走的是未經打包的原始碼，

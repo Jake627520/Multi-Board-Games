@@ -37,6 +37,19 @@ button, select { font: inherit; }
   border: 0;
 }
 
+/*
+ * 關掉雙擊縮放：iOS Safari 上連點相鄰的小格（五子棋手機上約 20px）會被當成
+ * 雙擊而放大畫面。manipulation 只取消雙擊縮放，**保留雙指縮放與捲動**——
+ * 使用者仍然可以放大畫面，這是無障礙的底線，不能拿掉。
+ * Playwright 驗不了這個行為，只能在 iOS 實機確認。
+ */
+button,
+.xiangqi-board,
+.gomoku-board,
+.banqi-board {
+  touch-action: manipulation;
+}
+
 .app-shell { max-width: 1180px; margin: 0 auto; padding: 28px 20px 48px; }
 .topbar { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 24px; }
 .eyebrow { font-size: 12px; letter-spacing: .28em; color: var(--jade); font-weight: 700; }
