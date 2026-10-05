@@ -28,11 +28,11 @@
 
 - **中國象棋 (Xiangqi)**：完整傳統規則（含將軍、困斃、長將判負、三次重複和棋、自然限招等）與中文傳統記譜，PvE 支援 Level 1（單層啟發式）與 Level 2（2-ply Minimax + Alpha-Beta 剪枝 + 走法排序）AI 切換。
 - **五子棋 (Gomoku)**：$15 \times 15$ 棋盤，支援自由規則 (Freestyle) 與黑方禁手規則（三三、四四、長連禁手，成五優先；白方無禁手），具備精確五連金光高亮與 Level 2 Minimax（含鄰近剪枝與 Alpha-Beta 搜尋）AI。
-- **半盤暗棋 (Banqi)**：$4 \times 8$ 隨機洗牌佈局，首翻決定執色、階級相剋、兵吃將、炮跳吃，具備完整的非完全資訊隱藏機制，PvE 支援 Level 1（啟發式）與 Level 2（2-ply Minimax + Alpha-Beta 剪枝）AI 切換。
+- **半盤暗棋 (Banqi)**：$4 \times 8$ 隨機洗牌佈局，首翻決定執色、階級相剋、兵吃將、炮跳吃，具備完整的非完全資訊隱藏機制，PvE 提供兩種風格、強度相當的對手：進取（見子就吃）與穩健（只吃划算的子、避免被吃）。
 - **雙人與電腦對戰**：支援本地雙人輪流（PvP）與單人對電腦（PvE，可自選先後手與難度，具備即時思考延遲）。
-- **通用視角解耦 (Generic Player View)**：核心層實質分離權威全狀態（Authoritative Full State）與安全視角（ViewState），暗棋未翻開狀態在記憶體與網路層皆不洩露兵種與陣營。
+- **通用視角解耦 (Generic Player View)**：核心層實質分離權威全狀態（Authoritative Full State）與安全視角（ViewState），玩家看到的畫面與 AI 收到的輸入都不含未翻開棋子的兵種與陣營；權威狀態（以及存檔）本身必然包含，那是遊戲運作所需。
 - **版本化存檔與管理 (Save Manager)**：
-  - 支援信賴本機存檔（GameSaveEnvelope v1）與原子化校驗回滾。
+  - 支援本機存檔（GameSaveEnvelope v2，含完整棋譜；v1 舊檔仍可載入）與重放校驗。
   - 提供本機存檔管理面板：一鍵儲存（自訂名稱）、載入、重新命名、刪除與容量保護（每遊戲上限 20 筆）。
 - **視覺化復盤回放 (Replay Controls)**：
   - 支援步譜單步前進/後退、進度滑桿拖曳跳轉、步譜項目點選跳轉。
@@ -143,11 +143,11 @@ src/
 
 - **中国象棋 (Xiangqi)**：完整传统规则（含将军、困毙、长将判负、三次重复和棋、自然限招等）与标准中文记谱；PvE 支持 Level 1（启发式）与 Level 2（2-ply Minimax + Alpha-Beta 剪枝 + 走法排序）AI。
 - **五子棋 (Gomoku)**：$15 \times 15$ 棋盘，支持无禁手自由规则 (Freestyle) 与黑方禁手规则（三三、四四、长连禁手，成五优先；白方无禁手），具备获胜五连高亮与 Level 2 Minimax（邻域搜索剪枝 + Alpha-Beta）AI。
-- **半盘暗棋 (Banqi)**：$4 \times 8$ 随机洗牌布局，首翻定色、阶级相克、兵吃将、炮跳吃，具备严格的不完全信息隐藏机制；PvE 支持 Level 1 与 Level 2 AI。
+- **半盘暗棋 (Banqi)**：$4 \times 8$ 随机洗牌布局，首翻定色、阶级相克、兵吃将、炮跳吃，具备严格的不完全信息隐藏机制；PvE 提供两种风格、强度相当的对手：进取与稳健。
 - **对战模式**：支持本地双人轮流（PvP）与人机对战（PvE，支持先后手、难度选择及思考延迟模拟）。
-- **通用视角隔离 (Generic Player View)**：核心层解耦权威全状态（Full State）与玩家安全视角（ViewState），暗棋未翻开棋子在内存与序列化层均不泄露兵种与阵营。
+- **通用视角隔离 (Generic Player View)**：核心层解耦权威全状态（Full State）与玩家安全视角（ViewState），玩家看到的画面与 AI 收到的输入都不含未翻开棋子的兵种与阵营；权威状态（以及存档）本身必然包含，那是游戏运作所需。
 - **版本化存档管理 (Save Manager)**：
-  - 本地安全存档（GameSaveEnvelope v1）与校验机制。
+  - 本地存档（GameSaveEnvelope v2，含完整棋谱；v1 旧档仍可加载）与重放校验。
   - 存档管理面板：支持保存、读取、重命名、删除与容量保护（单游戏上限 20 条）。
 - **复盘回放控制 (Replay Controls)**：
   - 支持单步前进/后退、进度条拖拽跳转、历史步谱项点击跳转。
@@ -210,16 +210,16 @@ Play directly in your browser (deployed via GitHub Pages):
 
 - **Xiangqi (Chinese Chess)**: Full traditional rules (check, checkmate, stalemate, perpetual check restrictions, threefold repetition, move counters) and Chinese algebraic notation. PvE supports Level 1 (heuristic) and Level 2 (2-ply Minimax + Alpha-Beta pruning + move ordering) AI.
 - **Gomoku**: $15 \times 15$ board. Supports Freestyle rules and Renju-style Black forbidden moves (double-three, double-four, overline; five-in-a-row takes precedence; no restrictions for White). Features winning five-in-a-row highlights and Level 2 Minimax AI with proximity pruning.
-- **Banqi (Half Chess)**: $4 \times 8$ randomized initial layout. First reveal determines player color, strict piece hierarchy (soldiers capture generals), and cannon jump-captures. Built-in hidden-information security model. PvE supports Level 1 and Level 2 AI.
+- **Banqi (Half Chess)**: $4 \times 8$ randomized initial layout. First reveal determines player color, strict piece hierarchy (soldiers capture generals), and cannon jump-captures. Built-in hidden-information security model. PvE offers two opponent styles of comparable strength: Aggressive and Cautious.
 - **Game Modes**: Local 2-Player pass-and-play (PvP) and vs Computer (PvE) with side selection, difficulty settings, and simulated thinking delay.
-- **View State Decoupling**: Structural separation between authoritative `FullState` and sanitized `ViewState`. Unrevealed Banqi pieces reveal neither identity nor side in memory or serialization payloads.
+- **View State Decoupling**: Structural separation between authoritative `FullState` and sanitized `ViewState`. Neither the player's view nor the AI's input contains an unrevealed piece's identity or side; the authoritative state, and saves, necessarily do, since the game runs on it.
 - **Save Manager**:
-  - Local persistence (`GameSaveEnvelope v1`) with payload validation.
+  - Local persistence (`GameSaveEnvelope v2`, carrying the full move history; v1 saves still load) with replay validation.
   - In-game save management: save, load, rename, delete, and slot capping (20 saves per game).
 - **Replay Controls**:
   - Step forward/backward, scrubber seeking, and move-list click-to-jump.
   - Auto-play with 3-speed toggle (0.4s / 0.8s / 1.2s), with player input and AI execution locked during review.
-- **Theme & Assets**: Ink-and-wash aesthetic using pure CSS/SVG and open-source web fonts (OFL-1.1). Zero bundled binary image assets.
+- **Theme & Assets**: Ink-and-wash aesthetic using pure CSS and open-source web fonts (OFL-1.1). Zero bundled binary image assets.
 
 ### 🚀 Quick Start
 

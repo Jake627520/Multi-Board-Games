@@ -271,7 +271,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
               </>
             ) : (
               <>
-                <strong>五子棋 禁手規則 (Standard Renju/Forbidden Rules)</strong>：
+                <strong>五子棋 黑方禁手規則 (Forbidden Moves for Black)</strong>：
                 <br />
                 黑方先行，禁止三三、四四與長連（≥6）；成五優先勝。白方無禁手限制。
                 <span className="en-rule">Black plays first with forbidden moves (double-three, double-four, overline ≥6). Five-in-a-row wins immediately. White has no restrictions.</span>

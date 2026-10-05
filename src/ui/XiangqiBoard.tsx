@@ -232,7 +232,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
             <span className="en-rule">Chariots move straight. Cannons jump over one piece to capture. Horses move in an L-step (blockable). Elephants move 2 diagonal steps on home side. Advisors &amp; Generals stay in palace. Soldiers move forward, gaining horizontal moves across river.</span>
             • <strong>將軍 (Check)</strong>：任一著法使對方將帥立即受攻擊即為將軍，被將方必須應將；兩方將帥不可在同一直線上直接照面（白臉將）。
             <span className="en-rule">Direct threat to the enemy General is Check. Players must respond. Generals cannot face each other directly on an open file (Flying General rule).</span>
-            • <strong>勝負 (End Game)</strong>：對方被將死或無合法著法（困斃）即獲勝；長將、長捉等循環局面依規則判負或和局。
+            • <strong>勝負 (End Game)</strong>：對方被將死或無合法著法（困斃）即獲勝；長將判負；其餘循環局面三次重複即和局（長捉判負尚未實作）。
             <span className="en-rule">Checkmate or stalemate the enemy King to win. Perpetual check results in a loss or draw.</span>
           </p>
         </div>
