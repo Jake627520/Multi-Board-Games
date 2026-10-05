@@ -13,6 +13,11 @@ interface GameHomeProps {
    */
   readonly canResume: (id: GameId) => boolean;
   readonly onSelectGame: (id: GameId) => void;
+  /**
+   * 放棄該棋種的存檔、開一局新的。只有「有可續的局」的卡片才會出現這個按鈕。
+   * 沒傳就不顯示（卡片仍會標示「繼續」）。
+   */
+  readonly onNewGame?: (id: GameId) => void;
 }
 
 /**
@@ -50,7 +55,7 @@ function Thumbnail({ gameId }: { readonly gameId: GameId }): ReactNode {
   return <span className="card-thumb thumb-generic" aria-hidden="true" />;
 }
 
-export function GameHome({ games, lastGameId, canResume, onSelectGame }: GameHomeProps) {
+export function GameHome({ games, lastGameId, canResume, onSelectGame, onNewGame }: GameHomeProps) {
   const found = lastGameId
     ? games.find((g) => g.id === lastGameId) ?? null
     : null;
@@ -80,8 +85,12 @@ export function GameHome({ games, lastGameId, canResume, onSelectGame }: GameHom
       </p>
 
       <ul className="game-card-grid">
-        {games.map((game) => (
-          <li key={game.id}>
+        {games.map((game) => {
+          // 每張卡各自判斷：點下去會不會續上舊局，要在卡片上講清楚，
+          // 不能只有「上次的棋種」才有提示、其他棋種卻無聲續上舊局。
+          const resumable = canResume(game.id);
+          return (
+          <li key={game.id} className={resumable ? "has-resume" : undefined}>
             <button
               type="button"
               className={`game-card accent-${game.accent ?? "ink"}`}
@@ -105,11 +114,30 @@ export function GameHome({ games, lastGameId, canResume, onSelectGame }: GameHom
                 {game.boardSize && (
                   <span className="card-size">{game.boardSize}</span>
                 )}
-                <span className="card-cta">開始對局 Play →</span>
+                {resumable ? (
+                  <span className="card-cta" data-testid={`card-cta-resume-${game.id}`}>
+                    繼續對局 Resume →
+                  </span>
+                ) : (
+                  <span className="card-cta" data-testid={`card-cta-new-${game.id}`}>
+                    開始對局 Play →
+                  </span>
+                )}
               </span>
             </button>
+            {resumable && onNewGame && (
+              <button
+                type="button"
+                className="card-new-game"
+                data-testid={`new-game-${game.id}`}
+                onClick={() => onNewGame(game.id)}
+              >
+                放棄存檔，開新局 New game
+              </button>
+            )}
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

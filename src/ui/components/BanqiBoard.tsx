@@ -11,6 +11,8 @@ import type { BanqiMove, BanqiPlayer, BanqiState, BanqiViewState } from "../../g
 import type { PieceType } from "../../games/xiangqi/types";
 import type { Player } from "../../core/game/types";
 import type { BoardProps } from "../board-props";
+import { confirmDiscardGame } from "../confirm-discard";
+import { loadSavedUi } from "../saved-ui";
 
 const LABELS: Record<BanqiPlayer, Record<PieceType, string>> = {
   red: {
@@ -52,9 +54,13 @@ const BANQI_AI_LABELS: AiLevelLabels = {
 export function BanqiBoard({ onProgressChange }: BoardProps) {
   const engine = useMemo(() => createBanqiEngine(), []);
 
-  const [mode, setMode] = useState<GameMode>("pvp");
-  const [humanPlayer, setHumanPlayer] = useState<Player>("red");
-  const [aiLevel, setAiLevel] = useState<AiLevel>("l1");
+  // 自動存檔附帶的 UI 設定：只在掛載時讀一次，當作下面幾個 state 的初始值
+  const [saved] = useState(() =>
+    loadSavedUi("banqi", AVAILABLE_PLAYERS.map((p) => p.id))
+  );
+  const [mode, setMode] = useState<GameMode>(saved.mode ?? "pvp");
+  const [humanPlayer, setHumanPlayer] = useState<Player>(saved.humanPlayer ?? "red");
+  const [aiLevel, setAiLevel] = useState<AiLevel>(saved.aiLevel ?? "l1");
   const [establishedP1Color, setEstablishedP1Color] = useState<Player | null>(null);
 
   const aiPlayer = useMemo(
@@ -80,6 +86,7 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
         ? `翻 (${m.pos.row},${m.pos.col})`
         : `(${m.from.row},${m.from.col})→(${m.to.row},${m.to.col})`,
     autosave: true,
+    autosaveUi: { mode, humanPlayer, aiLevel },
   });
 
   const {
@@ -90,12 +97,12 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
     isDraw,
     legalMoves,
     error,
-    history,
     move,
     undo,
     reset,
     isAiThinking,
     isReplayMode,
+    inProgress,
   } = session;
 
   // 同步首翻決定的執色
@@ -116,6 +123,9 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
     : [];
 
   function handleModeChange(newMode: GameMode) {
+    // 點已經選中的模式不是切換：不能清局
+    if (newMode === mode) return;
+    if (!confirmDiscardGame(inProgress, "切換對戰模式")) return;
     setMode(newMode);
     reset();
     setSelected(null);
@@ -123,6 +133,8 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
   }
 
   function handleHumanPlayerChange(player: Player) {
+    if (player === humanPlayer) return;
+    if (!confirmDiscardGame(inProgress, "更換先後手")) return;
     setHumanPlayer(player);
     reset();
     setSelected(null);
@@ -174,6 +186,8 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
   }
 
   function handleReset() {
+    if (isReplayMode) return; // 復盤中不可重新開始（按鈕也已停用）
+    if (!confirmDiscardGame(inProgress, "重新開始")) return;
     reset();
     setSelected(null);
     setEstablishedP1Color(null);
@@ -185,7 +199,7 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
   }
 
   // 回報「本局是否已開始」給 App（切換遊戲 / 回首頁前的確認依據）
-  const inProgress = history.length > 0 || isReplayMode;
+  // 排除已結束的對局：結束時自動存檔已被清掉，沒有東西需要保存，不該再警告
   useEffect(() => {
     onProgressChange?.(inProgress);
   }, [inProgress, onProgressChange]);
@@ -204,6 +218,7 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
           isAiThinking={isAiThinking}
           onUndo={handleUndo}
           onReset={handleReset}
+          isReplayMode={isReplayMode}
           formatPlayer={formatPlayer}
         />
 

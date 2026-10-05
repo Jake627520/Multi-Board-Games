@@ -1,10 +1,19 @@
 import { test, expect } from "@playwright/test";
 
+const seenDialogs: string[] = [];
+
 test.describe("E2E Platform User Flows A through E", () => {
   test.beforeEach(async ({ page }) => {
     // 首頁現在是三張遊戲卡；各 Flow 從首頁進入象棋後再照原本流程跑。
     // 對局中切換遊戲會跳確認，這裡一律同意（Flow E 會實際觸發）。
-    page.on("dialog", (d) => d.accept());
+    // 一律同意會讓「不該出現的確認」變成測試盲區——先前對局結束後離開會跳
+    // 不實警告，兩層測試都抓不到就是因為這一行。改成記錄下來，個別 flow
+    // 可以斷言它在不該出現的路徑上是空的。
+    seenDialogs.length = 0;
+    page.on("dialog", (d) => {
+      seenDialogs.push(d.message());
+      void d.accept();
+    });
     await page.goto("/");
     await page.getByTestId("game-card-xiangqi").click();
     await expect(page.getByTestId("xiangqi-board")).toBeVisible();
@@ -38,6 +47,9 @@ test.describe("E2E Platform User Flows A through E", () => {
     await expect(page.getByTestId("xiangqi-board")).toBeVisible();
     // 真的續上，不是開新局
     await expect(page.locator(".move-history-container")).toContainText("炮八平五");
+
+    // 棋局已自動保存，整段路徑不該有任何「會放棄棋局」的確認
+    expect(seenDialogs).toEqual([]);
   });
 
   test("Flow A: Home -> Xiangqi -> PvP -> move -> save -> replay", async ({ page }) => {

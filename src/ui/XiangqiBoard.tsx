@@ -15,6 +15,8 @@ import type { Piece, XiangqiMove, XiangqiState } from "../games/xiangqi/types";
 import { PIECE_NAMES } from "../games/xiangqi/notation";
 import type { Player } from "../core/game/types";
 import type { BoardProps } from "./board-props";
+import { confirmDiscardGame } from "./confirm-discard";
+import { loadSavedUi } from "./saved-ui";
 
 
 const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
@@ -24,14 +26,18 @@ const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
 
 export function XiangqiBoard({ onProgressChange }: BoardProps) {
   const engine = useMemo(() => createXiangqiEngine(), []);
-  const [aiLevel, setAiLevel] = useState<AiLevel>("l1");
+  // 自動存檔附帶的 UI 設定：只在掛載時讀一次，當作下面幾個 state 的初始值
+  const [saved] = useState(() =>
+    loadSavedUi("xiangqi", AVAILABLE_PLAYERS.map((p) => p.id))
+  );
+  const [aiLevel, setAiLevel] = useState<AiLevel>(saved.aiLevel ?? "l1");
   const aiPlayer = useMemo(
     () => (aiLevel === "l2" ? createXiangqiAiLevel2() : createXiangqiAiLevel1()),
     [aiLevel]
   );
 
-  const [mode, setMode] = useState<GameMode>("pvp");
-  const [humanPlayer, setHumanPlayer] = useState<Player>("red");
+  const [mode, setMode] = useState<GameMode>(saved.mode ?? "pvp");
+  const [humanPlayer, setHumanPlayer] = useState<Player>(saved.humanPlayer ?? "red");
 
   const aiColor: Player | undefined =
     mode === "pve" ? (humanPlayer === "red" ? "black" : "red") : undefined;
@@ -41,6 +47,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
     aiColor,
     formatMove: toXiangqiNotation,
     autosave: true,
+    autosaveUi: { mode, humanPlayer, aiLevel },
   });
 
   const {
@@ -52,11 +59,11 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
     legalMoves,
     error,
     isAiThinking,
-    history,
     move,
     undo,
     reset,
     isReplayMode,
+    inProgress,
   } = session;
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(
@@ -100,12 +107,17 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
   }
 
   function handleModeChange(newMode: GameMode) {
+    // 點已經選中的模式不是切換：不能清局（先前會呼叫 reset，PvE 局 2 步變 0 步）
+    if (newMode === mode) return;
+    if (!confirmDiscardGame(inProgress, "切換對戰模式")) return;
     setMode(newMode);
     reset();
     setSelected(null);
   }
 
   function handleHumanPlayerChange(p: Player) {
+    if (p === humanPlayer) return;
+    if (!confirmDiscardGame(inProgress, "更換執方")) return;
     setHumanPlayer(p);
     reset();
     setSelected(null);
@@ -119,6 +131,8 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
   }
 
   function handleReset() {
+    if (isReplayMode) return; // 復盤中不可重新開始（按鈕也已停用）
+    if (!confirmDiscardGame(inProgress, "重新開始")) return;
     reset();
     setSelected(null);
   }
@@ -129,7 +143,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
   }
 
   // 回報「本局是否已開始」給 App（切換遊戲 / 回首頁前的確認依據）
-  const inProgress = history.length > 0 || isReplayMode;
+  // 排除已結束的對局：結束時自動存檔已被清掉，沒有東西需要保存，不該再警告
   useEffect(() => {
     onProgressChange?.(inProgress);
   }, [inProgress, onProgressChange]);
@@ -150,6 +164,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
           isAiThinking={isAiThinking}
           onUndo={handleUndo}
           onReset={handleReset}
+          isReplayMode={isReplayMode}
           formatPlayer={formatPlayer}
         />
 

@@ -7,7 +7,8 @@ import { BanqiBoard } from "./ui/components/BanqiBoard";
 import { GameSwitcher } from "./ui/components/GameSwitcher";
 import { GameHome } from "./ui/components/GameHome";
 import { readLastGame, writeLastGame } from "./ui/last-game";
-import { hasAutosave } from "./core/persistence/autosave";
+import { clearAutosave, hasAutosave } from "./core/persistence/autosave";
+import { GameErrorBoundary } from "./ui/components/GameErrorBoundary";
 import type { GameId } from "./core/game/types";
 
 /**
@@ -52,6 +53,24 @@ export default function App() {
     setLastGameId(id);
     setGameId(id);
   }, []);
+
+  /**
+   * 「開新局」：丟掉該棋種的自動存檔再進入。會毀掉一局，所以有存檔時先確認
+   * （與「重新開始」同標準）。
+   */
+  const startNewGame = useCallback(
+    (id: GameId) => {
+      if (
+        hasAutosave(id) &&
+        !window.confirm("開新局會放棄這個棋種已保存、尚未結束的棋局。確定要開新局嗎？")
+      ) {
+        return;
+      }
+      clearAutosave(id);
+      enterGame(id);
+    },
+    [enterGame]
+  );
 
   const switchGame = useCallback(
     (id: GameId) => {
@@ -106,9 +125,20 @@ export default function App() {
           lastGameId={lastGameId}
           canResume={hasAutosave}
           onSelectGame={enterGame}
+          onNewGame={startNewGame}
         />
       ) : Board ? (
-        <Board key={gameId} onProgressChange={handleProgressChange} />
+        <GameErrorBoundary
+          key={gameId}
+          gameId={gameId}
+          onError={() => {
+            // 棋盤已崩潰、自動存檔已清：離開時不該再為這局問「無法自動保存」
+            inProgressRef.current = false;
+          }}
+          onGoHome={goHome}
+        >
+          <Board onProgressChange={handleProgressChange} />
+        </GameErrorBoundary>
       ) : (
         <section className="placeholder">
           <h2>{registry.get(gameId)?.name || gameId}</h2>

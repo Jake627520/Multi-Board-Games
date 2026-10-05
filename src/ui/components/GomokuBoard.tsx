@@ -13,6 +13,8 @@ import type { AiLevel } from "./AiLevelSelector";
 import type { GomokuMove, GomokuPlayer, GomokuRuleMode, GomokuState } from "../../games/gomoku/types";
 import type { Player } from "../../core/game/types";
 import type { BoardProps } from "../board-props";
+import { confirmDiscardGame } from "../confirm-discard";
+import { loadSavedUi } from "../saved-ui";
 
 const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "black", label: "⚫ 黑子（先手）" },
@@ -20,10 +22,20 @@ const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
 ];
 
 export function GomokuBoard({ onProgressChange }: BoardProps) {
-  const [ruleMode, setRuleMode] = useState<GomokuRuleMode>("freestyle");
-  const [aiLevel, setAiLevel] = useState<AiLevel>("l1");
-  const [mode, setMode] = useState<GameMode>("pvp");
-  const [humanPlayer, setHumanPlayer] = useState<Player>("black");
+  // 自動存檔附帶的 UI 設定：只在掛載時讀一次，當作下面幾個 state 的初始值。
+  // ruleMode 尤其重要：它決定「重新開始」會用哪個規則開新局，續局後若退回
+  // freestyle，禁手局按重新開始會無聲變成自由規則。
+  const [saved] = useState(() =>
+    loadSavedUi<GomokuRuleMode>(
+      "gomoku",
+      AVAILABLE_PLAYERS.map((p) => p.id),
+      ["freestyle", "forbidden_moves"]
+    )
+  );
+  const [ruleMode, setRuleMode] = useState<GomokuRuleMode>(saved.ruleMode ?? "freestyle");
+  const [aiLevel, setAiLevel] = useState<AiLevel>(saved.aiLevel ?? "l1");
+  const [mode, setMode] = useState<GameMode>(saved.mode ?? "pvp");
+  const [humanPlayer, setHumanPlayer] = useState<Player>(saved.humanPlayer ?? "black");
 
   const engine = useMemo(() => createGomokuEngine(ruleMode), [ruleMode]);
 
@@ -46,6 +58,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     aiColor,
     formatMove: (m) => toGomokuNotation(m),
     autosave: true,
+    autosaveUi: (s) => ({ mode, humanPlayer, aiLevel, ruleMode: s.ruleMode ?? ruleMode }),
   });
 
   const {
@@ -56,11 +69,11 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     isDraw,
     error,
     isAiThinking,
-    history,
     move,
     undo,
     reset,
     isReplayMode,
+    inProgress,
   } = session;
 
   const activeRuleMode = viewState.ruleMode ?? ruleMode;
@@ -96,6 +109,8 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
   }, [isReplayMode]);
 
   function handleReset() {
+    if (isReplayMode) return; // 復盤中不可重新開始（按鈕也已停用）
+    if (!confirmDiscardGame(inProgress, "重新開始")) return;
     tapConfirm.cancelPending();
     reset();
   }
@@ -106,25 +121,33 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
   }
 
   function handleModeChange(newMode: GameMode) {
+    // 點已經選中的模式不是切換：不能清局
+    if (newMode === mode) return;
+    if (!confirmDiscardGame(inProgress, "切換對戰模式")) return;
     tapConfirm.cancelPending();
     setMode(newMode);
     reset();
   }
 
   function handleHumanPlayerChange(p: Player) {
+    if (p === humanPlayer) return;
+    if (!confirmDiscardGame(inProgress, "更換執方")) return;
     tapConfirm.cancelPending();
     setHumanPlayer(p);
     reset();
   }
 
   function handleRuleModeChange(newRuleMode: GomokuRuleMode) {
+    // 以畫面實際生效的規則比對（載入存檔後與本地 state 可能不同）
+    if (newRuleMode === activeRuleMode) return;
+    if (!confirmDiscardGame(inProgress, "更換規則模式")) return;
     tapConfirm.cancelPending();
     setRuleMode(newRuleMode);
     reset();
   }
 
   // 回報「本局是否已開始」給 App（切換遊戲 / 回首頁前的確認依據）
-  const inProgress = history.length > 0 || isReplayMode;
+  // 排除已結束的對局：結束時自動存檔已被清掉，沒有東西需要保存，不該再警告
   useEffect(() => {
     onProgressChange?.(inProgress);
   }, [inProgress, onProgressChange]);
@@ -143,6 +166,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
           isAiThinking={isAiThinking}
           onUndo={handleUndo}
           onReset={handleReset}
+          isReplayMode={isReplayMode}
           formatPlayer={formatPlayer}
         />
 

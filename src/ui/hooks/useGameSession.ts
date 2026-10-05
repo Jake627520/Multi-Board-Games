@@ -21,6 +21,7 @@ import {
   clearAutosave,
   readAutosave,
   writeAutosave,
+  type AutosaveUi,
 } from "../../core/persistence/autosave";
 
 /**
@@ -43,9 +44,15 @@ export interface UseGameSessionOptions<State, Move, ViewState = State> {
   /**
    * 開啟自動存檔：掛載時還原該棋種的自動存檔，之後每次局面改變就寫回；
    * 對局結束、棋譜被清空（重新開始 / 悔棋到起點）時清除。預設關閉。
-   * 注意：只保存棋局本身（局面 + 棋譜），不含對戰模式 / 執方 / AI 風格這些 UI 選項。
+   * 棋局之外的 UI 選項（對戰模式 / 執方 / AI 風格 / 規則模式）由 autosaveUi 帶進同一份存檔，
+   * 還原時由棋盤自己用 readAutosaveUi 讀回（見 ui/saved-ui.ts）。
    */
   readonly autosave?: boolean;
+  /**
+   * 傳函式時以「目前實際局面」計算（例：五子棋的規則模式要以局面實際生效的為準，
+   * 載入存檔後可能與本地 state 不同）。
+   */
+  readonly autosaveUi?: AutosaveUi | ((state: State) => AutosaveUi);
 }
 
 export type ReplaySpeed = 400 | 800 | 1200;
@@ -176,6 +183,13 @@ export function useGameSession<State, Move, ViewState = State>(
   // 局面每次改變後同步自動存檔。直接讀 session 而非 React state：
   // 五子棋切換規則時 session 會被重建，session 才是權威來源。
   const sessionState = session.getState();
+  const autosaveUiOption = options?.autosaveUi;
+  const autosaveUi =
+    typeof autosaveUiOption === "function"
+      ? autosaveUiOption(sessionState)
+      : autosaveUiOption;
+  // 以內容（而非物件參照）判斷 UI 設定是否改變，呼叫端不必替它 memo
+  const autosaveUiKey = autosaveUi ? JSON.stringify(autosaveUi) : "";
   useEffect(() => {
     if (!autosaveEnabled) return;
     if (session.getHistory().length === 0 || engine.isGameOver(session.getState())) {
@@ -183,11 +197,18 @@ export function useGameSession<State, Move, ViewState = State>(
       return;
     }
     try {
-      writeAutosave(engine.id, saveManager.save(session, engine));
+      writeAutosave(engine.id, saveManager.save(session, engine), autosaveUi);
     } catch {
       clearAutosave(engine.id);
     }
-  }, [autosaveEnabled, engine, session, saveManager, state, sessionState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autosaveEnabled, engine, session, saveManager, state, sessionState, autosaveUiKey]);
+
+  // 「對局進行中」：有棋譜、且「實際對局」（不是復盤畫面）尚未結束。
+  // 對局結束時自動存檔會被刻意清掉，此時沒有任何東西需要保存；
+  // 必須讀 live 的 state 而不是 isGameOver（後者在復盤時跟著復盤步數走，
+  // 復盤一局已結束的棋、停在前幾步時會是 false），也不能用 history（復盤時被截斷）。
+  const inProgress = session.getHistory().length > 0 && !engine.isGameOver(session.getState());
 
   function saveGame(): string {
     return saveManager.save(session, engine);
@@ -362,6 +383,7 @@ export function useGameSession<State, Move, ViewState = State>(
     legalMoves,
     error,
     isAiThinking,
+    inProgress,
     history: isReplayMode
       ? (replaySession
           ? session.getHistory().slice(0, replayStep)

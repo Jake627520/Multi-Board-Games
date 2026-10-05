@@ -8,6 +8,8 @@ interface StatusBarProps {
   readonly inCheck?: boolean;
   readonly error?: string;
   readonly isAiThinking?: boolean;
+  /** 復盤中：悔棋與重新開始都會毀掉實際對局（或靜默無效），一律停用並說明原因 */
+  readonly isReplayMode?: boolean;
   readonly onUndo: () => void;
   readonly onReset: () => void;
   readonly formatPlayer?: (player: Player) => string;
@@ -28,6 +30,7 @@ export function StatusBar({
   inCheck,
   error,
   isAiThinking,
+  isReplayMode = false,
   onUndo,
   onReset,
   formatPlayer = defaultFormatPlayer,
@@ -53,13 +56,29 @@ export function StatusBar({
       </div>
 
       <div className="actions">
-        <button onClick={onUndo} disabled={isAiThinking} aria-label="悔棋">
+        <button
+          onClick={onUndo}
+          disabled={isAiThinking || isReplayMode}
+          aria-label="悔棋"
+          title={isReplayMode ? "復盤中無法悔棋，請先離開復盤" : undefined}
+        >
           悔棋
         </button>
-        <button onClick={onReset} disabled={isAiThinking} aria-label="重新開始">
+        <button
+          onClick={onReset}
+          disabled={isAiThinking || isReplayMode}
+          aria-label="重新開始"
+          title={isReplayMode ? "復盤中無法重新開始，請先離開復盤" : undefined}
+        >
           重新開始
         </button>
       </div>
+
+      {isReplayMode && (
+        <div className="muted" data-testid="replay-actions-hint">
+          復盤中：悔棋與重新開始已停用，離開復盤後才能操作。
+        </div>
+      )}
 
       {error && (
         <div className="error" role="alert" aria-live="assertive">

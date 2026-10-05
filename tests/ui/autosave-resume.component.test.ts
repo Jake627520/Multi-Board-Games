@@ -215,7 +215,11 @@ describe.each(CASES)("自動存檔與續局：$id", ({ id, Board, play, seedNear
     play();
     expect(hasAutosave(id)).toBe(true);
 
+    // 對局進行中重新開始會先確認（見 destructive-confirm 測試）；這裡同意，
+    // 驗的是「確認之後」自動存檔確實被清掉——期望值未變。
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     clickReset();
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
     expect(renderedMoveCount()).toBe(0);
     expect(window.localStorage.getItem(autosaveKey(id))).toBeNull();
     expect(hasAutosave(id)).toBe(false);
