@@ -28,7 +28,7 @@
 
 - **中國象棋 (Xiangqi)**：完整傳統規則（含將軍、困斃、長將判負、三次重複和棋、自然限招等）與中文傳統記譜，PvE 支援 Level 1（單層啟發式）與 Level 2（2-ply Minimax + Alpha-Beta 剪枝 + 走法排序）AI 切換。
 - **五子棋 (Gomoku)**：$15 \times 15$ 棋盤，支援自由規則 (Freestyle) 與黑方禁手規則（三三、四四、長連禁手，成五優先；白方無禁手），具備精確五連金光高亮與 Level 2 Minimax（含鄰近剪枝與 Alpha-Beta 搜尋）AI。
-- **半盤暗棋 (Banqi)**：$4 \times 8$ 隨機洗牌佈局，首翻決定執色、階級相剋、兵吃將、炮跳吃，具備完整的非完全資訊隱藏機制，PvE 提供兩種風格、強度相當的對手：進取（見子就吃）與穩健（只吃划算的子、避免被吃）。
+- **半盤暗棋 (Banqi)**：$4 \times 8$ 隨機洗牌佈局，首翻決定執色、階級相剋、兵吃將、炮跳吃，具備完整的非完全資訊隱藏機制，PvE 支援 Level 1（進取：見子就吃）與 Level 2（穩健：只吃划算的子、避免被吃）AI；Level 2 明顯較強，由配對對打測試守門。
 - **雙人與電腦對戰**：支援本地雙人輪流（PvP）與單人對電腦（PvE，可自選先後手與難度，具備即時思考延遲）。
 - **通用視角解耦 (Generic Player View)**：核心層實質分離權威全狀態（Authoritative Full State）與安全視角（ViewState），玩家看到的畫面與 AI 收到的輸入都不含未翻開棋子的兵種與陣營；權威狀態（以及存檔）本身必然包含，那是遊戲運作所需。
 - **版本化存檔與管理 (Save Manager)**：
@@ -143,7 +143,7 @@ src/
 
 - **中国象棋 (Xiangqi)**：完整传统规则（含将军、困毙、长将判负、三次重复和棋、自然限招等）与标准中文记谱；PvE 支持 Level 1（启发式）与 Level 2（2-ply Minimax + Alpha-Beta 剪枝 + 走法排序）AI。
 - **五子棋 (Gomoku)**：$15 \times 15$ 棋盘，支持无禁手自由规则 (Freestyle) 与黑方禁手规则（三三、四四、长连禁手，成五优先；白方无禁手），具备获胜五连高亮与 Level 2 Minimax（邻域搜索剪枝 + Alpha-Beta）AI。
-- **半盘暗棋 (Banqi)**：$4 \times 8$ 随机洗牌布局，首翻定色、阶级相克、兵吃将、炮跳吃，具备严格的不完全信息隐藏机制；PvE 提供两种风格、强度相当的对手：进取与稳健。
+- **半盘暗棋 (Banqi)**：$4 \times 8$ 随机洗牌布局，首翻定色、阶级相克、兵吃将、炮跳吃，具备严格的不完全信息隐藏机制；PvE 支持 Level 1（进取）与 Level 2（稳健）AI；Level 2 明显更强，由配对对打测试守门。
 - **对战模式**：支持本地双人轮流（PvP）与人机对战（PvE，支持先后手、难度选择及思考延迟模拟）。
 - **通用视角隔离 (Generic Player View)**：核心层解耦权威全状态（Full State）与玩家安全视角（ViewState），玩家看到的画面与 AI 收到的输入都不含未翻开棋子的兵种与阵营；权威状态（以及存档）本身必然包含，那是游戏运作所需。
 - **版本化存档管理 (Save Manager)**：
@@ -210,7 +210,7 @@ Play directly in your browser (deployed via GitHub Pages):
 
 - **Xiangqi (Chinese Chess)**: Full traditional rules (check, checkmate, stalemate, perpetual check restrictions, threefold repetition, move counters) and Chinese algebraic notation. PvE supports Level 1 (heuristic) and Level 2 (2-ply Minimax + Alpha-Beta pruning + move ordering) AI.
 - **Gomoku**: $15 \times 15$ board. Supports Freestyle rules and Renju-style Black forbidden moves (double-three, double-four, overline; five-in-a-row takes precedence; no restrictions for White). Features winning five-in-a-row highlights and Level 2 Minimax AI with proximity pruning.
-- **Banqi (Half Chess)**: $4 \times 8$ randomized initial layout. First reveal determines player color, strict piece hierarchy (soldiers capture generals), and cannon jump-captures. Built-in hidden-information security model. PvE offers two opponent styles of comparable strength: Aggressive and Cautious.
+- **Banqi (Half Chess)**: $4 \times 8$ randomized initial layout. First reveal determines player color, strict piece hierarchy (soldiers capture generals), and cannon jump-captures. Built-in hidden-information security model. PvE supports Level 1 (Aggressive) and Level 2 (Cautious) AI; Level 2 is clearly stronger, enforced by a paired-games test.
 - **Game Modes**: Local 2-Player pass-and-play (PvP) and vs Computer (PvE) with side selection, difficulty settings, and simulated thinking delay.
 - **View State Decoupling**: Structural separation between authoritative `FullState` and sanitized `ViewState`. Neither the player's view nor the AI's input contains an unrevealed piece's identity or side; the authoritative state, and saves, necessarily do, since the game runs on it.
 - **Save Manager**:

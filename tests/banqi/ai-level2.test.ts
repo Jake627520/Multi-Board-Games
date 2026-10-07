@@ -5,17 +5,16 @@ import { emptyBoard } from "../../src/games/banqi/board";
 import { getLegalMoves } from "../../src/games/banqi/rules";
 import type { BanqiPiece, BanqiState } from "../../src/games/banqi/types";
 
-describe("Banqi AI (Cautious style)", () => {
+describe("Banqi AI Level 2 (Cautious)", () => {
   const ai = createBanqiAiLevel2();
   const engine = createBanqiEngine();
 
   it("should have correct id and name metadata", () => {
-    // id 是穩定契約（存檔與既有測試都依賴它），維持 banqi-ai-l2 不變。
-    // name 則刻意不再寫「Level 2」：暗棋這兩個 AI 等強（配對對打 14:14），
-    // 差別在風格不在強弱，標成難度階梯是不實的宣稱。
+    // id 是穩定契約（存檔與既有測試都依賴它）。name 寫出難度與它的下法：
+    // Level 2 是只讀明子的穩健型貪婪，強弱關係由 ai-strength-ladder 測試守門。
     expect(ai.id).toBe("banqi-ai-l2");
+    expect(ai.name).toContain("Level 2");
     expect(ai.name).toContain("Cautious");
-    expect(ai.name).not.toContain("Level");
   });
 
   it("should select a strictly legal move from initial opening", async () => {

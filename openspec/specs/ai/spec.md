@@ -165,11 +165,13 @@ Each game offers two AIs, selected by `aiLevel` (`"l1"` | `"l2"`) when the mode 
 - **Source**: `src/ui/components/BanqiBoard.tsx:180-186`.
 - **Tests**: `tests/ui/ai-level-preserves-game.test.ts:62`.
 
-### 5.3 Requirement: Selector wording differs by game, deliberately
+### 5.3 Requirement: All three games use difficulty wording; the parenthetical must be truthful
 
-Xiangqi and Gomoku label the choice as **difficulty** ("電腦難度：", "Level 1 (啟發式)", "Level 2 (Minimax)"). Banqi labels it as **style** ("對手風格：", "進取 (Aggressive)", "穩健 (Cautious)") and must contain neither "難度" nor "Level".
+All three label the choice as **difficulty** ("電腦難度：", "Level 1", "Level 2"). The parenthetical description must describe how that game's AI actually plays: Xiangqi and Gomoku say "Minimax" for Level 2 because it is a search; Banqi overrides the default to say "穩健" (Cautious) because its Level 2 is a greedy heuristic over revealed pieces, not a search, so advertising "Minimax" there would be a false claim.
 
-- **Source**: `src/ui/components/AiLevelSelector.tsx:14-18` (defaults), `src/ui/components/BanqiBoard.tsx:48-52` (Banqi labels).
+Banqi was briefly labelled "對手風格" (style) and claimed to be two evenly-matched opponents. That rested on a 14:14 measurement that attributed wins by the opening `currentPlayer`, which before the first flip is only the first mover's placeholder; the half of games whose first flip is black were scored for the wrong side, flattening a real gap into a tie (§7.1).
+
+- **Source**: `src/ui/components/AiLevelSelector.tsx` (`DEFAULT_AI_LEVEL_LABELS`), `src/ui/components/BanqiBoard.tsx` (`BANQI_AI_LABELS`).
 - **Tests**: `tests/ui/ai-selector-labels.test.ts:20,28`, `tests/banqi/ai-level2.test.ts:12-19`.
 
 ---
@@ -216,11 +218,11 @@ All six are produced by factory functions that take optional `AiOptions` (see §
 - **Source**: `src/games/gomoku/ai.ts:49-50` (L1), `:388-389` (L2 leaf).
 - **Tests**: `tests/gomoku/ai.test.ts:24,49`, `tests/gomoku/ai-level2.test.ts:16,38`.
 
-### 6.3 Requirement: Banqi AIs are two styles, not two strengths
+### 6.3 Requirement: Banqi is a difficulty ladder (Level 2 beats Level 1)
 
 - **Level 1 "進取 (Aggressive)"** guesses the face-down cells once (§3.4), scores each flip with a constant and each move by captured value plus resulting material, and picks among the best (§8). It captures whenever it gains material, without checking whether the piece can be captured back.
 - **Level 2 "穩健 (Cautious)"** reads only revealed pieces. It values a capture, subtracts a penalty if the moved piece could be captured on arrival by an adjacent enemy, rewards moving an already-threatened piece away, and scores a flip lower the stronger the adjacent enemy pieces are.
-- The spec makes **no claim** about which is stronger; the UI presents them as styles (§5.3).
+- Level 2 clearly beats Level 1, enforced by a paired-games test with correct win attribution (§7.1). The fix that corrected the cannon threat model (§9, previously L4) widened the margin; the earlier "evenly matched" reading was a measurement error, not a property of the AIs.
 
 - **Source**: `src/games/banqi/ai.ts:99-127` (L1), `:129-256` (L2; flip at 227-231, move at 233-254).
 - **Tests**: `tests/banqi/ai-level2.test.ts:38,76` (takes an exposed capture; avoids stepping into capture), `tests/banqi/ai-blind.test.ts:47,67`.
@@ -238,7 +240,7 @@ All six are produced by factory functions that take optional `AiOptions` (see §
 
 ### 7.1 Requirement: Gomoku Level 2 must beat Level 1 (test-enforced)
 
-The test `tests/gomoku/ai-difficulty-ladder.test.ts` plays 10 paired games between Gomoku Level 2 and Level 1 (alternating colours, fixed-seed random two-move openings, at most 300 plies) and asserts that Level 2 wins **strictly more** games than Level 1, and that Level 2's average thinking time per move is under 100 ms. This is the only head-to-head strength test in the repository.
+The test `tests/gomoku/ai-difficulty-ladder.test.ts` plays 10 paired games between Gomoku Level 2 and Level 1 (alternating colours, fixed-seed random two-move openings, at most 300 plies) and asserts that Level 2 wins **strictly more** games than Level 1, and that Level 2's average thinking time per move is under 100 ms. Banqi has an equivalent test (§7.2).
 
 - **Source (guard)**: `tests/gomoku/ai-difficulty-ladder.test.ts:30-31,33-86` (assertions at 81 and 85).
 
@@ -247,11 +249,13 @@ The test `tests/gomoku/ai-difficulty-ladder.test.ts` plays 10 paired games betwe
 - **Then** the ladder test fails.
 - **Source**: `tests/gomoku/ai-difficulty-ladder.test.ts:81`.
 
-### 7.2 Requirement: Xiangqi and Banqi carry no strength test
+### 7.2 Requirement: Banqi Level 2 must beat Level 1 (test-enforced)
 
-There is no automated test that Xiangqi Level 2 beats Level 1, and none comparing the two Banqi styles. Xiangqi's selector calls its AIs a difficulty ladder, but nothing in the test suite enforces it. Xiangqi's tests cover legality, a few tactics, and a performance budget; Banqi's cover legality, tactics, the observation boundary and wording.
+`tests/banqi/ai-strength-ladder.test.ts` plays paired games between Banqi Level 2 (Cautious) and Level 1 (Aggressive), **attributing each win through `moverOf`** rather than the opening placeholder, and asserts Level 2 wins more than three times as many as Level 1. Attributing by the placeholder instead gives roughly 20:19 on the same games; by `moverOf` it is 35:4, and 41:1 after the cannon-threat fix.
 
-- **Source**: `src/ui/components/AiLevelSelector.tsx:9-13` (Xiangqi/Gomoku use difficulty wording), `tests/xiangqi/ai-level2.test.ts:11-90`, `tests/banqi/ai-level2.test.ts:12-130`; absence verified by `grep -rniE "head-to-head|paired|對打" tests` returning only `tests/gomoku/ai-difficulty-ladder.test.ts` and two comments.
+Xiangqi still has **no** strength test. Its selector calls its AIs a ladder but nothing enforces it; its tests cover legality, a few tactics and a performance budget.
+
+- **Source**: `tests/banqi/ai-strength-ladder.test.ts` (attribution via `engine.moverOf`, assertion `cautious > aggressive * 3`).
 
 ---
 
@@ -303,7 +307,7 @@ Every AI factory accepts `AiOptions { rng?, seed? }`. Resolution order: `rng` if
 - **L2 — `BANQI_L2_SAMPLES` is exported but unused.** Level 2 no longer samples; the constant is a leftover from an earlier design. (`src/games/banqi/ai.ts:40`; no other reference in `src/` or `tests/`.)
 - **L3 — Determinization over-counts captured pieces.** The view has no capture record, so captured pieces stay in the "unseen" pool and Level 1 may guess a face-down cell to be a piece that is already gone. (`src/games/banqi/determinize.ts:44-52`.)
 - **L4 — The Cautious AI treats an adjacent enemy cannon as able to capture it.** `attackedAt` reuses `canCapture`, which would let a cannon capture orthogonally, although a cannon captures only by jumping; the comment says cannon jumps are excluded but adjacent cannons are not. (`src/games/banqi/ai.ts:181-191` with `src/games/banqi/rules.ts:31-46`, `:77-117`.)
-- **L5 — Only Gomoku's difficulty ladder is test-enforced** (§7). Win-rate figures quoted in comments (`src/ui/components/AiLevelSelector.tsx:10-12`, `src/ui/components/BanqiBoard.tsx:43-47`, `tests/ui/ai-selector-labels.test.ts:9-12`, `tests/banqi/ai-level2.test.ts:12-15`) are historical measurements that no test reproduces.
+- **L5 — Xiangqi's difficulty ladder is not test-enforced** (§7.2); Gomoku's and Banqi's are. Win-rate figures quoted in comments (`src/ui/components/AiLevelSelector.tsx:10-12`, `src/ui/components/BanqiBoard.tsx:43-47`, `tests/ui/ai-selector-labels.test.ts:9-12`, `tests/banqi/ai-level2.test.ts:12-15`) are historical measurements that no test reproduces.
 - **L6 — Search depth is fixed at 2 plies** for both minimax AIs, with no time budget or iterative deepening. (`src/games/xiangqi/ai.ts:167`, `src/games/gomoku/ai.ts:327`.)
 - **L7 — Banqi's initial deal is not seedable through the engine**, so reproducing a whole PvE Banqi game requires overriding `Math.random` globally while the engine is constructed. (`src/games/banqi/board.ts:63-70`; the test does exactly that: `tests/ui/ai-observation-boundary.test.ts:39-48`.)
 - **L8 — A stale test-file reference exists in a code comment**: `src/games/gomoku/ai.ts:103` cites `tests/gomoku/ai-randomness.test.ts`, which does not exist (variety is covered by `tests/ai/move-variety.test.ts`).

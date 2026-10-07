@@ -41,14 +41,18 @@ const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
 ];
 
 /**
- * 暗棋的兩個 AI 等強（配對對打 14:14），差別在風格而非強弱，所以不用
- * 「難度」措辭——那會是個不實的宣稱。象棋與五子棋維持 Level 1/2，
- * 因為它們確實是階梯（8:0 與 11:1）。
+ * 暗棋是難度階梯：穩健型（Level 2）大幅強過進取型（Level 1），由
+ * tests/banqi/ai-strength-ladder.test.ts 守門。仍傳自己的標籤，是因為預設的
+ * 「Level 2 (Minimax)」對暗棋不成立——它的 Level 2 是只讀明子的貪婪，不是搜尋。
+ *
+ * 曾經標成「對手風格」並宣稱兩者等強，依據是 14:14 的對打結果。那個數字是
+ * 量測錯誤：勝負用開局的 currentPlayer 歸屬，而首翻前那只是先手的佔位標籤，
+ * 首翻翻黑子的那一半局被歸錯邊，真實差距被拉成五五波。
  */
 const BANQI_AI_LABELS: AiLevelLabels = {
-  heading: "對手風格：",
-  l1: "進取 (Aggressive)",
-  l2: "穩健 (Cautious)",
+  heading: "電腦難度：",
+  l1: "Level 1 (進取)",
+  l2: "Level 2 (穩健)",
 };
 
 export function BanqiBoard({ onProgressChange }: BoardProps) {

@@ -94,7 +94,7 @@ function orderMoves(state: BanqiState, moves: BanqiMove[]): BanqiMove[] {
  */
 export class BanqiAiLevel1 implements AiPlayer<BanqiViewState, BanqiMove> {
   readonly id = "banqi-ai-l1";
-  readonly name = "Banqi AI (Aggressive)";
+  readonly name = "Banqi AI (Level 1 - Aggressive)";
   private readonly rng: Rng;
 
   constructor(options?: AiOptions) {
@@ -204,7 +204,7 @@ export function adjacentThreatValue(board: ViewBoard, r: number, c: number, me: 
 
 export class BanqiAiLevel2 implements AiPlayer<BanqiViewState, BanqiMove> {
   readonly id = "banqi-ai-l2";
-  readonly name = "Banqi AI (Cautious)";
+  readonly name = "Banqi AI (Level 2 - Cautious)";
   private readonly rng: Rng;
 
   constructor(options?: AiOptions) {
