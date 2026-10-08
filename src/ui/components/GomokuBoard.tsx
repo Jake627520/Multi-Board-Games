@@ -15,6 +15,7 @@ import type { Player } from "../../core/game/types";
 import type { BoardProps } from "../board-props";
 import { confirmDiscardGame } from "../confirm-discard";
 import { loadSavedUi } from "../saved-ui";
+import { gomokuMoveCells } from "../move-cells";
 
 const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "black", label: "⚫ 黑子（先手）" },
@@ -57,6 +58,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
     formatMove: (m) => toGomokuNotation(m),
+    moveCells: gomokuMoveCells,
     autosave: true,
     autosaveUi: (s) => ({ mode, humanPlayer, aiLevel, ruleMode: s.ruleMode ?? ruleMode }),
   });
@@ -74,6 +76,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
     reset,
     isReplayMode,
     inProgress,
+    lastMoveCells,
   } = session;
 
   const activeRuleMode = viewState.ruleMode ?? ruleMode;
@@ -180,6 +183,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
             row.map((stone: GomokuPlayer | null, c: number) => {
               const isEmpty = stone === null;
               const isWinning = winningSet.has(`${r},${c}`);
+              const isLastMove = lastMoveCells.has(`${r},${c}`);
               const isPreview =
                 tapConfirm.pending !== null &&
                 tapConfirm.pending.row === r &&
@@ -187,7 +191,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
               return (
                 <button
                   key={`${r}-${c}`}
-                  className={`gomoku-cell ${isEmpty ? "empty" : ""}`}
+                  className={`gomoku-cell ${isEmpty ? "empty" : ""} ${isLastMove ? "last-move" : ""}`}
                   onClick={() => handleCellClick(r, c)}
                   disabled={isGameOver || isAiThinking || isReplayMode || !isEmpty}
                   aria-label={`${r}-${c}${stone ? ` ${stone}` : " 空位"}`}

@@ -75,6 +75,15 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 .piece { z-index: 2; width: 72%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: var(--disc); border: 1.5px solid currentColor; box-shadow: 0 2px 5px rgba(50,35,10,.28), inset 0 0 0 3px var(--disc), inset 0 0 0 3.8px currentColor; font-family: var(--font-serif); font-weight: 700; font-size: clamp(18px, 3.5vw, 30px); user-select: none; }
 .piece.red { color: var(--accent); }
 .piece.black { color: var(--piece-ink); }
+/* 上一步標記（三種棋共用的語彙）：格子內緣雙層圈（外 --gold、內 --gold-deep）＋ --gold-soft 底，持續到下一步，
+   不做動畫。用 box-shadow 而非 outline：outline 已被 focus ring（格子）、選取（.piece）、
+   五連（.stone.winning）佔用，互不干擾。不新增顏色字面值，只用 :root 既有 token。 */
+.cell.last-move,
+.gomoku-cell.last-move {
+  background: var(--gold-soft);
+  box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 0 5px var(--gold-deep);
+}
+
 .cell.selected .piece { outline: 3px solid var(--accent); outline-offset: 1px; }
 .cell.target::after { content: "•"; z-index: 3; position: absolute; color: var(--accent); font-size: 28px; background: transparent; }
 .river { position: absolute; z-index: 4; left: 1px; right: 1px; top: calc(45% + 1px); height: calc(10% - 2px); display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--font-seal); font-weight: 400; letter-spacing: .4em; color: var(--wood-line); pointer-events: none; font-size: clamp(14px, 2.2vw, 24px); background: var(--wood); }
@@ -545,6 +554,11 @@ h1 { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 900; font-siz
 
 .banqi-cell:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.25);
+}
+
+.banqi-cell.last-move {
+  background: var(--gold-soft);
+  box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 0 5px var(--gold-deep);
 }
 
 .banqi-cell.selected {

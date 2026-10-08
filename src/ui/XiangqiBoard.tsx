@@ -17,6 +17,7 @@ import type { Player } from "../core/game/types";
 import type { BoardProps } from "./board-props";
 import { confirmDiscardGame } from "./confirm-discard";
 import { loadSavedUi } from "./saved-ui";
+import { xiangqiMoveCells } from "./move-cells";
 
 
 const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
@@ -46,6 +47,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
     aiPlayer: mode === "pve" ? aiPlayer : undefined,
     aiColor,
     formatMove: toXiangqiNotation,
+    moveCells: xiangqiMoveCells,
     autosave: true,
     autosaveUi: { mode, humanPlayer, aiLevel },
   });
@@ -64,6 +66,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
     reset,
     isReplayMode,
     inProgress,
+    lastMoveCells,
   } = session;
 
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(
@@ -175,12 +178,13 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
               const isTarget = targets.some(
                 (m) => m.to.row === r && m.to.col === c
               );
+              const isLastMove = lastMoveCells.has(`${r},${c}`);
               return (
                 <button
                   key={`${r}-${c}`}
                   className={`cell ${isSelected ? "selected" : ""} ${
                     isTarget ? "target" : ""
-                  }`}
+                  } ${isLastMove ? "last-move" : ""}`}
                   onClick={() => clickCell(r, c)}
                   disabled={isAiThinking || isReplayMode}
                   aria-label={`${r}-${c}${

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { GameSession } from "../../core/game/session";
-import type { GameEngine, GameViewContext, Player } from "../../core/game/types";
+import type { GameEngine, GameViewContext, Player, Position } from "../../core/game/types";
 import type { AiPlayer } from "../../core/ai/types";
 import { SaveManager } from "../../core/persistence/save-manager";
 import {
@@ -41,6 +41,12 @@ export interface UseGameSessionOptions<State, Move, ViewState = State> {
   readonly aiDelayMs?: number;
   readonly formatMove?: (move: Move, stateBefore: State) => string;
   readonly viewContext?: GameViewContext;
+  /**
+   * 一步棋牽涉到哪些格子（象棋：起點與終點；五子棋：落子格；暗棋：翻的格或起訖兩格）。
+   * 給了才會有 lastMoveCells；Move 的形狀是各棋種自己的事，hook 不猜。
+   * 請傳模組層級的穩定函式（內部以它為 memo 依賴）。
+   */
+  readonly moveCells?: (move: Move) => readonly Position[];
   /**
    * 開啟自動存檔：掛載時還原該棋種的自動存檔，之後每次局面改變就寫回；
    * 對局結束、棋譜被清空（重新開始 / 悔棋到起點）時清除。預設關閉。
@@ -99,6 +105,23 @@ export function useGameSession<State, Move, ViewState = State>(
     }
     return engine.projectView(activeState, viewContext);
   }, [engine, activeState, viewContext, isReplayMode, replaySession, replayStep]);
+
+  // 「當前有效步」的棋譜：復盤時是截到 replayStep 的切片，否則是整局。
+  // history 與 lastMoveCells 共用這一份，兩者永遠對齊同一步。
+  const history = isReplayMode
+    ? (replaySession ? session.getHistory().slice(0, replayStep) : [])
+    : session.getHistory();
+  const lastMove: Move | undefined =
+    history.length > 0 ? history[history.length - 1].move : undefined;
+  const moveCells = options?.moveCells;
+  /** 當前有效步所牽涉格子的 "row,col" 集合；0 步或沒給 moveCells 時為空集合。 */
+  const lastMoveCells: ReadonlySet<string> = useMemo(() => {
+    const set = new Set<string>();
+    if (lastMove !== undefined && moveCells) {
+      for (const p of moveCells(lastMove)) set.add(`${p.row},${p.col}`);
+    }
+    return set;
+  }, [lastMove, moveCells]);
 
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -384,11 +407,8 @@ export function useGameSession<State, Move, ViewState = State>(
     error,
     isAiThinking,
     inProgress,
-    history: isReplayMode
-      ? (replaySession
-          ? session.getHistory().slice(0, replayStep)
-          : [])
-      : session.getHistory(),
+    history,
+    lastMoveCells,
     move,
     undo,
     reset,

@@ -13,6 +13,7 @@ import type { Player } from "../../core/game/types";
 import type { BoardProps } from "../board-props";
 import { confirmDiscardGame } from "../confirm-discard";
 import { loadSavedUi } from "../saved-ui";
+import { banqiMoveCells } from "../move-cells";
 
 const LABELS: Record<BanqiPlayer, Record<PieceType, string>> = {
   red: {
@@ -89,6 +90,7 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
       m.type === "flip"
         ? `翻 (${m.pos.row},${m.pos.col})`
         : `(${m.from.row},${m.from.col})→(${m.to.row},${m.to.col})`,
+    moveCells: banqiMoveCells,
     autosave: true,
     autosaveUi: { mode, humanPlayer, aiLevel },
   });
@@ -107,6 +109,7 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
     isAiThinking,
     isReplayMode,
     inProgress,
+    lastMoveCells,
   } = session;
 
   // 同步首翻決定的執色
@@ -236,11 +239,12 @@ export function BanqiBoard({ onProgressChange }: BoardProps) {
             row.map((piece, c) => {
               const isSelected = selected?.row === r && selected?.col === c;
               const isTarget = targets.some((t) => t.row === r && t.col === c);
+              const isLastMove = lastMoveCells.has(`${r},${c}`);
 
               return (
                 <button
                   key={`${r}-${c}`}
-                  className={`banqi-cell ${isSelected ? "selected" : ""} ${isTarget ? "target" : ""}`}
+                  className={`banqi-cell ${isSelected ? "selected" : ""} ${isTarget ? "target" : ""} ${isLastMove ? "last-move" : ""}`}
                   onClick={() => handleCellClick(r, c)}
                   disabled={isGameOver || isReplayMode}
                   aria-label={`${r}-${c}${
