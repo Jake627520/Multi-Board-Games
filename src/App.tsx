@@ -63,16 +63,20 @@ export default function App() {
    * 「開新局」：丟掉該棋種的自動存檔再進入。會毀掉一局，所以有存檔時先確認
    * （與「重新開始」同標準）。
    */
+  /**
+   * 以指定對手「開新局」：丟掉該棋種的自動存檔再進入。會毀掉一局，所以有存檔時
+   * 先確認（與「重新開始」同標準）。續局走 enterGame（不帶 mode、不清存檔）。
+   */
   const startNewGame = useCallback(
-    (id: GameId) => {
+    (id: GameId, mode?: GameMode) => {
       if (
         hasAutosave(id) &&
-        !window.confirm("開新局會放棄這個棋種已保存、尚未結束的棋局。確定要開新局嗎？")
+        !window.confirm("這個棋種有尚未結束的棋局，開新局會放棄它。確定要開新局嗎？")
       ) {
         return;
       }
       clearAutosave(id);
-      enterGame(id);
+      enterGame(id, mode);
     },
     [enterGame]
   );

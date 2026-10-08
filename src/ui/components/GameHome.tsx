@@ -22,7 +22,7 @@ interface GameHomeProps {
    * 放棄該棋種的存檔、開一局新的。只有「有可續的局」的卡片才會出現這個按鈕。
    * 沒傳就不顯示（卡片仍會標示「繼續」）。
    */
-  readonly onNewGame?: (id: GameId) => void;
+  readonly onNewGame: (id: GameId, mode?: GameMode) => void;
 }
 
 /**
@@ -117,19 +117,25 @@ export function GameHome({ games, lastGameId, canResume, onSelectGame, onNewGame
                 {game.boardSize && (
                   <span className="card-size">{game.boardSize}</span>
                 )}
-                {resumable && (
-                  <span className="card-cta" data-testid={`card-cta-resume-${game.id}`}>
-                    有未完成的棋局，將接續 Saved game resumes
-                  </span>
-                )}
               </div>
-              <div className="card-modes" role="group" aria-label={`${game.name}：選擇對手`}>
+              {resumable && (
+                <button
+                  type="button"
+                  className="card-resume"
+                  data-testid={`resume-game-${game.id}`}
+                  aria-label={`繼續未完成的${game.name} Resume`}
+                  onClick={() => onSelectGame(game.id)}
+                >
+                  ▶ 繼續未完成的棋局 Resume
+                </button>
+              )}
+              <div className="card-modes" role="group" aria-label={resumable ? `${game.name}：開新局` : `${game.name}：選擇對手`}>
                 <button
                   type="button"
                   className="mode-entry"
                   data-testid={`play-pvp-${game.id}`}
                   aria-label={`雙人對戰 ${game.name} Two Players`}
-                  onClick={() => onSelectGame(game.id, "pvp")}
+                  onClick={() => onNewGame(game.id, "pvp")}
                 >
                   <span className="mode-entry-zh">👥 雙人對戰</span>
                   <span className="mode-entry-en">Two Players</span>
@@ -139,23 +145,13 @@ export function GameHome({ games, lastGameId, canResume, onSelectGame, onNewGame
                   className="mode-entry"
                   data-testid={`play-pve-${game.id}`}
                   aria-label={`對戰電腦 ${game.name} vs Computer`}
-                  onClick={() => onSelectGame(game.id, "pve")}
+                  onClick={() => onNewGame(game.id, "pve")}
                 >
                   <span className="mode-entry-zh">🤖 對戰電腦</span>
                   <span className="mode-entry-en">vs Computer</span>
                 </button>
               </div>
             </article>
-            {resumable && onNewGame && (
-              <button
-                type="button"
-                className="card-new-game"
-                data-testid={`new-game-${game.id}`}
-                onClick={() => onNewGame(game.id)}
-              >
-                放棄存檔，開新局 New game
-              </button>
-            )}
           </li>
           );
         })}

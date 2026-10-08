@@ -10,10 +10,14 @@ import { autosaveKey, readAutosave, writeAutosave } from "../../src/core/persist
 import { mulberry32, seedAutosave } from "./autosave-helpers";
 
 /**
- * 首頁每張卡有兩個對手入口（雙人 / 對電腦）。
- * 優先序是這支測試最要守的：棋盤端 mode = saved.mode ?? initialMode ?? "pvp"，
- * 續局存檔的 mode 一定贏過首頁選擇——否則玩家續上一局 PvE，會因為在首頁點了
- * 「雙人對戰」（或預設）被無聲改成 PvP。
+ * 首頁每張卡有兩個對手入口（雙人 / 對電腦）＋ 有存檔時一個「繼續」入口。
+ * 語義分工是這支測試最要守的：
+ *   - 兩個 mode 按鈕一律「開新局」並用選的對手——玩家明確點了就該尊重，
+ *     有未完成存檔時先確認放棄（避免「點對戰電腦卻進了雙人」）。
+ *   - 「繼續」入口（卡片上的 resume-game，或頂部 resume-last-game 橫幅）才是
+ *     續局，用存檔的 mode。
+ * 開新局進入前會清掉該棋種的 autosave，所以棋盤端 saved.mode 為空、
+ * 由 initialMode 生效。
  */
 const GAMES: readonly GameId[] = ["xiangqi", "gomoku", "banqi"];
 
@@ -83,23 +87,46 @@ describe("首頁對手入口（雙人 / 對電腦）", () => {
       expect(screen.queryByTestId("side-selector")).toBeNull();
     });
 
-    it("優先序：存檔是 PvE，就算從首頁點「雙人對戰」，續局仍是 PvE", () => {
+    it("存檔是 PvE，點「雙人對戰」→ 確認後開新局且是 PvP（尊重按鈕，不續存檔）", () => {
       seedAutosaveWithMode(id, "pve");
       render(createElement(App));
       fireEvent.click(screen.getByTestId(`play-pvp-${id}`));
-      expect(isActive(pveBtn())).toBe(true);
-      expect(isActive(pvpBtn())).toBe(false);
+      // 開新局用選的對手，不是續上存檔的 PvE
+      expect(isActive(pvpBtn())).toBe(true);
+      expect(isActive(pveBtn())).toBe(false);
+      // 開新局清掉存檔
+      expect(window.localStorage.getItem(autosaveKey(id))).toBeNull();
     });
 
-    it("優先序：存檔是 PvP，從首頁點「對戰電腦」，續局仍是 PvP（存檔贏過首頁）", () => {
+    it("存檔是 PvP，點「對戰電腦」→ 確認後開新局且是 PvE", () => {
       seedAutosaveWithMode(id, "pvp");
       render(createElement(App));
       fireEvent.click(screen.getByTestId(`play-pve-${id}`));
-      expect(isActive(pvpBtn())).toBe(true);
-      expect(isActive(pveBtn())).toBe(false);
+      expect(isActive(pveBtn())).toBe(true);
+      expect(isActive(pvpBtn())).toBe(false);
+      expect(window.localStorage.getItem(autosaveKey(id))).toBeNull();
     });
 
-    it("「繼續上次」不帶 mode：續上存檔的 PvE", () => {
+    it("有存檔時點 mode 按鈕、取消確認 → 不進入、存檔還在", () => {
+      vi.spyOn(window, "confirm").mockReturnValue(false);
+      seedAutosaveWithMode(id, "pve");
+      render(createElement(App));
+      fireEvent.click(screen.getByTestId(`play-pvp-${id}`));
+      // 還在首頁，存檔未被清
+      expect(screen.getByTestId("game-home")).toBeTruthy();
+      expect(window.localStorage.getItem(autosaveKey(id))).not.toBeNull();
+    });
+
+    it("卡片「繼續」入口 → 續上存檔的 PvE（mode 來自存檔，不是首頁）", () => {
+      seedAutosaveWithMode(id, "pve");
+      render(createElement(App));
+      fireEvent.click(screen.getByTestId(`resume-game-${id}`));
+      expect(isActive(pveBtn())).toBe(true);
+      // 續局不清存檔
+      expect(window.localStorage.getItem(autosaveKey(id))).not.toBeNull();
+    });
+
+    it("「繼續上次」橫幅不帶 mode：續上存檔的 PvE", () => {
       seedAutosaveWithMode(id, "pve");
       // 讓 last-game 指向這個棋種，首頁才會出現繼續按鈕
       window.localStorage.setItem("mbg:last-game", id);
@@ -122,12 +149,11 @@ describe("首頁對手入口（雙人 / 對電腦）", () => {
     expect(isActive(pvpBtn())).toBe(true);
   });
 
-  it("開新局後存檔被清掉，不會殘留舊的 mode 存檔", () => {
+  it("開新局（點 mode 按鈕）後存檔被清掉，不會殘留舊的 mode 存檔", () => {
     seedAutosaveWithMode("gomoku", "pve");
     render(createElement(App));
-    fireEvent.click(screen.getByTestId("new-game-gomoku"));
+    fireEvent.click(screen.getByTestId("play-pvp-gomoku"));
     expect(window.localStorage.getItem(autosaveKey("gomoku"))).toBeNull();
-    // 沒帶 mode 的入口 → 預設 PvP
     expect(isActive(pvpBtn())).toBe(true);
   });
 });
