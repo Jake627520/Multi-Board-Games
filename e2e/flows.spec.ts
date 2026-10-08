@@ -15,7 +15,7 @@ test.describe("E2E Platform User Flows A through E", () => {
       void d.accept();
     });
     await page.goto("/");
-    await page.getByTestId("game-card-xiangqi").click();
+    await page.getByTestId("play-pvp-xiangqi").click();
     await expect(page.getByTestId("xiangqi-board")).toBeVisible();
   });
 
@@ -30,7 +30,7 @@ test.describe("E2E Platform User Flows A through E", () => {
     // 按鈕當時只看 mbg:last-game 有沒有值，點下去是空棋盤。
     await expect(page.getByTestId("resume-last-game")).toHaveCount(0);
 
-    await page.getByTestId("game-card-gomoku").click();
+    await page.getByTestId("play-pvp-gomoku").click();
     await expect(page.getByTestId("gomoku-board")).toBeVisible();
   });
 

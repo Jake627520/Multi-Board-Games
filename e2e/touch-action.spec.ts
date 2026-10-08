@@ -10,7 +10,7 @@ import { test, expect } from "@playwright/test";
  */
 test("棋盤與棋格關閉雙擊縮放，但保留其他觸控手勢", async ({ page }) => {
   await page.goto("/");
-  await page.getByTestId("game-card-gomoku").click();
+  await page.getByTestId("play-pvp-gomoku").click();
   await expect(page.getByTestId("gomoku-board")).toBeVisible();
 
   const board = await page.locator(".gomoku-board").evaluate((el) => getComputedStyle(el).touchAction);

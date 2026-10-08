@@ -25,7 +25,7 @@ const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "black", label: "⬛ 黑方（後手）" },
 ];
 
-export function XiangqiBoard({ onProgressChange }: BoardProps) {
+export function XiangqiBoard({ onProgressChange, initialMode }: BoardProps) {
   const engine = useMemo(() => createXiangqiEngine(), []);
   // 自動存檔附帶的 UI 設定：只在掛載時讀一次，當作下面幾個 state 的初始值
   const [saved] = useState(() =>
@@ -37,7 +37,7 @@ export function XiangqiBoard({ onProgressChange }: BoardProps) {
     [aiLevel]
   );
 
-  const [mode, setMode] = useState<GameMode>(saved.mode ?? "pvp");
+  const [mode, setMode] = useState<GameMode>(saved.mode ?? initialMode ?? "pvp");
   const [humanPlayer, setHumanPlayer] = useState<Player>(saved.humanPlayer ?? "red");
 
   const aiColor: Player | undefined =

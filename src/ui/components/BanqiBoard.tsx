@@ -56,14 +56,14 @@ const BANQI_AI_LABELS: AiLevelLabels = {
   l2: "Level 2 (穩健)",
 };
 
-export function BanqiBoard({ onProgressChange }: BoardProps) {
+export function BanqiBoard({ onProgressChange, initialMode }: BoardProps) {
   const engine = useMemo(() => createBanqiEngine(), []);
 
   // 自動存檔附帶的 UI 設定：只在掛載時讀一次，當作下面幾個 state 的初始值
   const [saved] = useState(() =>
     loadSavedUi("banqi", AVAILABLE_PLAYERS.map((p) => p.id))
   );
-  const [mode, setMode] = useState<GameMode>(saved.mode ?? "pvp");
+  const [mode, setMode] = useState<GameMode>(saved.mode ?? initialMode ?? "pvp");
   const [humanPlayer, setHumanPlayer] = useState<Player>(saved.humanPlayer ?? "red");
   const [aiLevel, setAiLevel] = useState<AiLevel>(saved.aiLevel ?? "l1");
   const [establishedP1Color, setEstablishedP1Color] = useState<Player | null>(null);

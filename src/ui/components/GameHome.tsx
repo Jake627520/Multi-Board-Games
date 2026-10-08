@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { GameEngine, GameId } from "../../core/game/types";
+import type { GameMode } from "./GameModeSelector";
 
 interface GameHomeProps {
   /** 直接來自 registry.list()：新棋種 register 進去就自動長出一張卡 */
@@ -12,7 +13,11 @@ interface GameHomeProps {
    * 只看 lastGameId 會讓按鈕成為空頭支票（點進去是全新棋局）。
    */
   readonly canResume: (id: GameId) => boolean;
-  readonly onSelectGame: (id: GameId) => void;
+  /**
+   * mode 選填：兩個入口按鈕各自帶 "pvp" / "pve"；「繼續上次」不帶（續局用存檔裡的設定）。
+   * 注意 mode 只是沒有存檔時的預設——該棋種若有存檔，存檔的 mode 優先。
+   */
+  readonly onSelectGame: (id: GameId, mode?: GameMode) => void;
   /**
    * 放棄該棋種的存檔、開一局新的。只有「有可續的局」的卡片才會出現這個按鈕。
    * 沒傳就不顯示（卡片仍會標示「繼續」）。
@@ -91,11 +96,9 @@ export function GameHome({ games, lastGameId, canResume, onSelectGame, onNewGame
           const resumable = canResume(game.id);
           return (
           <li key={game.id} className={resumable ? "has-resume" : undefined}>
-            <button
-              type="button"
+            <article
               className={`game-card accent-${game.accent ?? "ink"}`}
               data-testid={`game-card-${game.id}`}
-              onClick={() => onSelectGame(game.id)}
             >
               <Thumbnail gameId={game.id} />
               {game.latinName && (
@@ -110,21 +113,39 @@ export function GameHome({ games, lastGameId, canResume, onSelectGame, onNewGame
                   )}
                 </div>
               )}
-              <span className="card-foot">
+              <div className="card-foot">
                 {game.boardSize && (
                   <span className="card-size">{game.boardSize}</span>
                 )}
-                {resumable ? (
+                {resumable && (
                   <span className="card-cta" data-testid={`card-cta-resume-${game.id}`}>
-                    繼續對局 Resume →
-                  </span>
-                ) : (
-                  <span className="card-cta" data-testid={`card-cta-new-${game.id}`}>
-                    開始對局 Play →
+                    有未完成的棋局，將接續 Saved game resumes
                   </span>
                 )}
-              </span>
-            </button>
+              </div>
+              <div className="card-modes" role="group" aria-label={`${game.name}：選擇對手`}>
+                <button
+                  type="button"
+                  className="mode-entry"
+                  data-testid={`play-pvp-${game.id}`}
+                  aria-label={`雙人對戰 ${game.name} Two Players`}
+                  onClick={() => onSelectGame(game.id, "pvp")}
+                >
+                  <span className="mode-entry-zh">👥 雙人對戰</span>
+                  <span className="mode-entry-en">Two Players</span>
+                </button>
+                <button
+                  type="button"
+                  className="mode-entry"
+                  data-testid={`play-pve-${game.id}`}
+                  aria-label={`對戰電腦 ${game.name} vs Computer`}
+                  onClick={() => onSelectGame(game.id, "pve")}
+                >
+                  <span className="mode-entry-zh">🤖 對戰電腦</span>
+                  <span className="mode-entry-en">vs Computer</span>
+                </button>
+              </div>
+            </article>
             {resumable && onNewGame && (
               <button
                 type="button"

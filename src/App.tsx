@@ -10,6 +10,7 @@ import { readLastGame, writeLastGame } from "./ui/last-game";
 import { clearAutosave, hasAutosave } from "./core/persistence/autosave";
 import { GameErrorBoundary } from "./ui/components/GameErrorBoundary";
 import type { GameId } from "./core/game/types";
+import type { GameMode } from "./ui/components/GameModeSelector";
 
 /**
  * 唯一的擴充點：新棋種在此登記一次即可。
@@ -24,6 +25,8 @@ const boards: Record<GameId, ComponentType<BoardProps> | undefined> = {
 export default function App() {
   const registry = useMemo(() => createGameRegistry(), []);
   const [gameId, setGameId] = useState<GameId | null>(null);
+  // 首頁選的對手。只是「沒有存檔時的預設」，棋盤端的優先序是 saved.mode ?? initialMode。
+  const [initialMode, setInitialMode] = useState<GameMode | undefined>(undefined);
   const [lastGameId, setLastGameId] = useState<GameId | null>(() => readLastGame());
 
   // 用 ref 而非 state：只在切換當下讀取，不需要為此重新渲染 App
@@ -47,8 +50,10 @@ export default function App() {
     [gameId]
   );
 
-  const enterGame = useCallback((id: GameId) => {
+  const enterGame = useCallback((id: GameId, mode?: GameMode) => {
     inProgressRef.current = false;
+    // 沒帶 mode（繼續上次 / 遊戲切換器 / 開新局）一律清掉，避免上一次首頁選的對手漏到別的棋種
+    setInitialMode(mode);
     writeLastGame(id);
     setLastGameId(id);
     setGameId(id);
@@ -137,7 +142,7 @@ export default function App() {
           }}
           onGoHome={goHome}
         >
-          <Board onProgressChange={handleProgressChange} />
+          <Board onProgressChange={handleProgressChange} initialMode={initialMode} />
         </GameErrorBoundary>
       ) : (
         <section className="placeholder">

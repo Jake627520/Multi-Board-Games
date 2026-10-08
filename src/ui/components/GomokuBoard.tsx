@@ -22,7 +22,7 @@ const AVAILABLE_PLAYERS: { id: Player; label: string }[] = [
   { id: "white", label: "⚪ 白子（後手）" },
 ];
 
-export function GomokuBoard({ onProgressChange }: BoardProps) {
+export function GomokuBoard({ onProgressChange, initialMode }: BoardProps) {
   // 自動存檔附帶的 UI 設定：只在掛載時讀一次，當作下面幾個 state 的初始值。
   // ruleMode 尤其重要：它決定「重新開始」會用哪個規則開新局，續局後若退回
   // freestyle，禁手局按重新開始會無聲變成自由規則。
@@ -35,7 +35,7 @@ export function GomokuBoard({ onProgressChange }: BoardProps) {
   );
   const [ruleMode, setRuleMode] = useState<GomokuRuleMode>(saved.ruleMode ?? "freestyle");
   const [aiLevel, setAiLevel] = useState<AiLevel>(saved.aiLevel ?? "l1");
-  const [mode, setMode] = useState<GameMode>(saved.mode ?? "pvp");
+  const [mode, setMode] = useState<GameMode>(saved.mode ?? initialMode ?? "pvp");
   const [humanPlayer, setHumanPlayer] = useState<Player>(saved.humanPlayer ?? "black");
 
   const engine = useMemo(() => createGomokuEngine(ruleMode), [ruleMode]);

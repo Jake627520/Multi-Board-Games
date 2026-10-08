@@ -14,7 +14,7 @@ import { clickReset, mulberry32, playViaUi, seedAutosave } from "./autosave-help
 const resumeButton = () => screen.queryByTestId("resume-last-game");
 
 function enter(gameId: "xiangqi" | "gomoku" | "banqi"): void {
-  fireEvent.click(screen.getByTestId(`game-card-${gameId}`));
+  fireEvent.click(screen.getByTestId(`play-pvp-${gameId}`));
 }
 
 function goHome(): void {
