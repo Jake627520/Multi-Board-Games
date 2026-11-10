@@ -30,8 +30,8 @@ These packages are used solely during development, testing, and compilation; the
 | `@types/react-dom` | `19.2.7` | `MIT` | TypeScript type declarations for React DOM | [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) | Retain copyright notice |
 | `@vitejs/plugin-react` | `5.2.0` | `MIT` | Vite plugin for React fast refresh | [vite-plugin-react](https://github.com/vitejs/vite-plugin-react) | Retain copyright notice |
 | `typescript` | `5.9.3` | `Apache-2.0` | Static type checker and TS compiler | [TypeScript](https://www.typescriptlang.org/) | Apache-2.0 notice retention |
-| `vite` | `7.3.6` | `MIT` | Frontend dev server and production bundler | [https://vite.dev](https://vite.dev) | Retain copyright notice |
-| `vitest` | `3.2.7` | `MIT` | Unit test execution framework | [https://vitest.dev](https://vitest.dev) | Retain copyright notice |
+| `vite` | `7.3.8` | `MIT` | Frontend dev server and production bundler | [https://vite.dev](https://vite.dev) | Retain copyright notice |
+| `vitest` | `4.1.12` | `MIT` | Unit test execution framework | [https://vitest.dev](https://vitest.dev) | Retain copyright notice |
 | `jsdom` | `26.1.0` | `MIT` | Headless DOM implementation for test environment | [jsdom](https://github.com/jsdom/jsdom) | Retain copyright notice |
 
 ---
