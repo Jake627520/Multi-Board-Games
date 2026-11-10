@@ -1,8 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createXiangqiAiLevel2 } from "../../src/games/xiangqi/ai";
 import { createXiangqiEngine } from "../../src/games/xiangqi/engine";
 import { buildState, createPiece } from "./test-helper";
 import { getLegalMoves } from "../../src/games/xiangqi/rules";
+import * as xiangqiRules from "../../src/games/xiangqi/rules";
 
 describe("Xiangqi AI Level 2 (Minimax)", () => {
   const ai = createXiangqiAiLevel2();
@@ -75,17 +76,39 @@ describe("Xiangqi AI Level 2 (Minimax)", () => {
     expect(move.to).toEqual({ row: 5, col: 4 });
   });
 
-  it("should complete depth-2 search within performance budget", async () => {
+  it("should keep depth-2 search within a fixed position budget", async () => {
     const initialState = engine.createInitialState();
     const legalMoves = getLegalMoves(initialState);
 
-    const start = performance.now();
-    const move = await ai.selectMove(initialState, legalMoves);
-    const duration = performance.now() - start;
+    // Wall-clock is not a stable signal: the same opening search was measured
+    // at 347ms and 556ms on one machine, so a 500ms cutoff flakes under load.
+    // Counting applyMoveUnchecked calls is deterministic and still catches the
+    // regression this test exists for — extra position generation from lost
+    // alpha-beta cutoffs, or from recomputing moves inside the sort comparator.
+    let positions = 0;
+    const originalApply = xiangqiRules.applyMoveUnchecked;
+    const spy = vi.spyOn(xiangqiRules, "applyMoveUnchecked").mockImplementation((state, move) => {
+      positions += 1;
+      return originalApply(state, move);
+    });
 
-    expect(move).toBeDefined();
-    // In shared CI virtualization environments (GitHub Actions), allow adequate margin
-    const budget = Boolean((globalThis as unknown as { process?: { env?: { CI?: string } } }).process?.env?.CI) ? 1500 : 500;
-    expect(duration).toBeLessThan(budget);
+    try {
+      const move = await ai.selectMove(initialState, legalMoves);
+      const isLegal = legalMoves.some(
+        (m) =>
+          m.from.row === move.from.row &&
+          m.from.col === move.from.col &&
+          m.to.row === move.to.row &&
+          m.to.col === move.to.col
+      );
+      expect(isLegal).toBe(true);
+      // The opening search generates 2132 positions on Node 20 and Node 22.
+      // That measured cost is the ceiling: a cheaper search still passes,
+      // and a spy that fails to see the search stays at 0 and fails.
+      expect(positions).toBeGreaterThan(0);
+      expect(positions).toBeLessThanOrEqual(2132);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

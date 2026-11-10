@@ -56,27 +56,34 @@ start-game.bat
 ```
 
 ### 手動啟動
+
+需要 **Node.js 20.19 以上**（與 CI 的 Node.js 20 相同，見 `.nvmrc`），或 Node.js 22.12 以上。
+
 ```bash
 npm install
 npm run dev
 ```
 
-瀏覽器訪問：`http://localhost:5173` 即可遊玩。
+瀏覽器訪問：`http://localhost:5173` 即可遊玩。Vite 沒有改連接埠，這是預設位址。
 
 ---
 
 ### 🧪 驗證與自動化測試
 
-本專案遵循嚴格的 TDD 與品質防線，全專案無任何警告或跳過測試：
+單元、整合與端對端測試都沒有被跳過的案例。`npm install` / `npm ci` 仍可能印出上游依賴的 deprecation 警告（目前是 jsdom 帶入的 `whatwg-encoding`）；那不是測試失敗。
 
 ```bash
-# 執行全量單元與整合測試
+# 單元與整合測試（Vitest；不含瀏覽器端對端）
 npm run test
 
-# 執行 TypeScript 靜態型別嚴格檢查
+# 瀏覽器端對端測試（Playwright）。CI 會跑 Chromium 與 WebKit。
+# 首次需要：npx playwright install --with-deps chromium webkit
+npm run test:e2e
+
+# TypeScript 靜態型別檢查
 npx tsc --noEmit
 
-# 驗證生產環境打包建置
+# 生產環境打包（會再跑一次 tsc --noEmit，然後 vite build）
 npm run build
 ```
 
@@ -103,20 +110,28 @@ npm run build
 
 ```text
 src/
+├── main.tsx           # 進入點
+├── App.tsx            # 平台殼層
+├── styles.css         # 水墨樣式（倉庫內無二進位圖）
 ├── core/
-│   ├── ai/            # 通用 AI 抽象介面 (AiPlayer)
-│   ├── game/          # 通用核心型別 (GameEngine)、GameSession、GameRegistry
-│   └── persistence/   # SaveManager、ReplayManager、Serialization Policy
+│   ├── ai/            # 通用 AI 抽象介面 (AiPlayer) 與可注入亂數
+│   ├── game/          # GameEngine、GameSession、GameRegistry
+│   └── persistence/   # SaveManager、ReplayManager、Serialization Policy、本機存檔與自動存檔
 ├── games/
 │   ├── banqi/         # 暗棋引擎、規則、視角投影 (projectBanqiView)
 │   ├── gomoku/        # 五子棋引擎、規則、Level 1/2 AI、座標記譜
 │   ├── xiangqi/       # 象棋引擎、規則、Level 1/2 AI、中文記譜
 │   ├── shared/        # 跨棋種共用：FEN 式盤面編碼、棋子代碼、緊湊欄位、局面雜湊
-│   └── registry.ts    # 遊戲註冊中心
+│   └── registry.ts    # 遊戲註冊中心（註冊象棋、五子棋、暗棋）
 └── ui/
-    ├── XiangqiBoard.tsx   # 象棋盤（其餘棋盤在 components/）
-    ├── components/    # 棋盤與側欄組件 (GomokuBoard, BanqiBoard, GameHome, BoardSidePanel…)
-    └── hooks/         # useGameSession、useCoarsePointer、useTapConfirmPlacement
+    ├── XiangqiBoard.tsx   # 象棋盤（GomokuBoard、BanqiBoard 在 components/）
+    ├── components/    # 棋盤與側欄 (GameHome, BoardSidePanel, SaveManagerPanel, ReplayControls…)
+    ├── hooks/         # useGameSession、useCoarsePointer、useTapConfirmPlacement
+    ├── board-props.ts
+    ├── confirm-discard.ts
+    ├── last-game.ts
+    ├── move-cells.ts
+    └── saved-ui.ts
 ```
 
 ---
@@ -169,22 +184,31 @@ start-game.bat
 ```
 
 #### 手动运行
+
+需要 **Node.js 20.19 以上**（与 CI 的 Node.js 20 相同，见 `.nvmrc`），或 Node.js 22.12 以上。
+
 ```bash
 npm install
 npm run dev
 ```
-本地访问：`http://localhost:5173`。
+本地访问：`http://localhost:5173`。Vite 未改端口，这是默认地址。
 
 ### 🧪 测试与验证
 
+单元、集成与端到端测试都没有被跳过的用例。`npm install` / `npm ci` 仍可能打印上游依赖的 deprecation 警告（目前来自 jsdom 带入的 `whatwg-encoding`）；那不是测试失败。
+
 ```bash
-# 运行单元与集成测试
+# 单元与集成测试（Vitest；不含浏览器端到端）
 npm run test
+
+# 浏览器端到端测试（Playwright）。CI 会跑 Chromium 与 WebKit。
+# 首次需要：npx playwright install --with-deps chromium webkit
+npm run test:e2e
 
 # 静态类型检查
 npx tsc --noEmit
 
-# 生产环境打包构建
+# 生产环境打包（会再跑一次 tsc --noEmit，然后 vite build）
 npm run build
 ```
 
@@ -236,22 +260,31 @@ start-game.bat
 ```
 
 #### Manual Start
+
+Requires **Node.js 20.19 or newer** (CI uses Node.js 20; see `.nvmrc`) or Node.js 22.12 or newer.
+
 ```bash
 npm install
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
+Open `http://localhost:5173` in your browser. Vite's port is left at the default.
 
 ### 🧪 Verification & Tests
 
+No unit, integration, or end-to-end test is skipped. `npm install` / `npm ci` can still print an upstream deprecation warning (currently `whatwg-encoding`, pulled in by jsdom). That warning is not a test failure.
+
 ```bash
-# Run unit and integration tests
+# Unit and integration tests (Vitest; does not run browser e2e)
 npm run test
 
-# Run TypeScript type check
+# Browser end-to-end tests (Playwright). CI runs Chromium and WebKit.
+# First time: npx playwright install --with-deps chromium webkit
+npm run test:e2e
+
+# TypeScript type check
 npx tsc --noEmit
 
-# Production build
+# Production build (runs tsc --noEmit again, then vite build)
 npm run build
 ```
 
