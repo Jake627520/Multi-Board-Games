@@ -57,7 +57,7 @@ start-game.bat
 
 ### 手動啟動
 
-需要 **Node.js 20.19 以上**（與 CI 的 Node.js 20 相同，見 `.nvmrc`），或 Node.js 22.12 以上。
+需要 **Node.js 22.12 以上**（CI 使用 Node.js 22，見 `.nvmrc`）。
 
 ```bash
 npm install
@@ -185,7 +185,7 @@ start-game.bat
 
 #### 手动运行
 
-需要 **Node.js 20.19 以上**（与 CI 的 Node.js 20 相同，见 `.nvmrc`），或 Node.js 22.12 以上。
+需要 **Node.js 22.12 以上**（CI 使用 Node.js 22，见 `.nvmrc`）。
 
 ```bash
 npm install
@@ -261,7 +261,7 @@ start-game.bat
 
 #### Manual Start
 
-Requires **Node.js 20.19 or newer** (CI uses Node.js 20; see `.nvmrc`) or Node.js 22.12 or newer.
+Requires **Node.js 22.12 or newer** (CI uses Node.js 22; see `.nvmrc`).
 
 ```bash
 npm install
